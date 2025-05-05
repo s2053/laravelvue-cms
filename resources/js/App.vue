@@ -1,13 +1,9 @@
 <template>
     <Layout>
-      <router-view></router-view>
+        <router-view></router-view>
     </Layout>
-  </template>
+</template>
 
-  <script>
-  import Layout from './layouts/DashboardLayout.vue';
-
-  export default {
-    components: { Layout }
-  };
-  </script>
+<script setup lang="ts">
+import Layout from './layouts/DashboardLayout.vue';
+</script>

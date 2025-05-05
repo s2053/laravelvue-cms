@@ -10,5 +10,4 @@ window.Alpine = Alpine;
 
 Alpine.start();
 
-
 createApp(App).use(router).mount('#app');

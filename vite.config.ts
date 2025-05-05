@@ -7,13 +7,14 @@ import vue from '@vitejs/plugin-vue';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
         }),
         tailwindcss(),
         vue(),
     ],
     resolve: {
+        extensions: ['.ts', '.js', '.vue', '.json'],
         alias: {
           '@': '/resources/js',
         },

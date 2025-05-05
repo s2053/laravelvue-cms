@@ -1,10 +1,9 @@
 <template>
     <div>
-      <div class="flex">
-        <main class="p-4 flex-1">
-          <slot />
-        </main>
-      </div>
+        <div class="flex">
+            <main class="flex-1 p-4">
+                <slot />
+            </main>
+        </div>
     </div>
-  </template>
-
+</template>
