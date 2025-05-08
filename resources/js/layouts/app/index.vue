@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { AppContent, AppHeader, AppFooter, AppSidebar } from '@/layouts/app/components'
+import { AppContent, AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
 </script>
 
 <template>
+    <AppSidebar />
 
-      <AppSidebar />
-
-        <AppHeader />
-          <AppContent />
-          <AppFooter />
-
+    <AppHeader />
+    <AppContent>
+    <slot />
+    </AppContent>
+    <AppFooter />
 </template>
 
 <style scoped>
