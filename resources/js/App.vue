@@ -1,9 +1,9 @@
 <template>
-    <Layout>
+    <AppLayout>
         <router-view></router-view>
-    </Layout>
+    </AppLayout>
 </template>
 
 <script setup lang="ts">
-import Layout from './layouts/DashboardLayout.vue';
+import AppLayout from '@/layouts/app/index.vue';
 </script>
