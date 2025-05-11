@@ -1,9 +1,40 @@
 @import 'tailwindcss';
-
+@import 'tailwindcss-primeui';
 
 @source '../**/*.js';
-
+/*
 @theme {
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+        'Instrument Sans',
+        ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+         'Segoe UI Symbol', 'Noto Color Emoji';
+} */
+
+.outline-primary-500 {
+    outline-width: 1px; /* Or your desired outline width */
+    outline-style: solid;
+    outline-color: var(--p-primary-500); /* Use the primary color token */
+}
+
+.outline-primary {
+    outline-width: 1px;
+    outline-style: solid;
+    outline-color: var(--p-primary-300);
+}
+
+.dark\:bg-surface-900:where([class*='app-dark'], [class*='app-dark'] *) {
+    --tw-bg-opacity: 1;
+    background-color: color-mix(in srgb, var(--p-surface-900) calc(100% * var(--tw-bg-opacity)), transparent) !important;
+}
+
+.bg-surface-0 {
+    --tw-bg-opacity: 1;
+    background-color: color-mix(in srgb, var(--p-surface-0) calc(100% * var(--tw-bg-opacity)), transparent);
+}
+
+.rounded-border {
+    border-radius: var(--p-content-border-radius);
+}
+.border-surface {
+    border-color: var(--p-content-border-color);
 }

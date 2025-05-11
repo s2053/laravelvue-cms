@@ -1,8 +1,9 @@
-<script setup lang="ts">
-import { AppContent, AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
-
-import { useLayout } from '@/layouts/app/composables/layout';
+<script setup>
+import { useLayout } from '@/layout/composables/layout';
 import { computed, ref, watch } from 'vue';
+import AppFooter from './AppFooter.vue';
+import AppSidebar from './AppSidebar.vue';
+import AppTopbar from './AppTopbar.vue';
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
 
@@ -59,23 +60,15 @@ function isOutsideClicked(event) {
 }
 </script>
 
-<style scoped>
-/* .w-screen{} */
-</style>
-
 <template>
     <div class="layout-wrapper" :class="containerClass">
-        <AppHeader />
-
-        <AppSidebar />
-
+        <app-topbar></app-topbar>
+        <app-sidebar></app-sidebar>
         <div class="layout-main-container">
             <div class="layout-main">
-                <AppContent>
-                    <slot />
-                </AppContent>
+                <router-view></router-view>
             </div>
-            <AppFooter />
+            <app-footer></app-footer>
         </div>
         <div class="layout-mask animate-fadein"></div>
     </div>
