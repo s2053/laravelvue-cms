@@ -1,4 +1,4 @@
-import AppLayout from '@/layouts/app/index.vue';
+import AppLayout from '@/layouts/app/AppLayout.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const routes = [
@@ -14,21 +14,21 @@ const routes = [
                 component: () => import('@/pages/Dashboard.vue'),
             },
             {
-                path: '/dashboard//settings/password/',
+                path: '/dashboard/settings/password/',
                 name: 'Passwprd',
                 meta: { title: 'Passwprd' },
 
                 component: () => import('@/pages/settings/Password.vue'),
             },
             {
-                path: '/dashboard//settings/profile/',
+                path: '/dashboard/settings/profile/',
                 name: 'profile',
                 meta: { title: 'Profile' },
 
                 component: () => import('@/pages/settings/Profile.vue'),
             },
             {
-                path: '/dashboard//settings/appearance/',
+                path: '/dashboard/settings/appearance/',
                 name: 'appearance',
                 meta: { title: 'Appearance' },
 

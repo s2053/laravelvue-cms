@@ -57,6 +57,16 @@ function isOutsideClicked(event) {
         topbarEl.contains(event.target)
     );
 }
+
+
+function getTransition(routeMetaTransition) {
+  // console.log(routeMetaTransition);
+  if (routeMetaTransition == undefined) {
+    return 'slide-left'
+  } else {
+    return routeMetaTransition;
+  }
+}
 </script>
 
 <style scoped>
@@ -72,7 +82,11 @@ function isOutsideClicked(event) {
         <div class="layout-main-container">
             <div class="layout-main">
                 <AppContent>
-                <RouterView></RouterView>
+                    <router-view v-slot="{ Component, route }">
+                        <transition :name="getTransition(route.meta.transition)" mode="out-in">
+                            <component :is="Component" :key="route.path" />
+                        </transition>
+                    </router-view>
                 </AppContent>
             </div>
             <AppFooter />
@@ -81,3 +95,39 @@ function isOutsideClicked(event) {
     </div>
     <Toast />
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+    transition-duration: 0.3s;
+    transition-property: opacity;
+    transition-timing-function: ease;
+}
+
+.fade-enter,
+.fade-leave-active {
+    opacity: 0;
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active,
+.slide-right-enter-active,
+.slide-right-leave-active {
+    transition-duration: 0.5s;
+    transition-property: height, opacity, transform;
+    transition-timing-function: cubic-bezier(0.55, 0, 0.1, 1);
+    overflow: hidden;
+}
+
+.slide-left-enter,
+.slide-right-leave-active {
+    opacity: 0;
+    transform: translate(2em, 0);
+}
+
+.slide-left-leave-active,
+.slide-right-enter {
+    opacity: 0;
+    transform: translate(-2em, 0);
+}
+</style>
