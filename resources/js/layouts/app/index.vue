@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { AppContent, AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
 
 import { useLayout } from '@/layouts/app/composables/layout';
@@ -72,7 +72,7 @@ function isOutsideClicked(event) {
         <div class="layout-main-container">
             <div class="layout-main">
                 <AppContent>
-                    <slot />
+                <RouterView></RouterView>
                 </AppContent>
             </div>
             <AppFooter />

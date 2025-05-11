@@ -1,12 +1,40 @@
+import AppLayout from '@/layouts/app/index.vue';
 import { createRouter, createWebHistory } from 'vue-router';
-import Dashboard from '../pages/Dashboard.vue';
 
 const routes = [
-    { path: '/', redirect: '/dashboard' },
     {
         path: '/dashboard',
-        component: Dashboard,
-        meta: { title: 'Dashboard' },
+        component: AppLayout,
+        children: [
+            {
+                path: '/dashboard',
+                name: 'dashboard',
+                meta: { title: 'Dashboard' },
+
+                component: () => import('@/pages/Dashboard.vue'),
+            },
+            {
+                path: '/dashboard//settings/password/',
+                name: 'Passwprd',
+                meta: { title: 'Passwprd' },
+
+                component: () => import('@/pages/settings/Password.vue'),
+            },
+            {
+                path: '/dashboard//settings/profile/',
+                name: 'profile',
+                meta: { title: 'Profile' },
+
+                component: () => import('@/pages/settings/Profile.vue'),
+            },
+            {
+                path: '/dashboard//settings/appearance/',
+                name: 'appearance',
+                meta: { title: 'Appearance' },
+
+                component: () => import('@/pages/settings/Appearance.vue'),
+            },
+        ],
     },
 ];
 

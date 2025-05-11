@@ -11,6 +11,9 @@ const model = ref([
     {
         label: 'UI Components',
         items: [
+            { label: 'Prfile', icon: 'pi pi-fw pi-id-card', to: '/dashboard/settings/profile' },
+            { label: 'Appearcnce', icon: 'pi pi-fw pi-id-card', to: '/dashboard/settings/appearance' },
+            { label: 'password', icon: 'pi pi-fw pi-id-card', to: '/dashboard/settings/password' },
             { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', to: '/uikit/formlayout' },
             { label: 'Input', icon: 'pi pi-fw pi-check-square', to: '/uikit/input' },
             { label: 'Button', icon: 'pi pi-fw pi-mobile', to: '/uikit/button', class: 'rotated-icon' },
