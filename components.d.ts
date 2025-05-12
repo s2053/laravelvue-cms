@@ -8,6 +8,13 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Button: typeof import('primevue/button')['default']
+    Fieldset: typeof import('primevue/fieldset')['default']
+    Form: typeof import('@primevue/forms/form')['default']
+    InputText: typeof import('primevue/inputtext')['default']
+    Message: typeof import('primevue/message')['default']
+    RadioButton: typeof import('primevue/radiobutton')['default']
+    RadioButtonGroup: typeof import('primevue/radiobuttongroup')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SelectButton: typeof import('primevue/selectbutton')['default']

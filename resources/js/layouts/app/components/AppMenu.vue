@@ -9,7 +9,14 @@ const model = ref([
         items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' }],
     },
     {
-        label: 'UI Components',
+        label: 'Pages',
+        items: [
+            { label: 'Page Category', icon: 'pi pi-fw pi-id-card', to: '/dashboard/page-category' },
+            { label: 'Pages', icon: 'pi pi-fw pi-circle', to: '/dashboard/settings/pages' },
+        ],
+    },
+    {
+        label: 'Settings',
         items: [
             { label: 'Prfile', icon: 'pi pi-fw pi-id-card', to: '/dashboard/settings/profile' },
             { label: 'Appearcnce', icon: 'pi pi-fw pi-circle', to: '/dashboard/settings/appearance' },
