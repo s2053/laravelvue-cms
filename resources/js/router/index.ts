@@ -14,6 +14,20 @@ const routes = [
                 component: () => import('@/pages/Dashboard.vue'),
             },
             {
+                path: '/dashboard/roles/',
+                name: 'Roles',
+                meta: { title: 'Roles' },
+
+                component: () => import('@/pages/roles/Index.vue'),
+            },
+            {
+                path: '/dashboard/permissions/',
+                name: 'Permissions',
+                meta: { title: 'Permissions' },
+
+                component: () => import('@/pages/permissions/Index.vue'),
+            },
+            {
                 path: '/dashboard/settings/password/',
                 name: 'Passwprd',
                 meta: { title: 'Passwprd' },

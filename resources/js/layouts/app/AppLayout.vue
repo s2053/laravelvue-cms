@@ -1,5 +1,5 @@
 <script setup>
-import { AppContent, AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
+import {  AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
 
 import { useLayout } from '@/layouts/app/composables/layout';
 import { computed, ref, watch } from 'vue';
@@ -58,14 +58,13 @@ function isOutsideClicked(event) {
     );
 }
 
-
 function getTransition(routeMetaTransition) {
-  // console.log(routeMetaTransition);
-  if (routeMetaTransition == undefined) {
-    return 'slide-left'
-  } else {
-    return routeMetaTransition;
-  }
+    // console.log(routeMetaTransition);
+    if (routeMetaTransition == undefined) {
+        return 'slide-left';
+    } else {
+        return routeMetaTransition;
+    }
 }
 </script>
 
@@ -81,13 +80,11 @@ function getTransition(routeMetaTransition) {
 
         <div class="layout-main-container">
             <div class="layout-main">
-                <AppContent>
                     <router-view v-slot="{ Component, route }">
                         <transition :name="getTransition(route.meta.transition)" mode="out-in">
                             <component :is="Component" :key="route.path" />
                         </transition>
                     </router-view>
-                </AppContent>
             </div>
             <AppFooter />
         </div>
