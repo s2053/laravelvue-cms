@@ -1,7 +1,8 @@
 <script setup>
-import {  AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
+import { AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
 
 import { useLayout } from '@/layouts/app/composables/layout';
+import Toast from 'primevue/toast';
 import { computed, ref, watch } from 'vue';
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
@@ -80,11 +81,11 @@ function getTransition(routeMetaTransition) {
 
         <div class="layout-main-container">
             <div class="layout-main">
-                    <router-view v-slot="{ Component, route }">
-                        <transition :name="getTransition(route.meta.transition)" mode="out-in">
-                            <component :is="Component" :key="route.path" />
-                        </transition>
-                    </router-view>
+                <router-view v-slot="{ Component, route }">
+                    <transition :name="getTransition(route.meta.transition)" mode="out-in">
+                        <component :is="Component" :key="route.path" />
+                    </transition>
+                </router-view>
             </div>
             <AppFooter />
         </div>

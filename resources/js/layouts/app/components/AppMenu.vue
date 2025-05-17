@@ -21,7 +21,6 @@ const model = ref([
             { label: 'Roles', icon: 'pi pi-fw pi-id-card', to: '/dashboard/roles' },
             { label: 'Permissions', icon: 'pi pi-fw pi-circle', to: '/dashboard/permissions' },
         ],
-
     },
 
     {
