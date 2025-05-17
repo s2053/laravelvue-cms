@@ -3,11 +3,16 @@
         <div class="flex flex-col gap-1">
             <label for="name" class="mb-2 block font-bold">Role name:</label>
             <InputText v-model="roleForm.name" name="name" type="text" placeholder="name" />
-            <Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">{{ $form.name.error.message }}</Message>
+            <Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">
+                {{ $form.name.error.message }}
+            </Message>
+            <Message v-else-if="serverErrors?.name" severity="error" size="small" variant="simple">
+                {{ serverErrors.name[0] }}
+            </Message>
         </div>
         <div class="flex justify-end gap-2">
             <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" label="Save" severity="secondary"></Button>
+            <Button type="submit" :label="submitLabel" severity="secondary"></Button>
         </div>
     </Form>
 </template>
@@ -20,8 +25,9 @@ import { z } from 'zod';
 const props = defineProps<{
     modelValue: { name?: string | null };
     submitLabel: string;
+    serverErrors?: { [key: string]: string[] };
 }>();
-const emit = defineEmits(['submit', 'cancel']); // <-- Add 'cancel' here
+const emit = defineEmits(['submit', 'cancel']);
 
 const roleForm = ref({ name: props.modelValue.name ?? '' });
 watch(

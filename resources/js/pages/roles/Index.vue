@@ -13,10 +13,17 @@
             </Column>
         </DataTable>
         <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
-            <RoleForm :modelValue="formModel" @cancel="dialogVisible = false" :submitLabel="dialogSubmitLabel" @submit="handleSubmit" />
+            <RoleForm
+                :modelValue="formModel"
+                :submitLabel="dialogSubmitLabel"
+                :serverErrors="serverErrors"
+                @submit="handleSubmit"
+                @cancel="dialogVisible = false"
+            />
         </Dialog>
     </AppContent>
 </template>
+
 <script setup lang="ts">
 import RoleForm from '@/components/roles/RoleForm.vue';
 import { useRoles } from '@/composables/useRoles';
@@ -27,21 +34,21 @@ import { onMounted, ref } from 'vue';
 const { roles, fetchRoles, loading, getRoleById, createRole, updateRole, deleteRole } = useRoles();
 const toast = useToast();
 
-onMounted(() => {
-    fetchRoles();
-});
+onMounted(fetchRoles);
 
 const dialogVisible = ref(false);
 const dialogTitle = ref('Create Role');
 const dialogSubmitLabel = ref('Create');
 const formModel = ref({ name: '' });
 const editingId = ref<number | null>(null);
+const serverErrors = ref<{ [key: string]: string[] }>({});
 
 function openCreate() {
     dialogTitle.value = 'Create Role';
     dialogSubmitLabel.value = 'Create';
     formModel.value = { name: '' };
     editingId.value = null;
+    serverErrors.value = {};
     dialogVisible.value = true;
 }
 
@@ -49,25 +56,43 @@ async function openEdit(role: any) {
     dialogTitle.value = 'Edit Role';
     dialogSubmitLabel.value = 'Update';
     editingId.value = role.id;
-    // Fetch the latest data from the API
-    const latest = await getRoleById(role.id);
-    formModel.value = { name: latest.name };
-    dialogVisible.value = true;
+    serverErrors.value = {};
+    try {
+        const latest = await getRoleById(role.id);
+        formModel.value = { name: latest.name };
+        dialogVisible.value = true;
+    } catch (err: any) {
+        toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to fetch role', life: 4000 });
+    }
 }
 
 async function handleSubmit(form: { name: string }) {
-    if (editingId.value) {
-        await updateRole(editingId.value, form);
-        toast.add({ severity: 'success', summary: 'Role updated', life: 2000 });
-    } else {
-        await createRole(form);
-        toast.add({ severity: 'success', summary: 'Role created', life: 2000 });
+    serverErrors.value = {};
+    try {
+        if (editingId.value) {
+            await updateRole(editingId.value, form);
+            toast.add({ severity: 'success', summary: 'Role updated', life: 2000 });
+        } else {
+            await createRole(form);
+            toast.add({ severity: 'success', summary: 'Role created', life: 2000 });
+        }
+        dialogVisible.value = false;
+    } catch (err: any) {
+        // Laravel validation errors
+        if (err.response?.status === 422 && err.response.data?.errors) {
+            serverErrors.value = err.response.data.errors;
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+        }
     }
-    dialogVisible.value = false;
 }
 
 async function removeRole(id: number) {
-    await deleteRole(id);
-    toast.add({ severity: 'success', summary: 'Role deleted', life: 2000 });
+    try {
+        await deleteRole(id);
+        toast.add({ severity: 'success', summary: 'Role deleted', life: 2000 });
+    } catch (err: any) {
+        toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to delete role', life: 4000 });
+    }
 }
 </script>
