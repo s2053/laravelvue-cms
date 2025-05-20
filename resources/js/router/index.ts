@@ -18,14 +18,14 @@ const routes = [
                 name: 'Roles',
                 meta: { title: 'Roles' },
 
-                component: () => import('@/pages/roles/Index.vue'),
+                component: () => import('@/pages/roles/Roles.vue'),
             },
             {
                 path: '/dashboard/permissions/',
                 name: 'Permissions',
                 meta: { title: 'Permissions' },
 
-                component: () => import('@/pages/permissions/Index.vue'),
+                component: () => import('@/pages/permissions/Permissions.vue'),
             },
             {
                 path: '/dashboard/settings/password/',

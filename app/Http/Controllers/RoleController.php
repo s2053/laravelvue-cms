@@ -8,49 +8,76 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
-    //
-
-    public function roles()
+    /**
+     * Display a listing of the roles with permissions.
+     */
+    public function index()
     {
-        return Role::with('permissions')->get();
+        return response()->json(Role::with('permissions')->get());
     }
 
-
+    /**
+     * Display a listing of the permissions.
+     */
     public function permissions()
     {
-        return Permission::all();
+        return response()->json(Permission::all());
     }
 
-    public function createRole(Request $request)
+    /**
+     * Store a newly created role in storage.
+     */
+    public function store(Request $request)
     {
-        $request->validate(['name' => 'required|unique:roles']);
-        return Role::create(['name' => $request->name]);
+        $validated = $request->validate([
+            'name' => 'required|unique:roles',
+        ]);
+        $role = Role::create(['name' => $validated['name']]);
+        return response()->json($role, 201);
     }
 
-    public function createPermission(Request $request)
+    /**
+     * Store a newly created permission in storage.
+     */
+    public function storePermission(Request $request)
     {
-        $request->validate(['name' => 'required|unique:permissions']);
-        return Permission::create(['name' => $request->name]);
+        $validated = $request->validate([
+            'name' => 'required|unique:permissions',
+        ]);
+        $permission = Permission::create(['name' => $validated['name']]);
+        return response()->json($permission, 201);
     }
 
-    public function updateRole(Request $request, $id)
+    /**
+     * Display the specified role with permissions.
+     */
+    public function show($id)
     {
-        $request->validate(['name' => 'required|unique:roles,name,' . $id]);
+        $role = Role::with('permissions')->findOrFail($id);
+        return response()->json($role);
+    }
+
+    /**
+     * Update the specified role in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required|unique:roles,name,' . $id,
+        ]);
         $role = Role::findOrFail($id);
-        $role->name = $request->name;
+        $role->name = $validated['name'];
         $role->save();
-        return $role;
+        return response()->json($role);
     }
 
-    public function deleteRole($id)
+    /**
+     * Remove the specified role from storage.
+     */
+    public function destroy($id)
     {
         $role = Role::findOrFail($id);
         $role->delete();
         return response()->json(['message' => 'Role deleted successfully']);
     }
-
-    public function getRoleById($id)
-{
-    return Role::with('permissions')->findOrFail($id);
-}
 }
