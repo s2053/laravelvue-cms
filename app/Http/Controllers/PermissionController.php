@@ -4,7 +4,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 
 class PermissionController extends Controller
 {
@@ -13,7 +13,9 @@ class PermissionController extends Controller
      */
     public function index()
     {
-        return response()->json(Permission::all());
+        return response()->json(
+            Permission::with('group')->get()
+        );
     }
 
     /**
@@ -21,19 +23,23 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
-
         $validated = $request->validate([
             'name' => [
                 'required',
                 'unique:permissions,name,',
-                'regex:/^[A-Za-z0-9_]+$/'
-            ]
+                'regex:/^[A-Za-z0-9_.]+$/'
+            ],
+            'permission_group_id' => ['nullable', 'exists:permission_groups,id'],
         ], [
-            'name.regex' => 'The permission name may only contain letters, numbers, and underscores.',
+            'name.regex' => 'The permission name may only contain letters, numbers, underscores, and dots.',
         ]);
-        $permission = Permission::create(['name' => $validated['name']]);
+        $permission = Permission::create([
+            'name' => $validated['name'],
+            'permission_group_id' => $validated['permission_group_id'] ?? null,
+        ]);
         return response()->json($permission, 201);
     }
+
 
     /**
      * Display the specified permission.
@@ -53,13 +59,15 @@ class PermissionController extends Controller
             'name' => [
                 'required',
                 'unique:permissions,name,' . $id,
-                'regex:/^[A-Za-z0-9_]+$/'
-            ]
+                'regex:/^[A-Za-z0-9_.]+$/'
+            ],
+            'permission_group_id' => ['nullable', 'exists:permission_groups,id'],
         ], [
-            'name.regex' => 'The permission name may only contain letters, numbers, and underscores.',
+            'name.regex' => 'The permission name may only contain letters, numbers, underscores, and dots.',
         ]);
         $permission = Permission::findOrFail($id);
         $permission->name = $validated['name'];
+        $permission->permission_group_id = $validated['permission_group_id'] ?? null;
         $permission->save();
         return response()->json($permission);
     }
