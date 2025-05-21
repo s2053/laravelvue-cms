@@ -16,13 +16,6 @@ class RoleController extends Controller
         return response()->json(Role::with('permissions')->get());
     }
 
-    /**
-     * Display a listing of the permissions.
-     */
-    public function permissions()
-    {
-        return response()->json(Permission::all());
-    }
 
     /**
      * Store a newly created role in storage.
@@ -36,17 +29,7 @@ class RoleController extends Controller
         return response()->json($role, 201);
     }
 
-    /**
-     * Store a newly created permission in storage.
-     */
-    public function storePermission(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|unique:permissions',
-        ]);
-        $permission = Permission::create(['name' => $validated['name']]);
-        return response()->json($permission, 201);
-    }
+
 
     /**
      * Display the specified role with permissions.

@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import RoleService from '@/services/RoleService';
-import type { Role } from '@/types/role';
+import type { Role } from '@/types/rbac';
 import { ref } from 'vue';
 
 export function useRoles() {

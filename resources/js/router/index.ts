@@ -21,6 +21,13 @@ const routes = [
                 component: () => import('@/pages/roles/Roles.vue'),
             },
             {
+                path: '/dashboard/permission-group/',
+                name: 'Permission Group',
+                meta: { title: 'Permission Group' },
+
+                component: () => import('@/pages/permissions/PermissionGroup.vue'),
+            },
+            {
                 path: '/dashboard/permissions/',
                 name: 'Permissions',
                 meta: { title: 'Permissions' },

@@ -21,8 +21,15 @@ class PermissionController extends Controller
      */
     public function store(Request $request)
     {
+
         $validated = $request->validate([
-            'name' => 'required|unique:permissions',
+            'name' => [
+                'required',
+                'unique:permissions,name,',
+                'regex:/^[A-Za-z0-9_]+$/'
+            ]
+        ], [
+            'name.regex' => 'The permission name may only contain letters, numbers, and underscores.',
         ]);
         $permission = Permission::create(['name' => $validated['name']]);
         return response()->json($permission, 201);
@@ -43,7 +50,13 @@ class PermissionController extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'name' => 'required|unique:permissions,name,' . $id,
+            'name' => [
+                'required',
+                'unique:permissions,name,' . $id,
+                'regex:/^[A-Za-z0-9_]+$/'
+            ]
+        ], [
+            'name.regex' => 'The permission name may only contain letters, numbers, and underscores.',
         ]);
         $permission = Permission::findOrFail($id);
         $permission->name = $validated['name'];

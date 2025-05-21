@@ -1,6 +1,6 @@
 // src/services/RoleService.ts
 import api from '@/lib/axios';
-import type { Role } from '@/types/role';
+import type { Role } from '@/types/rbac';
 
 export default {
     async getAll(): Promise<Role[]> {
