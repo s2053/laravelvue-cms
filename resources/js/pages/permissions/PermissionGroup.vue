@@ -5,6 +5,11 @@
         <DataTable :value="groups" :loading="loading">
             <Column field="id" header="Id" />
             <Column field="name" header="Group Name" />
+            <Column header="Permissions">
+                <template #body="{ data }">
+                    {{ data.permissions ? data.permissions.length : 0 }}
+                </template>
+            </Column>
             <Column header="Action">
                 <template #body="{ data }">
                     <Button icon="pi pi-pencil" @click="openEdit(data)" />

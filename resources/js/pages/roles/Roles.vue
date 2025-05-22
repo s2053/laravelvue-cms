@@ -12,11 +12,12 @@
                 </template>
             </Column>
         </DataTable>
-        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
+        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '50rem' }">
             <RoleForm
                 :modelValue="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
+                :groups="groups"
                 @submit="handleSubmit"
                 @cancel="dialogVisible = false"
             />
@@ -26,27 +27,32 @@
 
 <script setup lang="ts">
 import RoleForm from '@/components/roles/RoleForm.vue';
+import { usePermissionGroups } from '@/composables/usePermissionGroups';
 import { useRoles } from '@/composables/useRoles';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
 const { roles, fetchRoles, loading, getRoleById, createRole, updateRole, deleteRole } = useRoles();
+const { groups, fetchGroups } = usePermissionGroups();
+
 const toast = useToast();
 
-onMounted(fetchRoles);
-
+onMounted(() => {
+    fetchRoles();
+    fetchGroups();
+});
 const dialogVisible = ref(false);
 const dialogTitle = ref('Create Role');
 const dialogSubmitLabel = ref('Create');
-const formModel = ref({ name: '' });
+const formModel = ref<{ name: string; permissions: number[] }>({ name: '', permissions: [] });
 const editingId = ref<number | null>(null);
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
 function openCreate() {
     dialogTitle.value = 'Create Role';
     dialogSubmitLabel.value = 'Create';
-    formModel.value = { name: '' };
+    formModel.value = { name: '', permissions: [] };
     editingId.value = null;
     serverErrors.value = {};
     dialogVisible.value = true;
@@ -59,7 +65,10 @@ async function openEdit(role: any) {
     serverErrors.value = {};
     try {
         const latest = await getRoleById(role.id);
-        formModel.value = { name: latest.name };
+        formModel.value = {
+            name: latest.name,
+            permissions: latest.permissions ? latest.permissions.map((p: any) => p.id) : [],
+        };
         dialogVisible.value = true;
     } catch (err: any) {
         toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to fetch role', life: 4000 });

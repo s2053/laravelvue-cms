@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
@@ -16,7 +15,6 @@ class RoleController extends Controller
         return response()->json(Role::with('permissions')->get());
     }
 
-
     /**
      * Store a newly created role in storage.
      */
@@ -24,12 +22,16 @@ class RoleController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|unique:roles',
+            'permissions' => 'array',
+            'permissions.*' => 'integer|exists:permissions,id',
         ]);
         $role = Role::create(['name' => $validated['name']]);
-        return response()->json($role, 201);
+        if (!empty($validated['permissions'])) {
+            $role->syncPermissions($validated['permissions']);
+        }
+        // Return with permissions
+        return response()->json($role->load('permissions'), 201);
     }
-
-
 
     /**
      * Display the specified role with permissions.
@@ -47,11 +49,17 @@ class RoleController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|unique:roles,name,' . $id,
+            'permissions' => 'array',
+            'permissions.*' => 'integer|exists:permissions,id',
         ]);
         $role = Role::findOrFail($id);
         $role->name = $validated['name'];
         $role->save();
-        return response()->json($role);
+        if (isset($validated['permissions'])) {
+            $role->syncPermissions($validated['permissions']);
+        }
+        // Return with permissions
+        return response()->json($role->load('permissions'));
     }
 
     /**

@@ -89,7 +89,7 @@ async function removePermission(id: number) {
             </Column>
             <Column header="Action">
                 <template #body="{ data }">
-                    <Button icon="pi pi-pencil" @click="openEdit(data)" />
+                    <Button icon="pi pi-pencil" @click="openEdit(data)" class="mr-2" />
                     <Button icon="pi pi-trash" severity="danger" @click="removePermission(data.id)" />
                 </template>
             </Column>
