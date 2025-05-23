@@ -2,7 +2,6 @@
 import { AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
 
 import { useLayout } from '@/layouts/app/composables/layout';
-import Toast from 'primevue/toast';
 import { computed, ref, watch } from 'vue';
 
 const { layoutConfig, layoutState, isSidebarActive } = useLayout();
@@ -92,6 +91,7 @@ function getTransition(routeMetaTransition) {
         <div class="layout-mask animate-fadein"></div>
     </div>
     <Toast />
+    <ConfirmDialog></ConfirmDialog>
 </template>
 
 <style scoped>

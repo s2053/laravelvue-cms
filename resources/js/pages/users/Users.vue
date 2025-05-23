@@ -1,105 +1,117 @@
 <template>
     <AppContent>
-        <h2>Role Management</h2>
+        <h2>User Management</h2>
         <Button icon="pi pi-plus" label="Add New" @click="openCreate" />
-        <DataTable :value="roles" :loading="loading">
+        <DataTable :value="users" :loading="loading">
             <Column field="id" header="Id" />
-            <Column field="name" header="Role" />
+            <Column field="name" header="Name" />
+            <Column field="email" header="Email" />
+            <Column field="role_name" header="Role" />
             <Column header="Action">
                 <template #body="{ data }">
                     <Button icon="pi pi-pencil" @click="openEdit(data)" class="mr-1" />
-                    <Button icon="pi pi-trash" severity="danger" @click="removeRole(data.id)" />
+                    <Button icon="pi pi-trash" severity="danger" @click="removeUser(data.id)" />
                 </template>
             </Column>
         </DataTable>
-        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '50rem' }">
-            <RoleForm
+        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
+            <UserForm
                 :modelValue="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
-                :groups="groups"
+                :roles="roles"
                 @submit="handleSubmit"
                 @cancel="dialogVisible = false"
             />
         </Dialog>
     </AppContent>
 </template>
-
 <script setup lang="ts">
-import RoleForm from '@/components/roles/RoleForm.vue';
+import UserForm from '@/components/users/UserForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { usePermissionGroups } from '@/composables/usePermissionGroups';
 import { useRoles } from '@/composables/useRoles';
+import { useUsers } from '@/composables/useUsers';
 import AppContent from '@/layouts/app/components/AppContent.vue';
+import type { User, UserPayload } from '@/types/user';
 import { useToast } from 'primevue/usetoast';
-
 import { onMounted, ref } from 'vue';
 
 const { showDeleteConfirm } = useDeleteConfirm();
-
-const { roles, fetchRoles, loading, getRoleById, createRole, updateRole, deleteRole } = useRoles();
-const { groups, fetchGroups } = usePermissionGroups();
-
+const { users, fetchUsers, loading, getUserById, createUser, updateUser, deleteUser } = useUsers();
+const { roles, fetchRoles } = useRoles();
 const toast = useToast();
 
 onMounted(() => {
+    fetchUsers();
     fetchRoles();
-    fetchGroups();
 });
+
 const dialogVisible = ref(false);
-const dialogTitle = ref('Create Role');
+const dialogTitle = ref('Create User');
 const dialogSubmitLabel = ref('Create');
-const formModel = ref<{ name: string; permissions: number[] }>({ name: '', permissions: [] });
+const formModel = ref<UserPayload>({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    role_id: null,
+});
 const editingId = ref<number | null>(null);
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
-function removeRole(id: number) {
+function removeUser(id: number) {
     showDeleteConfirm({
-        onAccept: () => deleteRole(id),
-        successMessage: 'Role deleted',
-        errorMessage: 'Failed to delete role',
+        onAccept: async () => {
+            await deleteUser(id);
+            fetchUsers();
+        },
+        successMessage: 'User deleted',
+        errorMessage: 'Failed to delete user',
     });
 }
 
 function openCreate() {
-    dialogTitle.value = 'Create Role';
+    dialogTitle.value = 'Create User';
     dialogSubmitLabel.value = 'Create';
-    formModel.value = { name: '', permissions: [] };
+    formModel.value = { name: '', email: '', password: '', password_confirmation: '', role_id: null };
     editingId.value = null;
     serverErrors.value = {};
     dialogVisible.value = true;
 }
 
-async function openEdit(role: any) {
-    dialogTitle.value = 'Edit Role';
+async function openEdit(user: User) {
+    dialogTitle.value = 'Edit User';
     dialogSubmitLabel.value = 'Update';
-    editingId.value = role.id;
+    editingId.value = user.id;
     serverErrors.value = {};
     try {
-        const latest = await getRoleById(role.id);
+        const latest = await getUserById(user.id);
         formModel.value = {
             name: latest.name,
-            permissions: latest.permissions ? latest.permissions.map((p: any) => p.id) : [],
+            email: latest.email,
+            password: '',
+            password_confirmation: '',
+            role_id: latest.role_id ?? null,
         };
         dialogVisible.value = true;
     } catch (err: any) {
-        toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to fetch role', life: 4000 });
+        toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to fetch user', life: 4000 });
     }
 }
 
-async function handleSubmit(form: { name: string }) {
+async function handleSubmit(form: UserPayload) {
     serverErrors.value = {};
     try {
         if (editingId.value) {
-            await updateRole(editingId.value, form);
-            toast.add({ severity: 'success', summary: 'Role updated', life: 2000 });
+            await updateUser(editingId.value, form);
+            toast.add({ severity: 'success', summary: 'User updated', life: 2000 });
         } else {
-            await createRole(form);
-            toast.add({ severity: 'success', summary: 'Role created', life: 2000 });
+            await createUser(form);
+            toast.add({ severity: 'success', summary: 'User created', life: 2000 });
         }
         dialogVisible.value = false;
+        fetchUsers();
     } catch (err: any) {
-        // Laravel validation errors
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {

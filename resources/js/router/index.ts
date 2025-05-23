@@ -14,6 +14,13 @@ const routes = [
                 component: () => import('@/pages/Dashboard.vue'),
             },
             {
+                path: '/dashboard/users/',
+                name: 'Users',
+                meta: { title: 'Users' },
+
+                component: () => import('@/pages/users/Users.vue'),
+            },
+            {
                 path: '/dashboard/roles/',
                 name: 'Roles',
                 meta: { title: 'Roles' },

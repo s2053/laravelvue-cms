@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import PermissionForm from '@/components/permissions/PermissionForm.vue';
+import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePermissionGroups } from '@/composables/usePermissionGroups';
 import { usePermissions } from '@/composables/usePermissions';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
+
+const { showDeleteConfirm } = useDeleteConfirm();
 
 const { permissions, fetchPermissions, loading, getPermissionById, createPermission, updatePermission, deletePermission } = usePermissions();
 const { groups, fetchGroups } = usePermissionGroups();
@@ -65,13 +68,12 @@ async function handleSubmit(form: { name: string; permission_group_id: number | 
     }
 }
 
-async function removePermission(id: number) {
-    try {
-        await deletePermission(id);
-        toast.add({ severity: 'success', summary: 'Permission deleted', life: 2000 });
-    } catch (err: any) {
-        toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to delete permission', life: 4000 });
-    }
+function removePermission(id: number) {
+    showDeleteConfirm({
+        onAccept: () => deletePermission(id),
+        successMessage: 'permission deleted',
+        errorMessage: 'Failed to delete permission',
+    });
 }
 </script>
 

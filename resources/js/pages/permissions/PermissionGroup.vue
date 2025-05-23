@@ -36,6 +36,10 @@ import AppContent from '@/layouts/app/components/AppContent.vue';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
+import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+
+const { showDeleteConfirm } = useDeleteConfirm();
+
 const { groups, fetchGroups, loading, getGroupById, createGroup, updateGroup, deleteGroup } = usePermissionGroups();
 const toast = useToast();
 
@@ -91,12 +95,11 @@ async function handleSubmit(form: { name: string }) {
     }
 }
 
-async function removeGroup(id: number) {
-    try {
-        await deleteGroup(id);
-        toast.add({ severity: 'success', summary: 'Group deleted', life: 2000 });
-    } catch (err: any) {
-        toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to delete group', life: 4000 });
-    }
+function removeGroup(id: number) {
+    showDeleteConfirm({
+        onAccept: () => deleteGroup(id),
+        successMessage: 'Permission group deleted',
+        errorMessage: 'Failed to delete permission group',
+    });
 }
 </script>
