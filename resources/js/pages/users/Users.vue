@@ -6,7 +6,14 @@
             <Column field="id" header="Id" />
             <Column field="name" header="Name" />
             <Column field="email" header="Email" />
-            <Column field="role_name" header="Role" />
+            <Column header="Roles">
+                <template #body="{ data }">
+                    <span v-if="data.roles && data.roles.length">
+                        <Tag v-for="role in data.roles" :key="role.id" :value="role.name" class="mr-1" severity="info" rounded />
+                    </span>
+                    <span v-else>-</span>
+                </template>
+            </Column>
             <Column header="Action">
                 <template #body="{ data }">
                     <Button icon="pi pi-pencil" @click="openEdit(data)" class="mr-1" />
@@ -35,6 +42,7 @@ import AppContent from '@/layouts/app/components/AppContent.vue';
 import type { User, UserPayload } from '@/types/user';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
+import { Role } from '../../types/rbac';
 
 const { showDeleteConfirm } = useDeleteConfirm();
 const { users, fetchUsers, loading, getUserById, createUser, updateUser, deleteUser } = useUsers();
@@ -54,7 +62,7 @@ const formModel = ref<UserPayload>({
     email: '',
     password: '',
     password_confirmation: '',
-    role_id: null,
+    role_ids: [],
 });
 const editingId = ref<number | null>(null);
 const serverErrors = ref<{ [key: string]: string[] }>({});
@@ -73,7 +81,7 @@ function removeUser(id: number) {
 function openCreate() {
     dialogTitle.value = 'Create User';
     dialogSubmitLabel.value = 'Create';
-    formModel.value = { name: '', email: '', password: '', password_confirmation: '', role_id: null };
+    formModel.value = { name: '', email: '', password: '', password_confirmation: '', role_ids: [] };
     editingId.value = null;
     serverErrors.value = {};
     dialogVisible.value = true;
@@ -91,7 +99,7 @@ async function openEdit(user: User) {
             email: latest.email,
             password: '',
             password_confirmation: '',
-            role_id: latest.role_id ?? null,
+            role_ids: latest.roles ? latest.roles.map((r: Role) => r.id) : [],
         };
         dialogVisible.value = true;
     } catch (err: any) {

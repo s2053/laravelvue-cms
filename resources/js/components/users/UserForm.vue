@@ -47,13 +47,33 @@
             </Message>
         </div>
         <div class="flex flex-col gap-1">
-            <label for="role_id" class="mb-2 block font-bold">Role:</label>
-            <Dropdown v-model="userForm.role_id" :options="roles" optionLabel="name" optionValue="id" placeholder="Select role" name="role_id" />
-            <Message v-if="$form.role_id?.invalid" severity="error" size="small" variant="simple">
-                {{ $form.role_id.error.message }}
+            <label for="role_ids" class="mb-2 block font-bold">Roles:</label>
+
+            <MultiSelect
+                v-model="userForm.role_ids"
+                display="chip"
+                :options="roles"
+                optionLabel="name"
+                placeholder="Select Roles"
+                optionValue="id"
+                :maxSelectedLabels="5"
+            />
+
+            <!-- <Dropdown
+                v-model="userForm.role_ids"
+                :options="roles"
+                optionLabel="name"
+                optionValue="id"
+                placeholder="Select roles"
+                name="role_ids"
+                multiple
+                showClear
+            /> -->
+            <Message v-if="$form.role_ids?.invalid" severity="error" size="small" variant="simple">
+                {{ $form.role_ids.error.message }}
             </Message>
-            <Message v-else-if="serverErrors?.role_id" severity="error" size="small" variant="simple">
-                {{ serverErrors.role_id[0] }}
+            <Message v-else-if="serverErrors?.role_ids" severity="error" size="small" variant="simple">
+                {{ serverErrors.role_ids[0] }}
             </Message>
         </div>
         <div class="flex justify-end gap-2">
@@ -74,7 +94,7 @@ const props = defineProps<{
         email?: string | null;
         password?: string | null;
         password_confirmation?: string | null;
-        role_id?: number | null;
+        role_ids?: number[] | null;
     };
     submitLabel: string;
     serverErrors?: { [key: string]: string[] };
@@ -87,7 +107,11 @@ const userForm = ref({
     email: props.modelValue.email ?? '',
     password: props.modelValue.password ?? '',
     password_confirmation: props.modelValue.password_confirmation ?? '',
-    role_id: props.modelValue.role_id ?? null,
+    role_ids: Array.isArray(props.modelValue.role_ids)
+        ? props.modelValue.role_ids
+        : props.modelValue.role_ids != null
+          ? [props.modelValue.role_ids]
+          : [],
 });
 watch(
     () => props.modelValue,
@@ -97,7 +121,7 @@ watch(
             email: val.email ?? '',
             password: val.password ?? '',
             password_confirmation: val.password_confirmation ?? '',
-            role_id: val.role_id ?? null,
+            role_ids: Array.isArray(val.role_ids) ? val.role_ids : val.role_ids != null ? [val.role_ids] : [],
         }),
 );
 
@@ -111,10 +135,7 @@ const resolver = zodResolver(
             email: z.string().email({ message: 'Valid email is required.' }),
             password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
             password_confirmation: z.string().min(6, { message: 'Password confirmation is required.' }),
-            role_id: z
-                .number({ invalid_type_error: 'Role is required.' })
-                .nullable()
-                .refine((val) => val !== null, { message: 'Role is required.' }),
+            role_ids: z.array(z.number()).min(1, { message: 'Select at least one role.' }),
         })
         .refine((data) => data.password === data.password_confirmation, {
             message: 'Passwords do not match.',

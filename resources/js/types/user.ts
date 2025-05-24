@@ -1,8 +1,10 @@
+import type { Role } from '@/types/rbac';
+
 export interface User {
     id: number;
     name: string;
     email: string;
-    role_id: number | null;
+    roles: Role[];
 }
 
 export interface UserPayload {
@@ -10,5 +12,5 @@ export interface UserPayload {
     email: string;
     password?: string;
     password_confirmation?: string;
-    role_id: number | null;
+    role_ids: number[];
 }
