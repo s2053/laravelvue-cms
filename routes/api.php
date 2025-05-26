@@ -32,6 +32,9 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     // User management routes
     Route::apiResource('users', UserController::class);
+    Route::put('/users/{id}/details', [UserController::class, 'updateDetails']);
+    Route::put('/users/{id}/password', [UserController::class, 'updatePassword']);
+    Route::put('/users/{id}/roles', [UserController::class, 'updateRoles']);
 
 
 });

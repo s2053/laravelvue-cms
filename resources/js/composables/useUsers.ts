@@ -55,6 +55,42 @@ export function useUsers() {
         }
     };
 
+    // New: update user details only
+    const updateUserDetails = async (id: number, details: { name: string; email: string }) => {
+        try {
+            await UserService.updateDetails(id, details);
+            await fetchUsers();
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to update user details';
+            throw err;
+        }
+    };
+
+    // New: update user password only
+    const updateUserPassword = async (id: number, payload: { password: string; password_confirmation: string }) => {
+        try {
+            await UserService.updatePassword(id, payload);
+            await fetchUsers();
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to update user password';
+            throw err;
+        }
+    };
+
+    // New: update user roles only
+    const updateUserRoles = async (id: number, payload: { role_ids: number[] }) => {
+        try {
+            await UserService.updateRoles(id, payload);
+            await fetchUsers();
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to update user roles';
+            throw err;
+        }
+    };
+
     const deleteUser = async (id: number) => {
         try {
             await UserService.delete(id);
@@ -74,6 +110,9 @@ export function useUsers() {
         getUserById,
         createUser,
         updateUser,
+        updateUserDetails,
+        updateUserPassword,
+        updateUserRoles,
         deleteUser,
     };
 }

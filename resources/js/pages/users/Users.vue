@@ -22,18 +22,34 @@
             </Column>
         </DataTable>
         <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
-            <UserForm
-                :modelValue="formModel"
-                :submitLabel="dialogSubmitLabel"
-                :serverErrors="serverErrors"
-                :roles="roles"
-                @submit="handleSubmit"
-                @cancel="dialogVisible = false"
-            />
+            <template v-if="editingId">
+                <UserEditForm
+                    :modelValue="formModel"
+                    :submitLabel="dialogSubmitLabel"
+                    :serverErrors="serverErrors"
+                    :roles="roles"
+                    @updateDetails="handleUpdateDetails"
+                    @updateSecurity="handleUpdateSecurity"
+                    @updateRoles="handleUpdateRoles"
+                    @cancel="dialogVisible = false"
+                />
+            </template>
+            <template v-else>
+                <UserForm
+                    :modelValue="formModel"
+                    :submitLabel="dialogSubmitLabel"
+                    :serverErrors="serverErrors"
+                    :roles="roles"
+                    @submit="handleSubmit"
+                    @cancel="dialogVisible = false"
+                />
+            </template>
         </Dialog>
     </AppContent>
 </template>
+
 <script setup lang="ts">
+import UserEditForm from '@/components/users/UserEditForm.vue';
 import UserForm from '@/components/users/UserForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { useRoles } from '@/composables/useRoles';
@@ -45,7 +61,8 @@ import { onMounted, ref } from 'vue';
 import { Role } from '../../types/rbac';
 
 const { showDeleteConfirm } = useDeleteConfirm();
-const { users, fetchUsers, loading, getUserById, createUser, updateUser, deleteUser } = useUsers();
+const { users, fetchUsers, loading, getUserById, createUser, updateUser, deleteUser, updateUserDetails, updateUserPassword, updateUserRoles } =
+    useUsers();
 const { roles, fetchRoles } = useRoles();
 const toast = useToast();
 
@@ -71,7 +88,6 @@ function removeUser(id: number) {
     showDeleteConfirm({
         onAccept: async () => {
             await deleteUser(id);
-            fetchUsers();
         },
         successMessage: 'User deleted',
         errorMessage: 'Failed to delete user',
@@ -118,7 +134,57 @@ async function handleSubmit(form: UserPayload) {
             toast.add({ severity: 'success', summary: 'User created', life: 2000 });
         }
         dialogVisible.value = false;
-        fetchUsers();
+    } catch (err: any) {
+        if (err.response?.status === 422 && err.response.data?.errors) {
+            serverErrors.value = err.response.data.errors;
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+        }
+    }
+}
+
+async function handleUpdateDetails(details: { name: string; email: string }) {
+    serverErrors.value = {};
+    try {
+        if (editingId.value) {
+            await updateUserDetails(editingId.value, details);
+            toast.add({ severity: 'success', summary: 'User details updated', life: 2000 });
+            dialogVisible.value = false;
+        }
+    } catch (err: any) {
+        if (err.response?.status === 422 && err.response.data?.errors) {
+            serverErrors.value = err.response.data.errors;
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+        }
+    }
+}
+
+async function handleUpdateSecurity(security: { password?: string; password_confirmation?: string }) {
+    serverErrors.value = {};
+    try {
+        if (editingId.value) {
+            await updateUserPassword(editingId.value, security as { password: string; password_confirmation: string });
+            toast.add({ severity: 'success', summary: 'User security updated', life: 2000 });
+            dialogVisible.value = false;
+        }
+    } catch (err: any) {
+        if (err.response?.status === 422 && err.response.data?.errors) {
+            serverErrors.value = err.response.data.errors;
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+        }
+    }
+}
+
+async function handleUpdateRoles(rolesPayload: { role_ids: number[] }) {
+    serverErrors.value = {};
+    try {
+        if (editingId.value) {
+            await updateUserRoles(editingId.value, rolesPayload);
+            toast.add({ severity: 'success', summary: 'User roles updated', life: 2000 });
+            dialogVisible.value = false;
+        }
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;

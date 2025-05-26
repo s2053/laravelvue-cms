@@ -74,15 +74,49 @@ class UserController extends Controller
         ], 200);
     }
 
-    public function assignRoles(Request $request, User $user)
+    public function updateDetails(Request $request, $id)
     {
+        $user = User::findOrFail($id);
         $data = $request->validate([
-            'role_ids' => 'required|array',
+            'name' => 'required|string',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+        ]);
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->save();
+
+        return response()->json([
+            'message' => 'User details updated successfully.',
+            'user' => $user->load('roles'),
+        ], 200);
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $data = $request->validate([
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+        $user->password = Hash::make($data['password']);
+        $user->save();
+
+        return response()->json([
+            'message' => 'User password updated successfully.',
+            'user' => $user->load('roles'),
+        ], 200);
+    }
+
+    public function updateRoles(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $data = $request->validate([
+            'role_ids' => 'required|array|min:1',
             'role_ids.*' => 'exists:roles,id',
         ]);
         $user->syncRoles($data['role_ids']);
+
         return response()->json([
-            'message' => 'Roles assigned successfully.',
+            'message' => 'User roles updated successfully.',
             'user' => $user->load('roles'),
         ], 200);
     }
