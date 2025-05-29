@@ -16,7 +16,7 @@
             </Column>
             <Column header="Action">
                 <template #body="{ data }">
-                    <Button icon="pi pi-pencil" @click="openEdit(data)" class="mr-1" />
+                    <Button icon="pi pi-pencil" @click="openEdit(data.id)" class="mr-1" />
                     <Button icon="pi pi-trash" severity="danger" @click="removeUser(data.id)" />
                 </template>
             </Column>
@@ -52,15 +52,17 @@
 import UserEditForm from '@/components/users/UserEditForm.vue';
 import UserForm from '@/components/users/UserForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useDialogConfirm } from '@/composables/useDialogConfirm';
 import { useRoles } from '@/composables/useRoles';
 import { useUsers } from '@/composables/useUsers';
 import AppContent from '@/layouts/app/components/AppContent.vue';
-import type { User, UserPayload } from '@/types/user';
+import type { UserPayload } from '@/types/user';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 import { Role } from '../../types/rbac';
 
 const { showDeleteConfirm } = useDeleteConfirm();
+const { showDialogConfirm } = useDialogConfirm();
 const { users, fetchUsers, loading, getUserById, createUser, updateUser, deleteUser, updateUserDetails, updateUserPassword, updateUserRoles } =
     useUsers();
 const { roles, fetchRoles } = useRoles();
@@ -75,6 +77,7 @@ const dialogVisible = ref(false);
 const dialogTitle = ref('Create User');
 const dialogSubmitLabel = ref('Create');
 const formModel = ref<UserPayload>({
+    id: null,
     name: '',
     email: '',
     password: '',
@@ -97,20 +100,21 @@ function removeUser(id: number) {
 function openCreate() {
     dialogTitle.value = 'Create User';
     dialogSubmitLabel.value = 'Create';
-    formModel.value = { name: '', email: '', password: '', password_confirmation: '', role_ids: [] };
+    formModel.value = { id: 0, name: '', email: '', password: '', password_confirmation: '', role_ids: [] };
     editingId.value = null;
     serverErrors.value = {};
     dialogVisible.value = true;
 }
 
-async function openEdit(user: User) {
+async function openEdit(edit_id: number) {
     dialogTitle.value = 'Edit User';
     dialogSubmitLabel.value = 'Update';
-    editingId.value = user.id;
+    editingId.value = edit_id;
     serverErrors.value = {};
     try {
-        const latest = await getUserById(user.id);
+        const latest = await getUserById(edit_id);
         formModel.value = {
+            id: latest.id,
             name: latest.name,
             email: latest.email,
             password: '',
@@ -179,18 +183,24 @@ async function handleUpdateSecurity(security: { password?: string; password_conf
 
 async function handleUpdateRoles(rolesPayload: { role_ids: number[] }) {
     serverErrors.value = {};
-    try {
-        if (editingId.value) {
-            await updateUserRoles(editingId.value, rolesPayload);
-            toast.add({ severity: 'success', summary: 'User roles updated', life: 2000 });
-            dialogVisible.value = false;
-        }
-    } catch (err: any) {
-        if (err.response?.status === 422 && err.response.data?.errors) {
-            serverErrors.value = err.response.data.errors;
-        } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
-        }
-    }
+    if (!editingId.value) return;
+
+    showDialogConfirm({
+        onAccept: async () => {
+            const edit_id = editingId.value || 0;
+
+            try {
+                await updateUserRoles(edit_id, rolesPayload);
+                dialogVisible.value = false;
+            } catch (err: any) {
+                if (err.response?.status === 422 && err.response.data?.errors) {
+                    serverErrors.value = err.response.data.errors;
+                }
+                throw err;
+            }
+        },
+        successMessage: 'User Updated',
+        errorMessage: 'Failed to update user',
+    });
 }
 </script>

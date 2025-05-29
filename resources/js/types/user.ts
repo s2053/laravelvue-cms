@@ -8,6 +8,7 @@ export interface User {
 }
 
 export interface UserPayload {
+    id: number | null;
     name: string;
     email: string;
     password?: string;

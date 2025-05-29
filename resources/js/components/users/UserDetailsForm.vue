@@ -39,7 +39,7 @@ import { z } from 'zod';
 
 interface UserDetailsFormProps {
     modelValue: {
-        id: number;
+        id: number | null;
         name?: string | null;
         email?: string | null;
     };

@@ -58,7 +58,7 @@ import UserSecurityForm from './UserSecurityForm.vue';
 
 const props = defineProps<{
     modelValue: {
-        id: number;
+        id: number | null;
         name?: string | null;
         email?: string | null;
         password?: string | null;

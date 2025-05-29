@@ -35,7 +35,7 @@ import { z } from 'zod';
 // Define props interface
 interface UserRolesFormProps {
     modelValue: {
-        id: number;
+        id: number | null;
 
         role_ids?: number[] | null;
     };

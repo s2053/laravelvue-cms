@@ -5,7 +5,7 @@
                 <i class="pi pi-lock mr-2"></i>
                 Password:
             </label>
-            <InputText v-model="form.password" name="password" type="password" placeholder="Password" autocomplete="new-password" />
+            <Password :fluid="true" v-model="form.password" name="current_password" :feedback="false" toggleMask />
             <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.password.error.message }}
             </Message>
@@ -18,13 +18,9 @@
                 <i class="pi pi-check mr-2"></i>
                 Confirm Password:
             </label>
-            <InputText
-                v-model="form.password_confirmation"
-                name="password_confirmation"
-                type="password"
-                placeholder="Confirm Password"
-                autocomplete="new-password"
-            />
+
+            <Password :fluid="true" v-model="form.password_confirmation" name="password_confirmation" :feedback="false" toggleMask />
+
             <Message v-if="$form.password_confirmation?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.password_confirmation.error.message }}
             </Message>
@@ -46,7 +42,7 @@ import { z } from 'zod';
 // Define props interface
 interface UserSecurityFormProps {
     modelValue: {
-        id: number;
+        id: number | null;
 
         password?: string | null;
         password_confirmation?: string | null;

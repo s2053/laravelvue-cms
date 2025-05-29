@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import UserService from '@/services/UserService';
-import type { User } from '@/types/user';
+import type { User, UserPayload } from '@/types/user';
 import { ref } from 'vue';
 
 export function useUsers() {
@@ -33,7 +33,7 @@ export function useUsers() {
         }
     };
 
-    const createUser = async (user: Partial<User>) => {
+    const createUser = async (user: Partial<UserPayload>) => {
         try {
             await UserService.create(user);
             await fetchUsers();
@@ -44,7 +44,7 @@ export function useUsers() {
         }
     };
 
-    const updateUser = async (id: number, user: Partial<User>) => {
+    const updateUser = async (id: number, user: Partial<UserPayload>) => {
         try {
             await UserService.update(id, user);
             await fetchUsers();
@@ -55,7 +55,6 @@ export function useUsers() {
         }
     };
 
-    // New: update user details only
     const updateUserDetails = async (id: number, details: { name: string; email: string }) => {
         try {
             await UserService.updateDetails(id, details);
@@ -67,7 +66,6 @@ export function useUsers() {
         }
     };
 
-    // New: update user password only
     const updateUserPassword = async (id: number, payload: { password: string; password_confirmation: string }) => {
         try {
             await UserService.updatePassword(id, payload);
