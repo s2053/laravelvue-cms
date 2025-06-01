@@ -1,6 +1,6 @@
 export interface PageCategory {
     id?: number;
-    name: string;
+    title: string;
     slug: string;
     description?: string | null;
     meta_title?: string | null;
