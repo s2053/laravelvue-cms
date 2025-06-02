@@ -4,7 +4,7 @@
         <Button icon="pi pi-plus" label="Add New Category" @click="openCreate" />
         <DataTable :value="categories" :loading="loading">
             <Column field="id" header="Id" />
-            <Column field="name" header="Category Name" />
+            <Column field="title" header="Category Name" />
             <Column field="slug" header="Slug" />
             <Column field="status" header="Status">
                 <template #body="{ data }">
@@ -23,6 +23,7 @@
                 :modelValue="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
+                :editingId="editingId"
                 @submit="handleSubmit"
                 @cancel="dialogVisible = false"
             />
@@ -32,11 +33,11 @@
 
 <script setup lang="ts">
 import PageCategoryForm from '@/components/pages/PageCategoryForm.vue';
+import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePageCategories } from '@/composables/usePageCategory';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { PageCategoryPayload } from '../../types/pages';
 
 const { showDeleteConfirm } = useDeleteConfirm();
@@ -49,7 +50,7 @@ const dialogVisible = ref(false);
 const dialogTitle = ref('Create Page Category');
 const dialogSubmitLabel = ref('Create');
 const formModel = ref<PageCategoryPayload>({
-    name: '',
+    title: '',
     slug: '',
     description: '',
     meta_title: '',
@@ -64,7 +65,7 @@ function openCreate() {
     dialogTitle.value = 'Create Page Category';
     dialogSubmitLabel.value = 'Create';
     formModel.value = {
-        name: '',
+        title: '',
         slug: '',
         description: '',
         meta_title: '',
@@ -85,13 +86,13 @@ async function openEdit(category: any) {
     try {
         const latest = await getCategoryById(category.id);
         formModel.value = {
-            name: latest.name,
-            slug: latest.slug,
-            description: latest.description,
-            meta_title: latest.meta_title,
-            meta_description: latest.meta_description,
-            meta_keywords: latest.meta_keywords,
-            status: latest.status,
+            title: latest.title ?? '',
+            slug: latest.slug ?? '',
+            description: latest.description ?? '',
+            meta_title: latest.meta_title ?? '',
+            meta_description: latest.meta_description ?? '',
+            meta_keywords: latest.meta_keywords ?? '',
+            status: !!latest.status,
         };
         dialogVisible.value = true;
     } catch (err: any) {
@@ -99,7 +100,7 @@ async function openEdit(category: any) {
     }
 }
 
-async function handleSubmit(form: any) {
+async function handleSubmit(form: PageCategoryPayload) {
     serverErrors.value = {};
     try {
         if (editingId.value) {
@@ -110,6 +111,7 @@ async function handleSubmit(form: any) {
             toast.add({ severity: 'success', summary: 'Category created', life: 2000 });
         }
         dialogVisible.value = false;
+        fetchCategories();
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;

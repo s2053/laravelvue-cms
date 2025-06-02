@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('page_categories', function (Blueprint $table) {
             $table->id();
 
-            $table->string('name')->unique();
-            $table->string('slug')->unique();
+            $table->string('title');
+            $table->string('slug')->unique()->nullable();
 
             $table->text('description')->nullable();
 
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('meta_keywords')->nullable();
 
             // Status as boolean stored as tinyint(1), default 0 = OFF
-            $table->boolean('status')->default(0);
+            $table->boolean('status')->default(1);
 
             $table->timestamps();
         });
