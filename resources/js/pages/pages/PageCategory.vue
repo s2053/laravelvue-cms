@@ -23,6 +23,7 @@
                 :modelValue="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
+                :editingId="editingId"
                 @submit="handleSubmit"
                 @cancel="dialogVisible = false"
             />
@@ -85,13 +86,13 @@ async function openEdit(category: any) {
     try {
         const latest = await getCategoryById(category.id);
         formModel.value = {
-            title: latest.title,
-            slug: latest.slug,
-            description: latest.description,
-            meta_title: latest.meta_title,
-            meta_description: latest.meta_description,
-            meta_keywords: latest.meta_keywords,
-            status: latest.status,
+            title: latest.title ?? '',
+            slug: latest.slug ?? '',
+            description: latest.description ?? '',
+            meta_title: latest.meta_title ?? '',
+            meta_description: latest.meta_description ?? '',
+            meta_keywords: latest.meta_keywords ?? '',
+            status: !!latest.status,
         };
         dialogVisible.value = true;
     } catch (err: any) {
@@ -99,7 +100,7 @@ async function openEdit(category: any) {
     }
 }
 
-async function handleSubmit(form: any) {
+async function handleSubmit(form: PageCategoryPayload) {
     serverErrors.value = {};
     try {
         if (editingId.value) {
@@ -110,6 +111,7 @@ async function handleSubmit(form: any) {
             toast.add({ severity: 'success', summary: 'Category created', life: 2000 });
         }
         dialogVisible.value = false;
+        fetchCategories();
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;

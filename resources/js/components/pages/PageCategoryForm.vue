@@ -26,7 +26,27 @@
                         </div>
                         <div>
                             <label for="slug" class="mb-2 block font-bold">Slug:</label>
-                            <InputText v-model="categoryForm.slug" name="slug" type="text" placeholder="Slug" class="w-full" />
+                            <div class="flex items-center gap-2">
+                                <InputText
+                                    v-model="categoryForm.slug"
+                                    name="slug"
+                                    type="text"
+                                    placeholder="Slug"
+                                    class="w-full"
+                                    :readonly="isEditMode && !slugEdit"
+                                    :style="{ background: isEditMode && !slugEdit ? '#f3f4f6' : '' }"
+                                    @input="onSlugInput"
+                                />
+                                <Button
+                                    v-if="isEditMode"
+                                    icon="pi pi-pencil"
+                                    size="small"
+                                    type="button"
+                                    @click="slugEdit = !slugEdit"
+                                    :label="slugEdit ? 'Lock' : 'Edit'"
+                                    :severity="slugEdit ? 'success' : 'secondary'"
+                                />
+                            </div>
                             <Message v-if="$form.slug?.invalid" severity="error" size="small" variant="simple">
                                 {{ $form.slug.error.message }}
                             </Message>
@@ -101,7 +121,7 @@ import TabList from 'primevue/tablist';
 import TabPanel from 'primevue/tabpanel';
 import TabPanels from 'primevue/tabpanels';
 import Tabs from 'primevue/tabs';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 
 const props = defineProps<{
@@ -116,8 +136,12 @@ const props = defineProps<{
     };
     submitLabel: string;
     serverErrors?: { [key: string]: string[] };
+    editingId: number | null;
 }>();
 const emit = defineEmits(['submit', 'cancel']);
+
+const isEditMode = computed(() => props.editingId !== null);
+const slugEdit = ref(false);
 
 const categoryForm = ref({
     title: props.modelValue.title ?? '',
@@ -128,20 +152,47 @@ const categoryForm = ref({
     meta_keywords: props.modelValue.meta_keywords ?? '',
     status: props.modelValue.status ?? true,
 });
+
 watch(
     () => props.modelValue,
-    (val) => {
+    () => {
         categoryForm.value = {
-            title: val.title ?? '',
-            slug: val.slug ?? '',
-            description: val.description ?? '',
-            meta_title: val.meta_title ?? '',
-            meta_description: val.meta_description ?? '',
-            meta_keywords: val.meta_keywords ?? '',
-            status: val.status ?? true,
+            title: props.modelValue.title ?? '',
+            slug: props.modelValue.slug ?? '',
+            description: props.modelValue.description ?? '',
+            meta_title: props.modelValue.meta_title ?? '',
+            meta_description: props.modelValue.meta_description ?? '',
+            meta_keywords: props.modelValue.meta_keywords ?? '',
+            status: props.modelValue.status ?? true,
         };
+        slugEdit.value = false;
+    },
+    { immediate: true },
+);
+watch(
+    () => categoryForm.value.title,
+    (newTitle) => {
+        if (!isEditMode.value) {
+            categoryForm.value.slug = slugify(newTitle);
+        }
     },
 );
+
+function onSlugInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    // Slugify as the user types
+    categoryForm.value.slug = slugify(input.value);
+}
+
+function slugify(text: string) {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-') // Replace spaces with -
+        .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+        .replace(/\-\-+/g, '-'); // Replace multiple - with single -
+}
 
 const activeTab = ref('main');
 
