@@ -14,15 +14,15 @@ const model = ref([
     {
         label: 'Pages',
         items: [
-            { label: 'Page Category', icon: 'pi pi-fw pi-id-card', to: '/dashboard/page-category' },
-            { label: 'Pages', icon: 'pi pi-fw pi-circle', to: '/dashboard/settings/pages' },
+            { label: 'Page Category', icon: 'pi pi-fw pi-id-card', to: '/dashboard/page-categories' },
+            { label: 'Pages', icon: 'pi pi-fw pi-circle', to: '/dashboard/pages' },
         ],
     },
     {
         label: 'Roles And Permissions',
         items: [
             { label: 'Roles', icon: 'pi pi-fw pi-id-card', to: '/dashboard/roles' },
-            { label: 'Permissions Group', icon: 'pi pi-fw pi-circle', to: '/dashboard/permission-group' },
+            { label: 'Permissions Group', icon: 'pi pi-fw pi-circle', to: '/dashboard/permission-groups' },
             { label: 'Permissions', icon: 'pi pi-fw pi-circle', to: '/dashboard/permissions' },
         ],
     },

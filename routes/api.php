@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PageCategoryController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PermissionGroupController;
 use App\Http\Controllers\RoleController;
@@ -35,6 +36,10 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::put('/users/{id}/details', [UserController::class, 'updateDetails']);
     Route::put('/users/{id}/password', [UserController::class, 'updatePassword']);
     Route::put('/users/{id}/roles', [UserController::class, 'updateRoles']);
+
+
+    Route::apiResource('page-categories', PageCategoryController::class);
+
 
 
 });
