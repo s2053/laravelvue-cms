@@ -23,37 +23,49 @@
                             <Message v-else-if="serverErrors?.title" severity="error" size="small" variant="simple">
                                 {{ serverErrors.title[0] }}
                             </Message>
-                        </div>
-                        <div>
-                            <label for="slug" class="mb-2 block font-bold">Slug:</label>
-                            <div class="flex items-center gap-2">
-                                <InputText
-                                    v-model="categoryForm.slug"
-                                    name="slug"
-                                    type="text"
-                                    placeholder="Slug"
-                                    class="w-full"
-                                    :readonly="isEditMode && !slugEdit"
-                                    :style="{ background: isEditMode && !slugEdit ? '#f3f4f6' : '' }"
-                                    @input="onSlugInput"
-                                />
+
+                            <!-- Slug label and input on one line -->
+                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                <label for="slug" class="font-semibold whitespace-nowrap">Slug:</label>
+                                <template v-if="!slugEdit">
+                                    <span
+                                        class="w-0 max-w-full flex-1 truncate overflow-hidden text-sm whitespace-nowrap text-gray-600"
+                                        :title="categoryForm.slug"
+                                    >
+                                        {{ categoryForm.slug }}
+                                    </span>
+                                </template>
+                                <template v-else>
+                                    <InputText
+                                        v-model="categoryForm.slug"
+                                        name="slug"
+                                        type="text"
+                                        placeholder="Slug"
+                                        class="mt-1 flex-grow text-sm"
+                                        @input="onSlugInput"
+                                        size="small"
+                                    />
+                                </template>
                                 <Button
-                                    v-if="isEditMode"
                                     icon="pi pi-pencil"
                                     size="small"
                                     type="button"
                                     @click="slugEdit = !slugEdit"
-                                    :label="slugEdit ? 'Lock' : 'Edit'"
                                     :severity="slugEdit ? 'success' : 'secondary'"
+                                    class="h-6 min-w-6 text-xs"
+                                    variant="text"
+                                    :title="'Edit Slug'"
                                 />
                             </div>
-                            <Message v-if="$form.slug?.invalid" severity="error" size="small" variant="simple">
+
+                            <Message v-if="$form.slug?.invalid" severity="error" size="small" variant="simple" class="mt-1">
                                 {{ $form.slug.error.message }}
                             </Message>
-                            <Message v-else-if="serverErrors?.slug" severity="error" size="small" variant="simple">
+                            <Message v-else-if="serverErrors?.slug" severity="error" size="small" variant="simple" class="mt-1">
                                 {{ serverErrors.slug[0] }}
                             </Message>
                         </div>
+
                         <div>
                             <label for="description" class="mb-2 block font-bold">Description:</label>
                             <InputText v-model="categoryForm.description" name="description" type="text" placeholder="Description" class="w-full" />
