@@ -115,6 +115,7 @@
 </template>
 
 <script setup lang="ts">
+import { slugify } from '@/utils/slugify';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import Tab from 'primevue/tab';
 import TabList from 'primevue/tablist';
@@ -182,16 +183,6 @@ function onSlugInput(event: Event) {
     const input = event.target as HTMLInputElement;
     // Slugify as the user types
     categoryForm.value.slug = slugify(input.value);
-}
-
-function slugify(text: string) {
-    return text
-        .toString()
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '-') // Replace spaces with -
-        .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-        .replace(/\-\-+/g, '-'); // Replace multiple - with single -
 }
 
 const activeTab = ref('main');
