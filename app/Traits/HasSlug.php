@@ -14,7 +14,7 @@ trait HasSlug
      * @param int|null $ignoreId
      * @return string
      */
-    public static function generateUniqueSlug(string $title, string $slugColumn = 'slug', int $ignoreId = null): string
+    public static function generateUniqueSlug(string $title, string $slugColumn = 'slug', ?int $ignoreId = null): string
     {
         $slug = Str::slug($title);
         $originalSlug = $slug;
