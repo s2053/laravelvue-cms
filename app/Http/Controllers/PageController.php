@@ -39,6 +39,7 @@ class PageController extends Controller
             'meta_keywords' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:50',
             'scheduled_at' => 'nullable|date',
+            'page_category_id' => 'nullable|exists:page_categories,id',
 
         ]);
 
@@ -81,6 +82,9 @@ class PageController extends Controller
             'meta_keywords' => 'nullable|string|max:255',
             'status' => 'nullable|string|max:50',
             'scheduled_at' => 'nullable|date',
+            'page_category_id' => 'nullable|exists:page_categories,id',
+
+
 
         ]);
 

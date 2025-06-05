@@ -25,6 +25,18 @@ const routes = [
                 component: () => import('@/pages/pages/Pages.vue'),
             },
             {
+                path: 'pages/create',
+                name: 'pages.create',
+                meta: { title: 'Pages' },
+                component: () => import('@/pages/pages/Create.vue'),
+            },
+
+            {
+                path: 'pages/:id/edit',
+                name: 'pages.edit',
+                component: () => import('@/pages/pages/Create.vue'),
+            },
+            {
                 path: 'users',
                 name: 'users.index',
                 meta: { title: 'Users' },
