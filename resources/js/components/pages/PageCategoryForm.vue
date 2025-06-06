@@ -78,13 +78,14 @@
                         </div>
                         <div>
                             <label for="status" class="mb-2 block font-bold">Status:</label>
-                            <Dropdown
+                            <Select
                                 v-model="categoryForm.status"
                                 :options="statusOptions"
                                 name="status"
-                                option-label="label"
-                                option-value="value"
+                                optionLabel="label"
+                                optionValue="value"
                                 class="w-full"
+                                placeholder="Select Status"
                             />
                         </div>
                     </div>

@@ -2,6 +2,7 @@
 import PageForm from '@/components/pages/PageForm.vue';
 import { usePageCategories } from '@/composables/usePageCategory';
 import { usePages } from '@/composables/usePages';
+import { PageType } from '@/enums/pageType';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { PagePayload } from '@/types/pages';
 import { useToast } from 'primevue/usetoast';
@@ -21,7 +22,7 @@ const loading = ref(false);
 const formModel = ref<PagePayload>({
     title: '',
     slug: '',
-    page_type: '',
+    page_type: PageType.DEFAULT,
     is_commentable: true,
     excerpt: '',
     body: '',

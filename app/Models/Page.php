@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PageType;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasSlug;
 
@@ -35,11 +36,14 @@ class Page extends Model
 
     protected $casts = [
         'is_commentable' => 'boolean',
+        'page_type' => PageType::class,
+
     ];
 
 
+
     public function category()
-{
-    return $this->belongsTo(PageCategory::class, 'page_category_id');
-}
+    {
+        return $this->belongsTo(PageCategory::class, 'page_category_id');
+    }
 }

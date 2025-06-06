@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PageType;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 class PageController extends Controller
 {
@@ -26,7 +28,7 @@ class PageController extends Controller
                 'max:255',
                 // Rule::unique('pages', 'slug'),
             ],
-            'page_type' => 'nullable|string|max:255',
+            'page_type' => ['required', new Enum(type: PageType::class)],
             'is_commentable' => 'boolean',
             'excerpt' => 'nullable|string',
             'body' => 'nullable|string',
@@ -69,7 +71,7 @@ class PageController extends Controller
                 'max:255',
                 // Rule::unique('pages', 'slug')->ignore($page->id),
             ],
-            'page_type' => 'nullable|string|max:255',
+            'page_type' => ['required', new Enum(type: PageType::class)],
             'is_commentable' => 'boolean',
             'excerpt' => 'nullable|string',
             'body' => 'nullable|string',
