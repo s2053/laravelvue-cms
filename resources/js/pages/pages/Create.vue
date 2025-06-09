@@ -31,6 +31,7 @@ const formModel = ref<PagePayload>({
     meta_description: '',
     meta_keywords: '',
     status: 'draft',
+    visibility: 'public',
     scheduled_at: '',
     page_category_id: null,
 });

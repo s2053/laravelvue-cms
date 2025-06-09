@@ -32,6 +32,7 @@ export interface Page {
     meta_description?: string | null;
     meta_keywords?: string | null;
     status: string;
+    visibility: string;
     scheduled_at?: string | null;
     published_at?: string | null;
     created_by?: number | null;

@@ -58,7 +58,6 @@ export function usePages() {
     const deletePage = async (id: number) => {
         try {
             await PageService.delete(id);
-            await fetchPages();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to delete page';

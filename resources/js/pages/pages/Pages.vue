@@ -21,14 +21,12 @@
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePages } from '@/composables/usePages';
 import AppContent from '@/layouts/app/components/AppContent.vue';
-import { useToast } from 'primevue/usetoast';
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const { showDeleteConfirm } = useDeleteConfirm();
 const { pages, fetchPages, loading, deletePage } = usePages();
-const toast = useToast();
 
 onMounted(fetchPages);
 
@@ -43,12 +41,8 @@ function goToEditPage(id: number) {
 function removePage(id: number) {
     showDeleteConfirm({
         onAccept: async () => {
-            try {
-                await deletePage(id);
-                toast.add({ severity: 'success', summary: 'Page deleted', life: 2000 });
-            } catch (err: any) {
-                toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to delete page', life: 4000 });
-            }
+            await deletePage(id);
+            await fetchPages(); // Refresh list after deletion
         },
         successMessage: 'Page deleted',
         errorMessage: 'Failed to delete page',

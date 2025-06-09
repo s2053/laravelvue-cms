@@ -47,7 +47,7 @@
                     <label for="status" class="mb-2 block font-bold">Status:</label>
                     <Select
                         v-model="form.status"
-                        :options="statusOptions"
+                        :options="PageStatusOptions"
                         name="status"
                         optionLabel="label"
                         optionValue="value"
@@ -73,6 +73,20 @@
                         optionValue="value"
                         class="w-full"
                         placeholder="Select Page Type"
+                    />
+                </div>
+
+                <!-- Page Visibility -->
+                <div>
+                    <label for="visibility" class="mb-2 block font-bold">Page Visibility:</label>
+                    <Select
+                        v-model="form.visibility"
+                        :options="PageVisibilityOptions"
+                        name="visibility"
+                        optionLabel="label"
+                        optionValue="value"
+                        class="w-full"
+                        placeholder="Select Page Visibility"
                     />
                 </div>
 
@@ -135,6 +149,8 @@ import { PageType, PageTypeOptions } from '@/enums/pageType'; // or wherever you
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
+import { PageStatus, PageStatusOptions } from '../../enums/pageStatus';
+import { PageVisibility, PageVisibilityOptions } from '../../enums/pageVisibility';
 
 const props = defineProps<{
     modelValue: any;
@@ -154,12 +170,12 @@ watch(
     },
 );
 
-const statusOptions = [
-    { label: 'Draft', value: 'draft' },
-    { label: 'Published', value: 'published' },
-    { label: 'Private', value: 'private' },
-    { label: 'Scheduled', value: 'scheduled' },
-];
+// const statusOptions = [
+//     { label: 'Draft', value: 'draft' },
+//     { label: 'Published', value: 'published' },
+//     { label: 'Private', value: 'private' },
+//     { label: 'Scheduled', value: 'scheduled' },
+// ];
 
 const resolver = zodResolver(
     z.object({
@@ -173,7 +189,8 @@ const resolver = zodResolver(
         meta_title: z.string().optional().nullable(),
         meta_description: z.string().optional().nullable(),
         meta_keywords: z.string().optional().nullable(),
-        status: z.string().min(1, { message: 'Status is required.' }),
+        status: z.enum(Object.values(PageStatus) as [string, ...string[]]),
+        visibility: z.enum(Object.values(PageVisibility) as [string, ...string[]]),
         scheduled_at: z.string().optional().nullable(),
         page_category_id: z.number().optional().nullable(),
     }),
