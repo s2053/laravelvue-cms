@@ -1,5 +1,5 @@
 <template>
-    <div class="card flex flex-col gap-5">
+    <div class="flex flex-col gap-5">
         <slot />
     </div>
 </template>
