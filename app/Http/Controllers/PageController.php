@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PageStatus;
+use App\Enums\PageType;
+use App\Enums\PageVisibility;
 use App\Http\Controllers\Controller;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 class PageController extends Controller
 {
@@ -26,7 +30,7 @@ class PageController extends Controller
                 'max:255',
                 // Rule::unique('pages', 'slug'),
             ],
-            'page_type' => 'nullable|string|max:255',
+            'page_type' => ['required', new Enum(type: PageType::class)],
             'is_commentable' => 'boolean',
             'excerpt' => 'nullable|string',
             'body' => 'nullable|string',
@@ -37,8 +41,10 @@ class PageController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords' => 'nullable|string|max:255',
-            'status' => 'nullable|string|max:50',
+            'status' => ['required', new Enum(type: PageStatus::class)],
+            'visibility' => ['required', new Enum(type: PageVisibility::class)],
             'scheduled_at' => 'nullable|date',
+            'page_category_id' => 'nullable|exists:page_categories,id',
 
         ]);
 
@@ -68,7 +74,7 @@ class PageController extends Controller
                 'max:255',
                 // Rule::unique('pages', 'slug')->ignore($page->id),
             ],
-            'page_type' => 'nullable|string|max:255',
+            'page_type' => ['required', new Enum(type: PageType::class)],
             'is_commentable' => 'boolean',
             'excerpt' => 'nullable|string',
             'body' => 'nullable|string',
@@ -79,9 +85,10 @@ class PageController extends Controller
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'meta_keywords' => 'nullable|string|max:255',
-            'status' => 'nullable|string|max:50',
+            'status' => ['required', new Enum(type: PageStatus::class)],
+            'visibility' => ['required', new Enum(type: PageVisibility::class)],
             'scheduled_at' => 'nullable|date',
-
+            'page_category_id' => 'nullable|exists:page_categories,id',
         ]);
 
         $page->fill($validated);

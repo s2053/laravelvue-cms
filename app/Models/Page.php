@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\PageStatus;
+use App\Enums\PageType;
+use App\Enums\PageVisibility;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasSlug;
 
@@ -12,6 +15,7 @@ class Page extends Model
     protected $fillable = [
         'title',
         'slug',
+        'page_category_id',
         'page_type',
         'is_commentable',
         'excerpt',
@@ -24,6 +28,7 @@ class Page extends Model
         'meta_description',
         'meta_keywords',
         'status',
+        'visibility',
         'scheduled_at',
         'published_at',
         'created_by',
@@ -33,6 +38,17 @@ class Page extends Model
 
 
     protected $casts = [
-        'status' => 'boolean',
+        'is_commentable' => 'boolean',
+        'page_type' => PageType::class,
+        'status' => PageStatus::class,
+        'visibility' => PageVisibility::class,
+
     ];
+
+
+
+    public function category()
+    {
+        return $this->belongsTo(PageCategory::class, 'page_category_id');
+    }
 }
