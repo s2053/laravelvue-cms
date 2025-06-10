@@ -13,16 +13,42 @@
                     <Message v-else-if="serverErrors?.title" severity="error" size="small" variant="simple">
                         {{ serverErrors.title[0] }}
                     </Message>
-                </div>
 
-                <!-- Slug -->
-                <div>
-                    <label for="slug" class="mb-2 block font-bold">Slug:</label>
-                    <InputText v-model="form.slug" name="slug" type="text" placeholder="Slug" class="w-full" />
-                    <Message v-if="$form.slug?.invalid" severity="error" size="small" variant="simple">
+                    <!-- Slug label and input on one line -->
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <label for="slug" class="font-semibold whitespace-nowrap">Slug:</label>
+                        <template v-if="!slugEdit">
+                            <span class="w-0 max-w-full flex-1 truncate overflow-hidden text-sm whitespace-nowrap text-gray-600" :title="form.slug">
+                                {{ form.slug }}
+                            </span>
+                        </template>
+                        <template v-else>
+                            <InputText
+                                v-model="form.slug"
+                                name="slug"
+                                type="text"
+                                placeholder="Slug"
+                                class="mt-1 flex-grow text-sm"
+                                @input="onSlugInput"
+                                size="small"
+                            />
+                        </template>
+                        <Button
+                            icon="pi pi-pencil"
+                            size="small"
+                            type="button"
+                            @click="slugEdit = !slugEdit"
+                            :severity="slugEdit ? 'success' : 'secondary'"
+                            class="h-6 min-w-6 text-xs"
+                            variant="text"
+                            :title="'Edit Slug'"
+                        />
+                    </div>
+
+                    <Message v-if="$form.slug?.invalid" severity="error" size="small" variant="simple" class="mt-1">
                         {{ $form.slug.error.message }}
                     </Message>
-                    <Message v-else-if="serverErrors?.slug" severity="error" size="small" variant="simple">
+                    <Message v-else-if="serverErrors?.slug" severity="error" size="small" variant="simple" class="mt-1">
                         {{ serverErrors.slug[0] }}
                     </Message>
                 </div>
@@ -42,25 +68,50 @@
 
             <!-- Sidebar Column -->
             <div class="flex flex-col gap-4">
-                <!-- Status -->
-                <div>
-                    <label for="status" class="mb-2 block font-bold">Status:</label>
-                    <Select
-                        v-model="form.status"
-                        :options="PageStatusOptions"
-                        name="status"
-                        optionLabel="label"
-                        optionValue="value"
-                        class="w-full"
-                        placeholder="Select Status"
-                    />
-                </div>
+                <AppCard>
+                    <template #header> Publish </template>
+                    <div class="flex flex-col gap-4">
+                        <!-- Status -->
+                        <div>
+                            <label for="status" class="mb-2 block font-bold">Status:</label>
+                            <Select
+                                v-model="form.status"
+                                :options="PageStatusOptions"
+                                name="status"
+                                optionLabel="label"
+                                optionValue="value"
+                                class="w-full"
+                                placeholder="Select Status"
+                            />
+                        </div>
 
-                <!-- Scheduled At -->
-                <div>
-                    <label for="scheduled_at" class="mb-2 block font-bold">Scheduled At:</label>
-                    <InputText v-model="form.scheduled_at" name="scheduled_at" type="datetime-local" class="w-full" />
-                </div>
+                        <!-- Scheduled At -->
+                        <div>
+                            <label for="scheduled_at" class="mb-2 block font-bold">Scheduled At:</label>
+                            <InputText v-model="form.scheduled_at" name="scheduled_at" type="datetime-local" class="w-full" />
+                        </div>
+
+                        <!-- Page Visibility -->
+                        <div>
+                            <label for="visibility" class="mb-2 block font-bold"> Visibility:</label>
+                            <Select
+                                v-model="form.visibility"
+                                :options="PageVisibilityOptions"
+                                name="visibility"
+                                optionLabel="label"
+                                optionValue="value"
+                                class="w-full"
+                                placeholder="Select Page Visibility"
+                            />
+                        </div>
+                    </div>
+                    <template #footer>
+                        <div class="mt-5 flex justify-end gap-4">
+                            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
+                            <Button type="submit" :label="submitLabel" severity="primary" />
+                        </div>
+                    </template>
+                </AppCard>
 
                 <!-- Page Type -->
                 <div>
@@ -73,20 +124,6 @@
                         optionValue="value"
                         class="w-full"
                         placeholder="Select Page Type"
-                    />
-                </div>
-
-                <!-- Page Visibility -->
-                <div>
-                    <label for="visibility" class="mb-2 block font-bold">Page Visibility:</label>
-                    <Select
-                        v-model="form.visibility"
-                        :options="PageVisibilityOptions"
-                        name="visibility"
-                        optionLabel="label"
-                        optionValue="value"
-                        class="w-full"
-                        placeholder="Select Page Visibility"
                     />
                 </div>
 
@@ -146,11 +183,14 @@
 
 <script setup lang="ts">
 import { PageType, PageTypeOptions } from '@/enums/pageType'; // or wherever you define it
+import { slugify } from '@/utils/slugify';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 import { PageStatus, PageStatusOptions } from '../../enums/pageStatus';
 import { PageVisibility, PageVisibilityOptions } from '../../enums/pageVisibility';
+
+import AppCard from '@/components/ui/AppCard.vue';
 
 const props = defineProps<{
     modelValue: any;
@@ -163,6 +203,9 @@ const emit = defineEmits(['submit', 'cancel']);
 
 const form = ref({ ...props.modelValue });
 
+const isEditMode = computed(() => props.editingId !== null);
+const slugEdit = ref(false);
+
 watch(
     () => props.modelValue,
     (val) => {
@@ -170,17 +213,24 @@ watch(
     },
 );
 
-// const statusOptions = [
-//     { label: 'Draft', value: 'draft' },
-//     { label: 'Published', value: 'published' },
-//     { label: 'Private', value: 'private' },
-//     { label: 'Scheduled', value: 'scheduled' },
-// ];
+watch(
+    () => form.value.title,
+    (newTitle) => {
+        if (!isEditMode.value) {
+            form.value.slug = slugify(newTitle);
+        }
+    },
+);
+function onSlugInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    // Slugify as the user types
+    form.value.slug = slugify(input.value);
+}
 
 const resolver = zodResolver(
     z.object({
         title: z.string().min(1, { message: 'Title is required.' }),
-        slug: z.string().min(1, { message: 'Slug is required.' }),
+        slug: z.string().optional(),
         page_type: z.enum(Object.values(PageType) as [string, ...string[]]),
         is_commentable: z.boolean(),
         excerpt: z.string().optional().nullable(),
