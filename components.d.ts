@@ -21,6 +21,7 @@ declare module 'vue' {
     InputText: typeof import('primevue/inputtext')['default']
     Message: typeof import('primevue/message')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
+    Panel: typeof import('primevue/panel')['default']
     Password: typeof import('primevue/password')['default']
     RadioButton: typeof import('primevue/radiobutton')['default']
     RadioButtonGroup: typeof import('primevue/radiobuttongroup')['default']

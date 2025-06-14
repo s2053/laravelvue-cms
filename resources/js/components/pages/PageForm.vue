@@ -113,63 +113,89 @@
                     </template>
                 </AppCard>
 
-                <!-- Page Type -->
-                <div>
-                    <label for="page_type" class="mb-2 block font-bold">Page Type:</label>
-                    <Select
-                        v-model="form.page_type"
-                        :options="PageTypeOptions"
-                        name="page_type"
-                        optionLabel="label"
-                        optionValue="value"
-                        class="w-full"
-                        placeholder="Select Page Type"
-                    />
-                </div>
+                <AppCard>
+                    <template #header> Category </template>
+                    <div class="flex flex-col gap-4">
+                        <!-- Page Type -->
+                        <div>
+                            <label for="page_type" class="mb-2 block font-bold">Page Type:</label>
+                            <Select
+                                v-model="form.page_type"
+                                :options="PageTypeOptions"
+                                name="page_type"
+                                optionLabel="label"
+                                optionValue="value"
+                                class="w-full"
+                                placeholder="Select Page Type"
+                            />
+                        </div>
 
-                <!-- Category -->
-                <div>
-                    <label for="page_category_id" class="mb-2 block font-bold">Category:</label>
-                    <Select
-                        v-model="form.page_category_id"
-                        :options="categoryOptions"
-                        name="page_category_id"
-                        optionLabel="title"
-                        optionValue="id"
-                        class="w-full"
-                        placeholder="Select Category"
-                    />
-                </div>
+                        <!-- Category -->
+                        <div>
+                            <label for="page_category_id" class="mb-2 block font-bold">Category:</label>
+                            <Select
+                                v-model="form.page_category_id"
+                                :options="categoryOptions"
+                                name="page_category_id"
+                                optionLabel="title"
+                                optionValue="id"
+                                class="w-full"
+                                placeholder="Select Category"
+                            />
+                        </div>
+                    </div>
+                </AppCard>
 
-                <!-- Commentable -->
-                <div>
-                    <label for="is_commentable" class="mb-2 block font-bold">Commentable:</label>
-                    <ToggleSwitch v-model="form.is_commentable" name="is_commentable" />
-                </div>
+                <AppCard>
+                    <template #header> Media </template>
+                    <div class="flex flex-col gap-4">
+                        <!-- Thumbnail -->
+                        <div>
+                            <label for="thumbnail" class="mb-2 block font-bold">Thumbnail:</label>
+                            <InputText v-model="form.thumbnail" name="thumbnail" type="text" placeholder="Thumbnail URL" class="w-full" />
+                        </div>
+                    </div>
+                </AppCard>
 
-                <!-- Thumbnail -->
-                <div>
-                    <label for="thumbnail" class="mb-2 block font-bold">Thumbnail:</label>
-                    <InputText v-model="form.thumbnail" name="thumbnail" type="text" placeholder="Thumbnail URL" class="w-full" />
-                </div>
+                <AppPanel v-model:collapsed="optionsCollapsed">
+                    <template #header> Options </template>
+                    <div class="flex flex-col gap-4">
+                        <!-- Commentable -->
+                        <div>
+                            <label for="is_commentable" class="mb-2 block font-bold">Commentable:</label>
+                            <ToggleSwitch v-model="form.is_commentable" name="is_commentable" />
+                        </div>
+                    </div>
+                </AppPanel>
 
-                <!-- Meta Title -->
-                <div>
-                    <label for="meta_title" class="mb-2 block font-bold">Meta Title:</label>
-                    <InputText v-model="form.meta_title" name="meta_title" type="text" placeholder="Meta Title" class="w-full" />
-                </div>
+                <AppPanel v-model:collapsed="metaCollapsed">
+                    <template #header> Meta </template>
+                    <div class="flex flex-col gap-4">
+                        <!-- Meta Title -->
+                        <div>
+                            <label for="meta_title" class="mb-2 block font-bold">Meta Title:</label>
+                            <InputText v-model="form.meta_title" name="meta_title" type="text" placeholder="Meta Title" class="w-full" />
+                        </div>
 
-                <!-- Meta Description -->
-                <div>
-                    <label for="meta_description" class="mb-2 block font-bold">Meta Description:</label>
-                    <InputText v-model="form.meta_description" name="meta_description" type="text" placeholder="Meta Description" class="w-full" />
-                </div>
+                        <!-- Meta Description -->
+                        <div>
+                            <label for="meta_description" class="mb-2 block font-bold">Meta Description:</label>
+                            <InputText
+                                v-model="form.meta_description"
+                                name="meta_description"
+                                type="text"
+                                placeholder="Meta Description"
+                                class="w-full"
+                            />
+                        </div>
 
-                <!-- Meta Keywords -->
-                <div>
-                    <label for="meta_keywords" class="mb-2 block font-bold">Meta Keywords:</label>
-                    <InputText v-model="form.meta_keywords" name="meta_keywords" type="text" placeholder="Meta Keywords" class="w-full" />
-                </div>
+                        <!-- Meta Keywords -->
+                        <div>
+                            <label for="meta_keywords" class="mb-2 block font-bold">Meta Keywords:</label>
+                            <InputText v-model="form.meta_keywords" name="meta_keywords" type="text" placeholder="Meta Keywords" class="w-full" />
+                        </div>
+                    </div>
+                </AppPanel>
             </div>
         </div>
 
@@ -191,6 +217,7 @@ import { PageStatus, PageStatusOptions } from '../../enums/pageStatus';
 import { PageVisibility, PageVisibilityOptions } from '../../enums/pageVisibility';
 
 import AppCard from '@/components/ui/AppCard.vue';
+import AppPanel from '@/components/ui/AppPanel.vue';
 
 const props = defineProps<{
     modelValue: any;
@@ -205,6 +232,10 @@ const form = ref({ ...props.modelValue });
 
 const isEditMode = computed(() => props.editingId !== null);
 const slugEdit = ref(false);
+
+
+const optionsCollapsed = ref(true);
+const metaCollapsed = ref(true);
 
 watch(
     () => props.modelValue,
