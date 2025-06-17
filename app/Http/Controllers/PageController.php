@@ -44,6 +44,7 @@ class PageController extends Controller
             'status' => ['required', new Enum(type: PageStatus::class)],
             'visibility' => ['required', new Enum(type: PageVisibility::class)],
             'scheduled_at' => 'nullable|date',
+            'published_at' => 'nullable|date',
             'page_category_id' => 'nullable|exists:page_categories,id',
 
         ]);
@@ -88,6 +89,7 @@ class PageController extends Controller
             'status' => ['required', new Enum(type: PageStatus::class)],
             'visibility' => ['required', new Enum(type: PageVisibility::class)],
             'scheduled_at' => 'nullable|date',
+            'published_at' => 'nullable|date',
             'page_category_id' => 'nullable|exists:page_categories,id',
         ]);
 

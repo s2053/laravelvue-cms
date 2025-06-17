@@ -36,7 +36,6 @@ export function usePages() {
     const createPage = async (page: PagePayload) => {
         try {
             await PageService.create(page);
-            await fetchPages();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to create page';
@@ -47,7 +46,6 @@ export function usePages() {
     const updatePage = async (id: number, page: PagePayload) => {
         try {
             await PageService.update(id, page);
-            await fetchPages();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update page';

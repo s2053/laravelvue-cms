@@ -1,23 +1,23 @@
 <template>
-  <Panel
-    :toggleable="toggleable"
-    :collapsed="collapsed"
-    @update:collapsed="val => $emit('update:collapsed', val)"
-    :class="['app-card', bordered ? 'app-card--bordered' : '', shadow ? 'app-card--shadow' : '', `app-card--bg-${background}`]"
-    v-bind="$attrs"
-  >
-    <template #header="{ class: headerClass }">
-      <div :class="headerClass" style="cursor: pointer" @click="$emit('update:collapsed', !collapsed)">
-        <slot name="header" />
-      </div>
-    </template>
-    <template #default>
-      <slot />
-    </template>
-    <template #footer>
-      <slot name="footer" />
-    </template>
-  </Panel>
+    <Panel
+        :toggleable="toggleable"
+        :collapsed="collapsed"
+        @update:collapsed="(val) => $emit('update:collapsed', val)"
+        :class="['app-card', bordered ? 'app-card--bordered' : '', shadow ? 'app-card--shadow' : '', `app-card--bg-${background}`]"
+        v-bind="$attrs"
+    >
+        <template #header="{ class: headerClass }">
+            <div :class="headerClass" style="cursor: pointer" @click="$emit('update:collapsed', !collapsed)">
+                <slot name="header" />
+            </div>
+        </template>
+        <template #default>
+            <slot />
+        </template>
+        <template #footer>
+            <slot name="footer" />
+        </template>
+    </Panel>
 </template>
 
 <script setup lang="ts">
@@ -30,8 +30,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:collapsed']);
-
-
 </script>
 
 <style scoped>
