@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import PageService from '@/services/PageService';
-import type { Page, PagePayload } from '@/types/pages';
+import type { Page } from '@/types/pages';
 import { ref } from 'vue';
 
 export function usePages() {
@@ -33,10 +33,9 @@ export function usePages() {
         }
     };
 
-    const createPage = async (page: PagePayload) => {
+    const createPage = async (page: FormData) => {
         try {
             await PageService.create(page);
-            await fetchPages();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to create page';
@@ -44,10 +43,9 @@ export function usePages() {
         }
     };
 
-    const updatePage = async (id: number, page: PagePayload) => {
+    const updatePage = async (id: number, page: FormData) => {
         try {
             await PageService.update(id, page);
-            await fetchPages();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update page';
