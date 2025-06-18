@@ -6,6 +6,7 @@ use App\Enums\PageStatus;
 use App\Enums\PageType;
 use App\Enums\PageVisibility;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PageResource;
 use App\Models\Page;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -34,7 +35,7 @@ class PageController extends Controller
             'is_commentable' => 'boolean',
             'excerpt' => 'nullable|string',
             'body' => 'nullable|string',
-            'thumbnail' => 'nullable|string|max:255',
+            'thumbnailFile' => 'nullable|image|max:2048',
             'featured_media_type' => 'nullable|string|max:255',
             'featured_media_url' => 'nullable|string|max:255',
             'media_source' => 'nullable|string|max:255',
@@ -50,6 +51,13 @@ class PageController extends Controller
         ]);
 
         $page = new Page($validated);
+
+        // Handle file upload
+        if ($request->hasFile('thumbnailFile')) {
+
+            $path = $request->file('thumbnailFile')->store('thumbnails', 'public');
+            $page->thumbnail = $path;
+        }
         $page->created_by = auth()->id();
         $page->save();
 
@@ -57,14 +65,15 @@ class PageController extends Controller
     }
 
     // Show a specific page
-    public function show($id)
+    public function show(Page $page)
     {
-        return Page::findOrFail($id);
+        return new PageResource($page);
     }
 
     // Update a page
     public function update(Request $request, $id)
     {
+        //  dd($request->all());
         $page = Page::findOrFail($id);
 
         $validated = $request->validate([
@@ -78,8 +87,10 @@ class PageController extends Controller
             'page_type' => ['required', new Enum(type: PageType::class)],
             'is_commentable' => 'boolean',
             'excerpt' => 'nullable|string',
+            'thumbnailFile' => 'nullable|image|max:2048',
+
             'body' => 'nullable|string',
-            'thumbnail' => 'nullable|string|max:255',
+
             'featured_media_type' => 'nullable|string|max:255',
             'featured_media_url' => 'nullable|string|max:255',
             'media_source' => 'nullable|string|max:255',
@@ -94,12 +105,29 @@ class PageController extends Controller
         ]);
 
         $page->fill($validated);
+
+        if ($request->input("thumbnail") == null || $request->input("thumbnail") == '') {
+            $page->thumbnail = null;
+        }
+
+        // Handle file upload
+        if ($request->hasFile('thumbnailFile')) {
+            // Optionally: delete old file
+            if ($page->thumbnail) {
+                \Storage::disk('public')->delete($page->thumbnail);
+            }
+            $path = $request->file('thumbnailFile')->store('thumbnails', 'public');
+            $page->thumbnail = $path;
+        }
+
+
+
+
         $page->updated_by = auth()->id();
         $page->save();
         return $page;
     }
 
-    // Delete a page
     public function destroy($id)
     {
         $page = Page::findOrFail($id);

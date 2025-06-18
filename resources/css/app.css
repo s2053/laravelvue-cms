@@ -40,9 +40,13 @@
 }
 
 .app-input-sm {
-  @apply h-8 !text-sm text-gray-800 items-center;
+    @apply h-8 items-center !text-sm text-gray-800;
 }
 
 .app-select-sm {
-  @apply text-sm text-gray-800;
+    @apply text-sm text-gray-800;
+}
+
+.app-card--bordered {
+    border: 1px solid var(--surface-border);
 }

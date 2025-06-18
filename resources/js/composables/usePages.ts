@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import PageService from '@/services/PageService';
-import type { Page, PagePayload } from '@/types/pages';
+import type { Page } from '@/types/pages';
 import { ref } from 'vue';
 
 export function usePages() {
@@ -33,7 +33,7 @@ export function usePages() {
         }
     };
 
-    const createPage = async (page: PagePayload) => {
+    const createPage = async (page: FormData) => {
         try {
             await PageService.create(page);
         } catch (err: any) {
@@ -43,7 +43,7 @@ export function usePages() {
         }
     };
 
-    const updatePage = async (id: number, page: PagePayload) => {
+    const updatePage = async (id: number, page: FormData) => {
         try {
             await PageService.update(id, page);
         } catch (err: any) {

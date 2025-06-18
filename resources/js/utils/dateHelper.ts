@@ -69,19 +69,18 @@ export function utcToLocalDateTime(utcString: string): string {
 
 //Format to string readable
 export function formatLocalDateTime(isoString: string): string {
-  if (!isoString) return '';
+    if (!isoString) return '';
 
-  const date = new Date(isoString);
-  return new Intl.DateTimeFormat(undefined, {
-    year: 'numeric',
-    month: 'short',    // Jun
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true       // 12-hour format with AM/PM
-  }).format(date);
+    const date = new Date(isoString);
+    return new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short', // Jun
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true, // 12-hour format with AM/PM
+    }).format(date);
 }
-
 
 export function getMaxDateTimeLocal(): string {
     const now = new Date();
@@ -97,8 +96,6 @@ export function getMaxDateTimeLocal(): string {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-
-
 export function getMinDateTimeLocal(): string {
     const now = new Date();
     now.setFullYear(now.getFullYear() - 3000);
@@ -112,8 +109,6 @@ export function getMinDateTimeLocal(): string {
 
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
-
-
 
 // format to isoMysqldatetime
 export function isoToMySQLDatetime(isoString: string): string {

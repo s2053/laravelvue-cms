@@ -42,6 +42,7 @@ const formModel = ref<PagePayload>({
     scheduled_at: getDefaultScheduledDateTimeLocal(),
     published_at: getCurrentDateTimeLocal(),
     page_category_id: null,
+    thumbnailFile: null, // For file upload
 });
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
@@ -74,11 +75,31 @@ onMounted(async () => {
     }
 });
 
+function payloadToFormData(payload: PagePayload): FormData {
+    const formData = new FormData();
+
+    if (editingId.value) {
+        formData.append('_method', 'PUT');
+    }
+    console.log('payload', payload);
+    Object.entries(payload).forEach(([key, value]) => {
+        if (key === 'thumbnailFile' && value) {
+            formData.append('thumbnailFile', value as File);
+        } else if (typeof value === 'boolean') {
+            formData.append(key, value ? '1' : '0');
+        } else if (value !== undefined && value !== null) {
+            formData.append(key, value as any);
+        }
+    });
+
+    return formData;
+}
+
 async function handleSubmit(form: PagePayload) {
     serverErrors.value = {};
 
     // Clone and convert date fields to UTC ISO if they are not null/empty
-    const payload = { ...form };
+    const payload = <PagePayload>{ ...form };
     if (payload.scheduled_at) {
         console.log(payload.scheduled_at);
         payload.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(payload.scheduled_at));
@@ -87,13 +108,15 @@ async function handleSubmit(form: PagePayload) {
         payload.published_at = isoToMySQLDatetime(localDateTimeToUTC(payload.published_at));
     }
 
+    const formData = payloadToFormData(payload);
+
     try {
         if (editingId.value) {
-            await updatePage(editingId.value, payload);
+            await updatePage(editingId.value, formData);
             toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
             redirectAfterSubmit();
         } else {
-            await createPage(payload);
+            await createPage(formData);
             toast.add({ severity: 'success', summary: 'Page created', life: 2000 });
             redirectAfterSubmit();
         }

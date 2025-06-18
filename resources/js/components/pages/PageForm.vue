@@ -1,5 +1,5 @@
 <template>
-    <Form v-slot="$form" :initialValues="form" :key="editingId || 'create'" :resolver="resolver" @submit="onSubmit">
+    <Form ref="formRef" v-slot="$form" :initialValues="form" :key="editingId || 'create'" :resolver="resolver" @submit="onSubmit">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <!-- Main Column -->
             <div class="flex flex-col gap-4 md:col-span-2">
@@ -130,6 +130,8 @@
                     <template #footer>
                         <div class="mt-5 flex justify-end gap-4">
                             <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
+
+                            <!-- <SplitButton label="Save" :model="saveItems" @click="submitForm" type="submit" raised></SplitButton> -->
                             <Button type="submit" :label="submitLabel" severity="primary" />
                         </div>
                     </template>
@@ -174,9 +176,60 @@
                     <template #header> Media </template>
                     <div class="flex flex-col gap-4">
                         <!-- Thumbnail -->
+
                         <div>
-                            <label for="thumbnail" class="mb-2 block font-bold">Thumbnail:</label>
-                            <InputText v-model="form.thumbnail" name="thumbnail" type="text" placeholder="Thumbnail URL" class="w-full" />
+                            <label for="thumbnailFile" class="mb-2 block font-bold">Thumbnail:</label>
+
+                            <div v-if="form.thumbnail" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                                <img :src="form.thumbnail" alt="Thumbnail preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
+
+                                <!-- Remove button/icon (top-right corner) -->
+                                <div class="absolute top-0 right-0">
+                                    <Button
+                                        @click="removeMedia"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        aria-label="Cancel"
+                                        size="small"
+                                        title="Remove"
+                                    />
+                                </div>
+                            </div>
+                            <div :style="{ fontSize: '12px' }">
+                                <FileUpload
+                                    ref="fileUploadRef"
+                                    mode="basic"
+                                    name="thumbnailFile"
+                                    accept="image/*"
+                                    :auto="false"
+                                    customUpload
+                                    @select="onThumbnailChange"
+                                    chooseLabel="Select Image"
+                                    class="w-full"
+                                    :style="{ fontSize: '1rem' }"
+                                />
+                                <div v-if="thumbnailPreview" class="relative mt-2 flex h-[80px] items-center justify-center p-2 shadow-md">
+                                    <img
+                                        :src="thumbnailPreview"
+                                        alt="Thumbnail preview"
+                                        class="block max-h-full max-w-full rounded-xl object-contain"
+                                        style="filter: grayscale(10%)"
+                                    />
+                                    <!-- Remove button/icon (top-right corner) -->
+                                    <div class="absolute top-0 right-0">
+                                        <Button
+                                            @click="clearThumbnail"
+                                            icon="pi pi-times"
+                                            severity="danger"
+                                            rounded
+                                            variant="outlined"
+                                            aria-label="Cancel"
+                                            size="small"
+                                            title="Cancel"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                             <FieldError :formError="$form.thumbnail?.error?.message" :serverError="serverErrors?.thumbnail?.[0]" />
                         </div>
                     </div>
@@ -238,7 +291,7 @@
 </template>
 
 <script setup lang="ts">
-import { PageType, PageTypeOptions } from '@/enums/pageType'; // or wherever you define it
+import { PageType, PageTypeOptions } from '@/enums/pageType';
 import { slugify } from '@/utils/slugify';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
@@ -249,8 +302,20 @@ import { PageVisibility, PageVisibilityOptions } from '../../enums/pageVisibilit
 import FieldError from '@/components/common/FieldError.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppPanel from '@/components/ui/AppPanel.vue';
+import type { FileUploadSelectEvent } from 'primevue/fileupload';
 
 import { formatLocalDateTime, getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';
+import { PagePayload } from '../../types/pages';
+const fileUploadRef = ref();
+
+const saveItems = [
+    {
+        label: 'Save And Exit',
+        command: () => {
+            console.log('Save And Exit clicked');
+        },
+    },
+];
 
 const props = defineProps<{
     modelValue: any;
@@ -261,7 +326,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(['submit', 'cancel']);
 
-const form = ref({ ...props.modelValue });
+const form = ref<PagePayload>({ ...props.modelValue });
 
 const isEditMode = computed(() => props.editingId !== null);
 const slugEdit = ref(false);
@@ -276,6 +341,43 @@ const filteredPageStatusOptions = computed(
             ? PageStatusOptions // show all
             : PageStatusOptions.filter((option) => option.value !== 'archived'), // exclude 'archived'
 );
+
+const thumbnailPreview = ref('');
+const formRef = ref();
+
+// File input handler
+function onThumbnailChange(event: FileUploadSelectEvent) {
+    console.log('event.files:', event.files);
+
+    const fileWrapper = event.files[0];
+
+    // Check if it's already a File instance
+    if (fileWrapper instanceof File) {
+        form.value.thumbnailFile = fileWrapper;
+    }
+    // If it's an object with objectURL, try to find the actual file inside
+    else if (fileWrapper && fileWrapper.objectURL) {
+        // PrimeVue wraps files inside 'originalFile' or similar, check this
+        const realFile = (fileWrapper as any).file || (fileWrapper as any).originalFile || null;
+
+        if (realFile instanceof File) {
+            form.value.thumbnailFile = realFile;
+        } else {
+            console.error('Could not find real File object inside wrapper:', fileWrapper);
+        }
+    } else {
+        console.error('Invalid file:', fileWrapper);
+    }
+
+    // Preview logic remains same
+    if (form.value.thumbnailFile) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            thumbnailPreview.value = e.target?.result as string;
+        };
+        reader.readAsDataURL(form.value.thumbnailFile);
+    }
+}
 
 watch(
     () => form.value.status,
@@ -303,6 +405,16 @@ watch(
         }
     },
 );
+
+function clearThumbnail() {
+    form.value.thumbnailFile = null;
+    thumbnailPreview.value = '';
+    fileUploadRef.value?.clear();
+}
+
+function removeMedia() {
+    form.value.thumbnail = '';
+}
 
 function onSlugInput(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -350,5 +462,10 @@ function onSubmit({ valid }: { valid: boolean }) {
     if (valid) {
         emit('submit', form.value);
     }
+}
+
+function submitForm() {
+    // Manually trigger form validation and submit
+    formRef.value?.submit();
 }
 </script>
