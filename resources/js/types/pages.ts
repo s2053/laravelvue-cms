@@ -44,4 +44,6 @@ export interface Page {
 }
 
 // Use this for create/update payloads
-export type PagePayload = Omit<Page, 'id' | 'created_at' | 'updated_at' | 'deleted_at'>;
+export type PagePayload = Omit<Page, 'id' | 'created_at' | 'updated_at' | 'deleted_at'> & {
+    thumbnailFile?: File | null;
+};
