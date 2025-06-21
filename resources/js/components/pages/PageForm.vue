@@ -195,40 +195,8 @@
                                     />
                                 </div>
                             </div>
-                            <div :style="{ fontSize: '12px' }">
-                                <FileUpload
-                                    ref="fileUploadRef"
-                                    mode="basic"
-                                    name="thumbnailFile"
-                                    accept="image/*"
-                                    :auto="false"
-                                    customUpload
-                                    @select="onThumbnailChange"
-                                    chooseLabel="Select Image"
-                                    class="w-full"
-                                    :style="{ fontSize: '1rem' }"
-                                />
-                                <div v-if="thumbnailPreview" class="relative mt-2 flex h-[80px] items-center justify-center p-2 shadow-md">
-                                    <img
-                                        :src="thumbnailPreview"
-                                        alt="Thumbnail preview"
-                                        class="block max-h-full max-w-full rounded-xl object-contain"
-                                        style="filter: grayscale(10%)"
-                                    />
-                                    <!-- Remove button/icon (top-right corner) -->
-                                    <div class="absolute top-0 right-0">
-                                        <Button
-                                            @click="clearThumbnail"
-                                            icon="pi pi-times"
-                                            severity="danger"
-                                            rounded
-                                            variant="outlined"
-                                            aria-label="Cancel"
-                                            size="small"
-                                            title="Cancel"
-                                        />
-                                    </div>
-                                </div>
+                            <div>
+                                <MediaUploader v-model:file="form.thumbnailFile" />
                             </div>
                             <FieldError :formError="$form.thumbnail?.error?.message" :serverError="serverErrors?.thumbnail?.[0]" />
                         </div>
@@ -300,13 +268,12 @@ import { PageStatus, PageStatusOptions } from '../../enums/pageStatus';
 import { PageVisibility, PageVisibilityOptions } from '../../enums/pageVisibility';
 
 import FieldError from '@/components/common/FieldError.vue';
+import MediaUploader from '@/components/common/MediaUploader.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppPanel from '@/components/ui/AppPanel.vue';
-import type { FileUploadSelectEvent } from 'primevue/fileupload';
 
 import { formatLocalDateTime, getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';
 import { PagePayload } from '../../types/pages';
-const fileUploadRef = ref();
 
 const saveItems = [
     {
@@ -342,42 +309,7 @@ const filteredPageStatusOptions = computed(
             : PageStatusOptions.filter((option) => option.value !== 'archived'), // exclude 'archived'
 );
 
-const thumbnailPreview = ref('');
 const formRef = ref();
-
-// File input handler
-function onThumbnailChange(event: FileUploadSelectEvent) {
-    console.log('event.files:', event.files);
-
-    const fileWrapper = event.files[0];
-
-    // Check if it's already a File instance
-    if (fileWrapper instanceof File) {
-        form.value.thumbnailFile = fileWrapper;
-    }
-    // If it's an object with objectURL, try to find the actual file inside
-    else if (fileWrapper && fileWrapper.objectURL) {
-        // PrimeVue wraps files inside 'originalFile' or similar, check this
-        const realFile = (fileWrapper as any).file || (fileWrapper as any).originalFile || null;
-
-        if (realFile instanceof File) {
-            form.value.thumbnailFile = realFile;
-        } else {
-            console.error('Could not find real File object inside wrapper:', fileWrapper);
-        }
-    } else {
-        console.error('Invalid file:', fileWrapper);
-    }
-
-    // Preview logic remains same
-    if (form.value.thumbnailFile) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            thumbnailPreview.value = e.target?.result as string;
-        };
-        reader.readAsDataURL(form.value.thumbnailFile);
-    }
-}
 
 watch(
     () => form.value.status,
@@ -405,12 +337,6 @@ watch(
         }
     },
 );
-
-function clearThumbnail() {
-    form.value.thumbnailFile = null;
-    thumbnailPreview.value = '';
-    fileUploadRef.value?.clear();
-}
 
 function removeMedia() {
     form.value.thumbnail = '';
@@ -447,7 +373,7 @@ const resolver = zodResolver(
                             return val && val >= scheduledAtMin.value;
                         }
                     }
-                    return true; // Skip validation if in edit mode and originally scheduled
+                    return true;
                 },
                 {
                     message: `Scheduled date must be at least ${formatLocalDateTime(scheduledAtMin.value)}`,
@@ -465,7 +391,6 @@ function onSubmit({ valid }: { valid: boolean }) {
 }
 
 function submitForm() {
-    // Manually trigger form validation and submit
     formRef.value?.submit();
 }
 </script>

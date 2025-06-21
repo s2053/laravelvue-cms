@@ -11,7 +11,6 @@ export interface PageCategory {
     updated_at?: string;
 }
 
-// Use this for create/update payloads
 export type PageCategoryPayload = Omit<PageCategory, 'id' | 'created_at' | 'updated_at'>;
 
 export interface Page {
@@ -19,7 +18,7 @@ export interface Page {
     title: string;
     slug: string;
     page_category_id?: number | null;
-
+    category?: PageCategory | null;
     page_type?: string | null;
     is_commentable: boolean;
     excerpt?: string | null;
@@ -43,7 +42,6 @@ export interface Page {
     deleted_at?: string | null;
 }
 
-// Use this for create/update payloads
-export type PagePayload = Omit<Page, 'id' | 'created_at' | 'updated_at' | 'deleted_at'> & {
+export type PagePayload = Omit<Page, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'category'> & {
     thumbnailFile?: File | null;
 };
