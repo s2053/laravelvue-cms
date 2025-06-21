@@ -115,3 +115,15 @@ export function isoToMySQLDatetime(isoString: string): string {
     // "2025-06-16T15:43:00.000Z" => "2025-06-16 15:43:00"
     return isoString.replace('T', ' ').replace('Z', '').slice(0, 19);
 }
+
+//Format to string readable
+export function formatDateTimeString(dateStr: string): string {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${day} ${h}:${min}`;
+}

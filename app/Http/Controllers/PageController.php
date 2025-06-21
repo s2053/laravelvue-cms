@@ -15,9 +15,39 @@ use Illuminate\Validation\Rules\Enum;
 class PageController extends Controller
 {
     // List all pages
-    public function index()
+    public function index(Request $request)
     {
-        return Page::all();
+        $perPage = (int) $request->get('rows', 6);
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = $request->get('sort_dir', 'desc');
+
+        $search = $request->get('search', null);
+
+        $query = Page::query();
+
+        $query->with('category');
+
+        if ($sortBy === 'category') {
+            $query->join('page_categories', 'pages.page_category_id', '=', 'page_categories.id')
+                ->orderBy('page_categories.title', $sortDir)
+                ->select('pages.*');
+        } else {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhere('created_at', 'like', "%{$search}%");
+            });
+        }
+
+
+        $pages = $query->paginate($perPage);
+
+        return PageResource::collection($pages);
     }
 
     // Store a new page

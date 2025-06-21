@@ -6,15 +6,18 @@ import { ref } from 'vue';
 export function usePages() {
     const { handleError } = useApiErrorHandler();
 
+    const paginatedRes = ref<any>({});
     const pages = ref<Page[]>([]);
     const loading = ref(false);
     const error = ref<string | null>(null);
 
-    const fetchPages = async () => {
+    const fetchPages = async (page = 1) => {
         loading.value = true;
         error.value = null;
         try {
-            pages.value = await PageService.getAll();
+            const response = await PageService.getAll({ page, per_page: 3, sort_by: 'created_at', sort_dir: 'desc' });
+            pages.value = response.data;
+            paginatedRes.value = response;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch pages';
@@ -66,6 +69,7 @@ export function usePages() {
     return {
         pages,
         loading,
+        paginatedRes,
         error,
         fetchPages,
         getPageById,

@@ -8,7 +8,7 @@ export interface Permission {
     id: number;
     name: string;
     permission_group_id?: number | null;
-    group?: PermissionGroup; // Optional: populated if included in API response
+    group?: PermissionGroup;
 }
 
 export interface PermissionGroup {
