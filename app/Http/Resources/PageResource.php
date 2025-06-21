@@ -42,8 +42,16 @@ class PageResource extends JsonResource
             'published_at' => $this->published_at,
 
             'page_category_id' => $this->page_category_id,
+            'category' => $this->whenLoaded('category', function () {
+                return [
+                    'id' => $this->category->id,
+                    'title' => $this->category->title,
+                    'slug' => $this->category->slug,
+                ];
+            }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+
         ];
     }
 }

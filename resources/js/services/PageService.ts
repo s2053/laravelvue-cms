@@ -1,10 +1,10 @@
 import api from '@/lib/axios';
-import { ApiResponse } from '@/types/apiResponse';
+import { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 import type { Page } from '@/types/pages';
 
 const PageService = {
-    async getAll(): Promise<Page[]> {
-        const res = await api.get<Page[]>('/pages');
+    async getAll(params = {}): Promise<PaginatedResponse<Page>> {
+        const res = await api.get<PaginatedResponse<Page>>('/pages', { params });
         return res.data;
     },
     async getById(id: number): Promise<Page> {
