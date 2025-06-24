@@ -66,6 +66,16 @@ export function usePages() {
         }
     };
 
+    const bulkUpdatePages = async (action: string, ids: number[], data?: Record<string, any>) => {
+        try {
+            await PageService.bulkUpdate({ action, ids, data });
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to perform bulk update';
+            throw err;
+        }
+    };
+
     return {
         pages,
         loading,
@@ -76,5 +86,6 @@ export function usePages() {
         createPage,
         updatePage,
         deletePage,
+        bulkUpdatePages,
     };
 }

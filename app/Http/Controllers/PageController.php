@@ -167,4 +167,34 @@ class PageController extends Controller
 
         return response()->json(null, 204);
     }
+
+
+    public function bulkUpdate(Request $request)
+{
+    $validated = $request->validate([
+        'action' => 'required|string|in:delete,status,category,visibility,page_type',
+        'ids' => 'required|array',
+        'ids.*' => 'integer|exists:pages,id',
+        'data' => 'nullable|array',
+    ]);
+
+    $pages = Page::whereIn('id', $validated['ids']);
+
+    switch ($validated['action']) {
+        case 'delete':
+            $pages->delete();
+            return response()->json(['message' => 'Pages deleted.']);
+
+        case 'status':
+        case 'category':
+        case 'visibility':
+        case 'page_type':
+            $pages->update([$validated['action'] => $validated['data'][$validated['action']]]);
+            return response()->json(['message' => 'Pages updated.']);
+
+        default:
+            return response()->json(['message' => 'Invalid action'], 400);
+    }
+}
+
 }
