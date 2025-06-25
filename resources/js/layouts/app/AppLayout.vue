@@ -95,7 +95,9 @@ function getTransition(routeMetaTransition) {
 </template>
 
 <style scoped>
-.fade-enter-active,
+/* disable the  transition */
+
+/* .fade-enter-active,
 .fade-leave-active {
     transition-duration: 0.3s;
     transition-property: opacity;
@@ -127,5 +129,5 @@ function getTransition(routeMetaTransition) {
 .slide-right-enter {
     opacity: 0;
     transform: translate(-2em, 0);
-}
+} */
 </style>

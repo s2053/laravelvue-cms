@@ -22,6 +22,11 @@ const PageService = {
     async delete(id: number): Promise<void> {
         await api.delete(`/pages/${id}`);
     },
+
+    async bulkUpdate<T extends string = string>(payload: { action: T; ids: number[]; data?: Record<string, any> }): Promise<ApiResponse<null>> {
+        const res = await api.post<ApiResponse<null>>('/pages/bulk-update', payload);
+        return res.data;
+    },
 };
 
 export default PageService;

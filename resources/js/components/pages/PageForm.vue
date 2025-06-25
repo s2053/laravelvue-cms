@@ -259,21 +259,21 @@
 </template>
 
 <script setup lang="ts">
+import { PageStatus, PageStatusOptions } from '@/enums/pageStatus';
 import { PageType, PageTypeOptions } from '@/enums/pageType';
+import { PageVisibility, PageVisibilityOptions } from '@/enums/pageVisibility';
 import { slugify } from '@/utils/slugify';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
-import { PageStatus, PageStatusOptions } from '../../enums/pageStatus';
-import { PageVisibility, PageVisibilityOptions } from '../../enums/pageVisibility';
 
 import FieldError from '@/components/common/FieldError.vue';
 import MediaUploader from '@/components/common/MediaUploader.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppPanel from '@/components/ui/AppPanel.vue';
 
+import { PagePayload } from '@/types/pages';
 import { formatLocalDateTime, getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';
-import { PagePayload } from '../../types/pages';
 
 const saveItems = [
     {

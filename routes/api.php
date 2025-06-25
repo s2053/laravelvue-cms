@@ -41,5 +41,6 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::apiResource('page-categories', PageCategoryController::class);
     Route::apiResource('pages', PageController::class);
+    Route::post('/pages/bulk-update', [PageController::class, 'bulkUpdate'])->name('pages.bulk-update');
 
 });
