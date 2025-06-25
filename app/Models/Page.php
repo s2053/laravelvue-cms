@@ -43,6 +43,10 @@ class Page extends Model
         'status' => PageStatus::class,
         'visibility' => PageVisibility::class,
 
+
+        'scheduled_at' => 'datetime',
+        'published_at' => 'datetime',
+
     ];
 
 
