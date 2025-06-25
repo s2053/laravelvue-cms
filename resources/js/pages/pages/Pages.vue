@@ -96,12 +96,18 @@ import { Page } from '@/types/pages';
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
 import { FilterMatchMode } from '@primevue/core/api';
+import { useToast } from 'primevue/usetoast';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+const toast = useToast();
+
 const router = useRouter();
+
+const serverErrors = ref<{ [key: string]: string[] }>({});
+
 const { showDeleteConfirm } = useDeleteConfirm();
-const { deletePage } = usePages();
+const { deletePage, bulkUpdatePages } = usePages();
 
 const { items: pages, total, per_page, loading, currentPage, loadPage: loadPageData } = usePaginatedTable<Page>(PageService.getAll);
 
@@ -129,27 +135,26 @@ async function applyBulkAction() {
         case 'delete':
             bulkDeletePages(selectedIds);
             break;
-
         case 'status':
-            showBulkUpdateDialog(bulkAction.value, selectedIds);
+            showBulkUpdateDialog(bulkAction.value);
             break;
         case 'category':
+            showBulkUpdateDialog(bulkAction.value);
+            break;
         case 'visibility':
+            showBulkUpdateDialog(bulkAction.value);
+            break;
         case 'page_type':
-            showBulkUpdateDialog(bulkAction.value, selectedIds);
+            showBulkUpdateDialog(bulkAction.value);
             break;
     }
 }
-function showBulkUpdateDialog(action: string, ids: number[]) {
+function showBulkUpdateDialog(action: string) {
     console.log('Bulk update for:', selectedRecords.value);
     bulkDialogVisible.value = true;
     dialogAction.value = action;
     console.log(dialogAction.value);
-    //   updatePayload.value = {}; // Reset
-    //   dialogVisible.value = true;
 }
-
-function submitBulkUpdate() {}
 
 const perPageOptions = [5, 10, 25];
 const numOfRows = perPageOptions[0];
@@ -238,12 +243,8 @@ function removePage(id: number, title?: string) {
     });
 }
 
-function bulkEditPages() {
-    // Implement your bulk edit logic here
-    console.log('Bulk edit for:', selectedRecords.value);
-}
-
 async function bulkDeletePages(ids: number[]) {
+    if (ids.length === 0) return;
     const count = ids.length;
     const message = `Are you sure you want to delete ${count} selected page${count > 1 ? 's' : ''}?`;
 
@@ -251,11 +252,41 @@ async function bulkDeletePages(ids: number[]) {
         message,
 
         onAccept: async () => {
-            await PageService.bulkUpdate({ action: 'delete', ids });
+            await bulkUpdatePages('delete', ids);
             await loadPageData({ page: currentPage.value, rows: numOfRows, sortField: sortField.value, sortOrder: sortOrder.value });
+            selectedRecords.value = []; // Clear selection after deletion
         },
         successMessage: 'Pages deleted',
         errorMessage: 'Failed to delete pages',
     });
+}
+
+async function submitBulkUpdate(formData: Record<string, any>) {
+    const ids = selectedRecords.value.map((p) => p.id).filter((id): id is number => typeof id === 'number');
+    serverErrors.value = {};
+
+    if (!ids.length) return;
+
+    try {
+        await bulkUpdatePages(dialogAction.value, ids, formData);
+        bulkDialogVisible.value = false;
+        selectedRecords.value = [];
+        bulkAction.value = null;
+        toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
+
+        loadPageData({
+            page: currentPage.value,
+            rows: numOfRows,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
+        });
+    } catch (err) {
+        console.error('Bulk update failed', err);
+        if (err.response?.status === 422 && err.response.data?.errors) {
+            serverErrors.value = err.response.data.errors;
+        } else {
+            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+        }
+    }
 }
 </script>

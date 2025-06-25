@@ -8,8 +8,8 @@ use App\Enums\PageVisibility;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
 class PageController extends Controller
@@ -170,31 +170,83 @@ class PageController extends Controller
 
 
     public function bulkUpdate(Request $request)
-{
-    $validated = $request->validate([
-        'action' => 'required|string|in:delete,status,category,visibility,page_type',
-        'ids' => 'required|array',
-        'ids.*' => 'integer|exists:pages,id',
-        'data' => 'nullable|array',
-    ]);
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:delete,status,category,visibility,page_type',
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:pages,id',
+            'data' => 'nullable|array',
+        ]);
 
-    $pages = Page::whereIn('id', $validated['ids']);
+        $pages = Page::whereIn('id', $validated['ids']);
 
-    switch ($validated['action']) {
-        case 'delete':
-            $pages->delete();
-            return response()->json(['message' => 'Pages deleted.']);
+        switch ($validated['action']) {
+            case 'delete':
+                $pages->delete();
+                return response()->json(['message' => 'Pages deleted.']);
 
-        case 'status':
-        case 'category':
-        case 'visibility':
-        case 'page_type':
-            $pages->update([$validated['action'] => $validated['data'][$validated['action']]]);
-            return response()->json(['message' => 'Pages updated.']);
+            case 'status':
 
-        default:
-            return response()->json(['message' => 'Invalid action'], 400);
+                $scheduled_at = null;
+                $data = $validated['data'];
+                $status = PageStatus::tryFrom($data['status']);
+
+                //  dd($data['status'], PageStatus::SCHEDULED);
+                if ($status == PageStatus::SCHEDULED) {
+                    $scheduled_at = $data['scheduled_at'] ?? null;
+
+                    if ($scheduled_at == null) {
+                        $scheduled_at = Carbon::now()->addHours(4);
+
+                    }
+
+                    $pages->update([
+                        'status' => PageStatus::SCHEDULED,
+                        'scheduled_at' => $scheduled_at,
+                    ]);
+                } else if ($status == PageStatus::PUBLISHED) {
+
+                    $published_at = $data['published_at'] ?? null;
+
+                    if ($published_at == null) {
+                        $published_at = Carbon::now();
+
+                    }
+
+                    $pages->update([
+                        'status' => PageStatus::PUBLISHED,
+                        'published_at' => $published_at,
+                    ]);
+                } else if ($status == PageStatus::ARCHIVED) {
+                    $pages->where('status', PageStatus::PUBLISHED)
+                        ->update([
+                            'status' => PageStatus::ARCHIVED,
+                        ]);
+                } else {
+                    $pages->update([
+                        'status' => PageStatus::DRAFT,
+                        'scheduled_at' => $scheduled_at,
+                    ]);
+                }
+
+                return response()->json(['message' => 'Status updated.']);
+
+            case 'category':
+                $pages->update(['category' => $validated['data']['category']]);
+                return response()->json(['message' => 'Category updated.']);
+
+            case 'visibility':
+                $pages->update(['visibility' => $validated['data']['visibility']]);
+                return response()->json(['message' => 'Visibility updated.']);
+
+            case 'page_type':
+                $pages->update(['page_type' => $validated['data']['page_type']]);
+                return response()->json(['message' => 'Page Type updated.']);
+
+            default:
+                return response()->json(['message' => 'Invalid action'], 400);
+        }
+
     }
-}
 
 }

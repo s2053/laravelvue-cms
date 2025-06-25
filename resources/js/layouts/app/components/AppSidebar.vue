@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 // import AppMenu from './AppMenu.vue';
 
 import AppMenu from '@/layouts/app/components/AppMenu.vue';

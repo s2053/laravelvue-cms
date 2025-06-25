@@ -1,45 +1,92 @@
 <template>
-    <form @submit.prevent="onSubmit">
-        {{ action }}
-        <!-- Show status field only for status action -->
-        <div v-if="action == 'status'">
-            <label>Status</label>
-            <Dropdown v-model="form.status" :options="statusOptions" placeholder="Select status" />
+    <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
+        <div class="flex flex-col gap-4">
+            <!-- Show status field only for status action -->
+            <div v-if="action == 'status'">
+                <label for="status" class="mb-2 block font-bold">Status:</label>
+                <Select
+                    v-model="form.status"
+                    :options="filteredPageStatusOptions"
+                    name="status"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                    placeholder="Select Status"
+                />
+                <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
+            </div>
+
+            <!-- Show category field only for category action -->
+            <div v-if="action === 'category'">
+                <label>Category</label>
+                <Dropdown v-model="form.category_id" :options="categoryOptions" placeholder="Select category" />
+            </div>
+
+            <!-- Show visibility field only for visibility action -->
+            <div v-if="action == 'visibility'">
+                <label for="visibility" class="mb-2 block font-bold">Visibility:</label>
+                <Select
+                    v-model="form.visibility"
+                    :options="PageVisibilityOptions"
+                    name="visibility"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                    placeholder="Select visibility"
+                />
+                <FieldError :formError="$form.visibility?.error?.message" :serverError="serverErrors?.visibility?.[0]" />
+            </div>
+
+            <!-- Show page_type field only for page_type action -->
+            <div v-if="action == 'page_type'">
+                <label for="page_type" class="mb-2 block font-bold">Page Type:</label>
+                <Select
+                    v-model="form.page_type"
+                    :options="PageTypeOptions"
+                    name="page_type"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                    placeholder="Select Page Type"
+                />
+                <FieldError :formError="$form.page_type?.error?.message" :serverError="serverErrors?.page_type?.[0]" />
+            </div>
         </div>
 
-        <!-- Show category field only for category action -->
-        <div v-if="action === 'category'">
-            <label>Category</label>
-            <Dropdown v-model="form.category_id" :options="categoryOptions" placeholder="Select category" />
+        <div class="mt-4 flex justify-end gap-2">
+            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
+            <Button type="submit" label="Update" severity="primary"></Button>
         </div>
-
-        <!-- Show visibility field only for visibility action -->
-        <div v-if="action === 'visibility'">
-            <label>Visibility</label>
-            <Dropdown v-model="form.visibility" :options="visibilityOptions" placeholder="Select visibility" />
-        </div>
-
-        <!-- Show page_type field only for page_type action -->
-        <div v-if="action === 'page_type'">
-            <label>Page Type</label>
-            <Dropdown v-model="form.page_type" :options="pageTypeOptions" placeholder="Select page type" />
-        </div>
-
-        <div class="dialog-footer">
-            <Button label="Cancel" icon="pi pi-times" class="p-button-text" @click="$emit('cancel')" />
-            <Button label="Save" icon="pi pi-check" type="submit" :disabled="!isValid" />
-        </div>
-    </form>
+    </Form>
 </template>
 
 <script setup lang="ts">
-import { computed, defineEmits, defineProps, ref, watch } from 'vue';
+import { PageTypeOptions } from '@/enums/pageType';
 
-const props = defineProps({
-    action: { type: String, required: true },
-    initialData: { type: Object, default: () => ({}) },
-});
+import FieldError from '@/components/common/FieldError.vue';
+import { PageStatus, PageStatusOptions } from '@/enums/pageStatus';
+import { PageVisibilityOptions } from '@/enums/pageVisibility';
+import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { defineEmits, defineProps, ref, watch } from 'vue';
+import { z } from 'zod';
 
+// const props = defineProps({
+//     action: { type: String, required: true },
+//     initialData: { type: Object, default: () => ({}) },
+//         serverErrors?: { [key: string]: string[] }
+
+// });
+
+const props = withDefaults(
+    defineProps<{
+        action: string;
+        initialData?: Record<string, any>;
+        serverErrors?: Record<string, string[]>;
+    }>(),
+    {
+        initialData: () => ({}),
+    },
+);
 const emit = defineEmits(['submit', 'cancel']);
 
 const form = ref({ ...props.initialData });
@@ -51,46 +98,19 @@ watch(
     },
 );
 
-// Basic validation per action
-const isValid = computed(() => {
-    switch (props.action) {
-        case 'status':
-            return !!form.value.status;
-        case 'category':
-            return !!form.value.category_id;
-        case 'visibility':
-            return !!form.value.visibility;
-        case 'page_type':
-            return !!form.value.page_type;
-        default:
-            return false;
+const filteredPageStatusOptions = PageStatusOptions;
+
+const resolver = zodResolver(
+    z.object({
+        status: z.enum(Object.values(PageStatus) as [string, ...string[]]),
+    }),
+);
+
+function onSubmit({ valid }: { valid: boolean }) {
+    if (valid) {
+        emit('submit', { ...form.value });
+
+        // emit('submit', categoryForm.value);
     }
-});
-
-function onSubmit() {
-    emit('submit', { ...form.value });
 }
-
-// Example options, replace with your real data or props
-const statusOptions = [
-    { label: 'Draft', value: 'draft' },
-    { label: 'Published', value: 'published' },
-    { label: 'Archived', value: 'archived' },
-];
-
-const categoryOptions = [
-    { label: 'News', id: 1 },
-    { label: 'Blog', id: 2 },
-    { label: 'Tutorial', id: 3 },
-];
-
-const visibilityOptions = [
-    { label: 'Public', value: 'public' },
-    { label: 'Private', value: 'private' },
-];
-
-const pageTypeOptions = [
-    { label: 'Landing', value: 'landing' },
-    { label: 'Article', value: 'article' },
-];
 </script>

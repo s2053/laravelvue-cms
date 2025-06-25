@@ -114,7 +114,7 @@ async function handleSubmit(form: PagePayload) {
         if (editingId.value) {
             await updatePage(editingId.value, formData);
             toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
-            redirectAfterSubmit();
+            //  redirectAfterSubmit();
         } else {
             await createPage(formData);
             toast.add({ severity: 'success', summary: 'Page created', life: 2000 });
