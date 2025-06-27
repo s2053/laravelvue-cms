@@ -41,15 +41,21 @@
                     </div>
 
                     <!-- Search on the RIGHT with ml-auto -->
-                    <div class="ml-auto">
+                    <div class="ml-auto flex items-center gap-2">
                         <InputGroup class="!w-[200px]">
                             <InputText v-model="globalFilterValue" placeholder="Search" @keyup.enter="onGlobalSearch" />
                             <InputGroupAddon>
                                 <Button icon="pi pi-search" severity="secondary" @click="onGlobalSearch" />
                             </InputGroupAddon>
                         </InputGroup>
+
+                        <!-- Filter Button -->
+                        <Button icon="pi pi-filter" outlined severity="secondary" @click="openFilter = !openFilter" />
                     </div>
                 </div>
+
+                <!-- Inline Filter Panel -->
+                <PageFilter v-if="openFilter" v-model:filters="filters" @update:filters="onFiltersChanged" />
             </template>
 
             <template #empty> No data found. </template>
@@ -73,19 +79,44 @@
             <!-- Action column: always visible -->
             <Column header="Action">
                 <template #body="{ data }">
-                    <Button icon="pi pi-pencil" @click="goToEditPage(data.id)" />
-                    <Button icon="pi pi-trash" severity="danger" @click="removePage(data.id, data.title)" />
+                    <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="goToEditPage(data.id)" />
+                    <Button
+                        icon="pi pi-trash"
+                        size="small"
+                        class="mr-2"
+                        outlined
+                        rounded
+                        severity="danger"
+                        @click="removePage(data.id, data.title)"
+                    />
+
+                    <Button icon="pi pi-ellipsis-v" size="small" severity="secondary" outlined rounded @click="toggleMenu(data.id, $event)" />
+                    <Menu
+                        :ref="(el) => setMenuRef(data.id, el)"
+                        popup
+                        :model="[
+                            { label: 'Edit', icon: 'pi pi-pencil', command: () => goToEditPage(data.id) },
+                            { label: 'Update Status', icon: 'pi pi-cog', command: () => showUpdateDialogForSingle('status', data.id) },
+                            { label: 'Update Visibility', icon: 'pi pi-eye', command: () => showUpdateDialogForSingle('visibility', data.id) },
+                            { label: 'Update Page Type', icon: 'pi pi-file', command: () => showUpdateDialogForSingle('page_type', data.id) },
+                            { label: 'Update Category', icon: 'pi pi-tags', command: () => showUpdateDialogForSingle('category', data.id) },
+                            { label: 'Remove', icon: 'pi pi-trash', command: () => removePage(data.id, data.title) },
+                        ]"
+                        class="!min-w-40"
+                    >
+                    </Menu>
                 </template>
             </Column>
         </DataTable>
 
         <Dialog v-model:visible="bulkDialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
-            <PageOptionForm :action="dialogAction" :initialData="{}" @submit="submitBulkUpdate" @cancel="bulkDialogVisible = false" />
+            <PageOptionForm :action="dialogAction" :initialData="initialFormData" @submit="submitBulkUpdate" @cancel="bulkDialogVisible = false" />
         </Dialog>
     </AppContent>
 </template>
 
 <script setup lang="ts">
+import PageFilter from '@/components/pages/PageFilter.vue';
 import PageOptionForm from '@/components/pages/PageOptionForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePages } from '@/composables/usePages';
@@ -93,16 +124,43 @@ import { usePaginatedTable } from '@/composables/usePaginatedList';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import PageService from '@/services/PageService';
 import { Page } from '@/types/pages';
-import { formatDateTimeString } from '@/utils/dateHelper';
+import { formatDateTimeString, isoToMySQLDatetime } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
 import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { localDateTimeToUTC, utcToLocalDateTime } from '../../utils/dateHelper';
 
 const toast = useToast();
 
 const router = useRouter();
+
+// const filters = reactive({
+//   status: null,
+//   page_type: null,
+//   category: null,
+//   visibility: null,
+// });
+const openFilter = ref(false);
+const menuRefs = ref<Record<string, any | null>>({});
+
+function setMenuRef(id: number, el: any | null) {
+    if (el) {
+        menuRefs.value[id] = el;
+    } else {
+        delete menuRefs.value[id];
+    }
+}
+
+function toggleMenu(id: number, event: Event) {
+    menuRefs.value[id]?.toggle(event);
+}
+
+const items = ref([
+    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
+    { label: 'Remove', icon: 'pi pi-fw pi-trash' },
+]);
 
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
@@ -110,6 +168,8 @@ const { showDeleteConfirm } = useDeleteConfirm();
 const { deletePage, bulkUpdatePages } = usePages();
 
 const { items: pages, total, per_page, loading, currentPage, loadPage: loadPageData } = usePaginatedTable<Page>(PageService.getAll);
+
+const initialFormData = ref<Record<string, any>>({});
 
 const selectedRecords = ref<Page[]>([]);
 
@@ -150,10 +210,9 @@ async function applyBulkAction() {
     }
 }
 function showBulkUpdateDialog(action: string) {
-    console.log('Bulk update for:', selectedRecords.value);
+    initialFormData.value = {};
     bulkDialogVisible.value = true;
     dialogAction.value = action;
-    console.log(dialogAction.value);
 }
 
 const perPageOptions = [5, 10, 25];
@@ -204,6 +263,8 @@ function onLazyLoad(event: { page: number; rows: number; sortField: string; sort
     sortOrder.value = event.sortOrder;
 
     loadPageData(event);
+    selectedRecords.value = [];
+    selectedIds.value = [];
 }
 
 function onPage(event: { page: number; rows: number }) {
@@ -242,6 +303,52 @@ function removePage(id: number, title?: string) {
         errorMessage: 'Failed to delete page',
     });
 }
+const selectedIds = ref<number[]>([]);
+
+function showUpdateDialogForSingle(action: string, id: number) {
+    dialogAction.value = action;
+    dialogTitle.value = `Update ${action} for page`;
+
+    selectedIds.value = [id];
+
+    const page = pages.value.find((p) => p.id === id);
+
+    if (!page) {
+        initialFormData.value = {};
+    } else {
+        switch (action) {
+            case 'status':
+                if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
+                if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
+
+                initialFormData.value = {
+                    status: page.status,
+                    scheduled_at: page.scheduled_at || null,
+                    published_at: page.published_at || null,
+                };
+                break;
+            case 'category':
+                initialFormData.value = {
+                    category: page.category?.id || null,
+                };
+                break;
+            case 'visibility':
+                initialFormData.value = {
+                    visibility: page.visibility,
+                };
+                break;
+            case 'page_type':
+                initialFormData.value = {
+                    page_type: page.page_type,
+                };
+                break;
+            default:
+                initialFormData.value = {};
+        }
+    }
+
+    bulkDialogVisible.value = true;
+}
 
 async function bulkDeletePages(ids: number[]) {
     if (ids.length === 0) return;
@@ -254,7 +361,8 @@ async function bulkDeletePages(ids: number[]) {
         onAccept: async () => {
             await bulkUpdatePages('delete', ids);
             await loadPageData({ page: currentPage.value, rows: numOfRows, sortField: sortField.value, sortOrder: sortOrder.value });
-            selectedRecords.value = []; // Clear selection after deletion
+            selectedRecords.value = [];
+            selectedIds.value = [];
         },
         successMessage: 'Pages deleted',
         errorMessage: 'Failed to delete pages',
@@ -262,15 +370,26 @@ async function bulkDeletePages(ids: number[]) {
 }
 
 async function submitBulkUpdate(formData: Record<string, any>) {
-    const ids = selectedRecords.value.map((p) => p.id).filter((id): id is number => typeof id === 'number');
+    const ids = selectedIds.value.length
+        ? selectedIds.value
+        : selectedRecords.value.map((p) => p.id).filter((id): id is number => typeof id === 'number');
     serverErrors.value = {};
 
     if (!ids.length) return;
 
+    if (formData.scheduled_at) {
+        formData.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(formData.scheduled_at));
+    }
+
+    if (formData.published_at) {
+        formData.published_at = isoToMySQLDatetime(localDateTimeToUTC(formData.published_at));
+    }
     try {
         await bulkUpdatePages(dialogAction.value, ids, formData);
         bulkDialogVisible.value = false;
         selectedRecords.value = [];
+        selectedIds.value = [];
+
         bulkAction.value = null;
         toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
 
@@ -280,13 +399,23 @@ async function submitBulkUpdate(formData: Record<string, any>) {
             sortField: sortField.value,
             sortOrder: sortOrder.value,
         });
-    } catch (err) {
-        console.error('Bulk update failed', err);
+    } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
             toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
         }
     }
+}
+
+function onFiltersChanged(newFilters: typeof filters) {
+    Object.assign(filters, newFilters);
+    loadPageData({
+        page: 0,
+        rows: numOfRows,
+        filters,
+        sortField: sortField.value,
+        sortOrder: sortOrder.value,
+    });
 }
 </script>

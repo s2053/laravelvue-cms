@@ -194,7 +194,6 @@ watch(
 
 function onSlugInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    // Slugify as the user types
     categoryForm.value.slug = slugify(input.value);
 }
 

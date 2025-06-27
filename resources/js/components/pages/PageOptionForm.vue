@@ -70,13 +70,6 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { defineEmits, defineProps, ref, watch } from 'vue';
 import { z } from 'zod';
 
-// const props = defineProps({
-//     action: { type: String, required: true },
-//     initialData: { type: Object, default: () => ({}) },
-//         serverErrors?: { [key: string]: string[] }
-
-// });
-
 const props = withDefaults(
     defineProps<{
         action: string;
@@ -109,8 +102,6 @@ const resolver = zodResolver(
 function onSubmit({ valid }: { valid: boolean }) {
     if (valid) {
         emit('submit', { ...form.value });
-
-        // emit('submit', categoryForm.value);
     }
 }
 </script>

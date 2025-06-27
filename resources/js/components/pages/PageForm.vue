@@ -302,11 +302,8 @@ const optionsCollapsed = ref(true);
 const metaCollapsed = ref(true);
 const scheduledAtMin = ref(getDefaultScheduledDateTimeLocal());
 
-const filteredPageStatusOptions = computed(
-    () =>
-        isEditMode.value
-            ? PageStatusOptions // show all
-            : PageStatusOptions.filter((option) => option.value !== 'archived'), // exclude 'archived'
+const filteredPageStatusOptions = computed(() =>
+    isEditMode.value ? PageStatusOptions : PageStatusOptions.filter((option) => option.value !== 'archived'),
 );
 
 const formRef = ref();
@@ -344,7 +341,6 @@ function removeMedia() {
 
 function onSlugInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    // Slugify as the user types
     form.value.slug = slugify(input.value);
 }
 
