@@ -36,14 +36,17 @@ export function usePaginatedTable<T>(
         const page = event.page ?? 1;
         const rows = event.rows ?? per_page.value;
 
+        const { global, ...restFilters } = event.filters || {};
+
         try {
+            console.log(event.filters);
             const resp = await fetchFn({
                 page,
                 rows,
                 sort_by: event.sortField || 'created_at',
                 sort_dir: event.sortOrder === 1 ? 'asc' : 'desc',
-                search: event.filters?.global?.value || '',
-                ...filters.value,
+                search: global ?? '',
+                ...restFilters,
             });
 
             items.value = resp.data;

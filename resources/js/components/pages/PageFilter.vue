@@ -14,7 +14,6 @@
                         class="app-input-sm w-full"
                         placeholder="Select Status"
                     />
-
                 </div>
 
                 <!-- Page Type -->
@@ -69,10 +68,10 @@
 </template>
 
 <script setup lang="ts">
+import { PageStatusOptions } from '@/enums/pageStatus';
+import { PageTypeOptions } from '@/enums/pageType';
+import { PageVisibilityOptions } from '@/enums/pageVisibility';
 import { reactive } from 'vue';
-import { PageStatus, PageStatusOptions } from '@/enums/pageStatus';
-import { PageType, PageTypeOptions } from '@/enums/pageType';
-import { PageVisibility, PageVisibilityOptions } from '@/enums/pageVisibility';
 const emit = defineEmits(['update:filters']);
 
 const filters = reactive({
@@ -89,13 +88,11 @@ const statusOptions = [
     { label: 'Archived', value: 'archived' },
 ];
 
-
 const categoryOptions = [
     { label: 'News', value: 1 },
     { label: 'Tutorial', value: 2 },
     { label: 'Review', value: 3 },
 ];
-
 
 function emitFilters() {
     emit('update:filters', { ...filters });

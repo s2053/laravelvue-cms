@@ -20,7 +20,6 @@
             :rows="per_page"
             :totalRecords="total"
             :paginator="true"
-            :filters="filters"
             paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown "
             :rowsPerPageOptions="perPageOptions"
             currentPageReportTemplate="{first} to {last} of {totalRecords}"
@@ -126,9 +125,8 @@ import PageService from '@/services/PageService';
 import { Page } from '@/types/pages';
 import { formatDateTimeString, isoToMySQLDatetime } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
-import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { computed, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { localDateTimeToUTC, utcToLocalDateTime } from '../../utils/dateHelper';
 
@@ -136,12 +134,13 @@ const toast = useToast();
 
 const router = useRouter();
 
-// const filters = reactive({
-//   status: null,
-//   page_type: null,
-//   category: null,
-//   visibility: null,
-// });
+const filters = reactive({
+    status: null,
+    page_type: null,
+    category: null,
+    visibility: null,
+    global: '',
+});
 const openFilter = ref(false);
 const menuRefs = ref<Record<string, any | null>>({});
 
@@ -218,24 +217,21 @@ function showBulkUpdateDialog(action: string) {
 const perPageOptions = [5, 10, 25];
 const numOfRows = perPageOptions[0];
 
-const filters = ref<Record<string, { value: string | number | boolean | null | Date; matchMode: any }>>({
-    global: { value: '', matchMode: FilterMatchMode.CONTAINS },
-    title: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-    'country.name': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-    representative: { value: null, matchMode: FilterMatchMode.IN },
-    status: { value: null, matchMode: FilterMatchMode.EQUALS },
-    verified: { value: null, matchMode: FilterMatchMode.EQUALS },
-});
+// const filters = ref<Record<string, { value: string | number | boolean | null | Date; matchMode: any }>>({
+//     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
+//     status: { value: null, matchMode: FilterMatchMode.EQUALS },
+// });
 
 function onGlobalSearch() {
-    filters.value.global.value = globalFilterValue.value;
+    filters.global = globalFilterValue.value;
 
+    console.log(filters);
     loadPageData({
         page: 0,
         rows: numOfRows,
         sortField: sortField.value,
         sortOrder: sortOrder.value,
-        filters: filters.value,
+        filters: filters,
     });
 }
 const globalFilterValue = ref('');
@@ -256,7 +252,7 @@ const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'pa
 const sortField = ref<string>('created_at');
 const sortOrder = ref<number>(-1);
 
-loadPageData({ page: 0, rows: numOfRows, filters: filters.value });
+loadPageData({ page: 0, rows: numOfRows, filters: filters });
 
 function onLazyLoad(event: { page: number; rows: number; sortField: string; sortOrder: number; filters?: Record<string, any> }) {
     sortField.value = event.sortField;
@@ -273,7 +269,7 @@ function onPage(event: { page: number; rows: number }) {
         rows: event.rows,
         sortField: sortField.value,
         sortOrder: sortOrder.value,
-        filters: filters.value,
+        filters: filters,
     });
 }
 
@@ -409,7 +405,10 @@ async function submitBulkUpdate(formData: Record<string, any>) {
 }
 
 function onFiltersChanged(newFilters: typeof filters) {
+    console.log('onFiltersChanged', newFilters);
     Object.assign(filters, newFilters);
+    console.log('onFiltersChanged', filters);
+
     loadPageData({
         page: 0,
         rows: numOfRows,
