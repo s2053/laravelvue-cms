@@ -46,12 +46,10 @@ const formModel = ref<PagePayload>({
 });
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
-// const categoryOptions = { id: number; title: string }[];
-
 const categoryOptions = computed(() =>
     (categories.value || []).map((cat) => ({
         id: cat.id as number,
-        title: cat.title, // use title if present, else name
+        title: cat.title,
     })),
 );
 onMounted(async () => {
@@ -81,7 +79,6 @@ function payloadToFormData(payload: PagePayload): FormData {
     if (editingId.value) {
         formData.append('_method', 'PUT');
     }
-    console.log('payload', payload);
     Object.entries(payload).forEach(([key, value]) => {
         if (key === 'thumbnailFile' && value) {
             formData.append('thumbnailFile', value as File);
@@ -101,7 +98,6 @@ async function handleSubmit(form: PagePayload) {
     // Clone and convert date fields to UTC ISO if they are not null/empty
     const payload = <PagePayload>{ ...form };
     if (payload.scheduled_at) {
-        console.log(payload.scheduled_at);
         payload.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(payload.scheduled_at));
     }
     if (payload.published_at) {

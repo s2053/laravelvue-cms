@@ -111,7 +111,7 @@ async function handleSubmit(form: PageCategoryPayload) {
             toast.add({ severity: 'success', summary: 'Category created', life: 2000 });
         }
         dialogVisible.value = false;
-        fetchCategories();
+        await fetchCategories();
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
@@ -123,7 +123,11 @@ async function handleSubmit(form: PageCategoryPayload) {
 
 function removeCategory(id: number) {
     showDeleteConfirm({
-        onAccept: () => deleteCategory(id),
+        onAccept: async () => {
+            await deleteCategory(id);
+
+            await fetchCategories();
+        },
         successMessage: 'Page category deleted',
         errorMessage: 'Failed to delete page category',
     });

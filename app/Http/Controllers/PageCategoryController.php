@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\PageCategoryResource;
 use App\Models\PageCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -10,9 +11,27 @@ use Illuminate\Validation\Rule;
 class PageCategoryController extends Controller
 {
     // List all page categories
-    public function index()
+    public function index(Request $request)
     {
-        return PageCategory::all();
+        $perPage = (int) $request->input('rows', 25);
+
+        $query = PageCategory::query();
+
+        // $filter = new PageCategoryFilter($request);
+        // $filteredQuery = $filter->apply($query);
+
+        $filteredQuery = $query;
+
+        if ($request->boolean('all')) {
+            // Return all results (no pagination)
+            $records = $filteredQuery->get();
+            return PageCategoryResource::collection($records);
+        } else {
+            // Return paginated results
+            $records = $filteredQuery->paginate($perPage);
+            return PageCategoryResource::collection($records);
+        }
+
     }
 
     // Store a new page category
@@ -36,13 +55,18 @@ class PageCategoryController extends Controller
 
         $category = PageCategory::create($validated);
 
-        return response()->json($category, 201);
+        return (new PageCategoryResource($category))
+            ->response()
+            ->setStatusCode(201);
     }
 
     // Show a specific page category
     public function show($id)
     {
-        return PageCategory::findOrFail($id);
+
+        $category = PageCategory::findOrFail($id);
+
+        return new PageCategoryResource($category);
     }
 
     // Update a page category
@@ -70,7 +94,7 @@ class PageCategoryController extends Controller
         $category->update($validated);
 
 
-        return $category;
+        return new PageCategoryResource($category);
     }
 
     // Delete a page category

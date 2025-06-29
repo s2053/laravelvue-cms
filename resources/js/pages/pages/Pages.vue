@@ -98,7 +98,7 @@
                             { label: 'Update Status', icon: 'pi pi-cog', command: () => showUpdateDialogForSingle('status', data.id) },
                             { label: 'Update Visibility', icon: 'pi pi-eye', command: () => showUpdateDialogForSingle('visibility', data.id) },
                             { label: 'Update Page Type', icon: 'pi pi-file', command: () => showUpdateDialogForSingle('page_type', data.id) },
-                            { label: 'Update Category', icon: 'pi pi-tags', command: () => showUpdateDialogForSingle('category', data.id) },
+                            { label: 'Update Category', icon: 'pi pi-tags', command: () => showUpdateDialogForSingle('page_category_id', data.id) },
                             { label: 'Remove', icon: 'pi pi-trash', command: () => removePage(data.id, data.title) },
                         ]"
                         class="!min-w-40"
@@ -109,13 +109,21 @@
         </DataTable>
 
         <Dialog v-model:visible="bulkDialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
-            <PageOptionForm :action="dialogAction" :initialData="initialFormData" @submit="submitBulkUpdate" @cancel="bulkDialogVisible = false" />
+            <PageOptionForm
+                :categoryOptions="categoryOptions"
+                :action="dialogAction"
+                :initialData="initialFormData"
+                @submit="submitBulkUpdate"
+                @cancel="bulkDialogVisible = false"
+            />
         </Dialog>
     </AppContent>
 </template>
 
 <script setup lang="ts">
 import PageFilter from '@/components/pages/PageFilter.vue';
+import { usePageCategories } from '@/composables/usePageCategory';
+
 import PageOptionForm from '@/components/pages/PageOptionForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePages } from '@/composables/usePages';
@@ -126,14 +134,20 @@ import { Page } from '@/types/pages';
 import { formatDateTimeString, isoToMySQLDatetime } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
 import { useToast } from 'primevue/usetoast';
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { localDateTimeToUTC, utcToLocalDateTime } from '../../utils/dateHelper';
 
 const toast = useToast();
 
 const router = useRouter();
-
+const { categories, fetchCategories } = usePageCategories();
+const categoryOptions = computed(() =>
+    (categories.value || []).map((cat) => ({
+        id: cat.id as number,
+        title: cat.title,
+    })),
+);
 const filters = reactive({
     status: null,
     page_type: null,
@@ -166,7 +180,7 @@ const serverErrors = ref<{ [key: string]: string[] }>({});
 const { showDeleteConfirm } = useDeleteConfirm();
 const { deletePage, bulkUpdatePages } = usePages();
 
-const { items: pages, total, per_page, loading, currentPage, loadPage: loadPageData } = usePaginatedTable<Page>(PageService.getAll);
+const { items: pages, total, per_page, loading, currentPage, loadPage: loadPageData } = usePaginatedTable<Page>(PageService.getPaginated);
 
 const initialFormData = ref<Record<string, any>>({});
 
@@ -178,7 +192,7 @@ const dialogTitle = ref('Bulk Update Pages');
 const bulkOptions = [
     { label: 'Delete Pages', value: 'delete' },
     { label: 'Update Status', value: 'status' },
-    { label: 'Update Category', value: 'category' },
+    { label: 'Update Category', value: 'page_category_id' },
     { label: 'Update Visibility', value: 'visibility' },
     { label: 'Update Page Type', value: 'page_type' },
 ];
@@ -197,7 +211,7 @@ async function applyBulkAction() {
         case 'status':
             showBulkUpdateDialog(bulkAction.value);
             break;
-        case 'category':
+        case 'page_category_id':
             showBulkUpdateDialog(bulkAction.value);
             break;
         case 'visibility':
@@ -215,7 +229,7 @@ function showBulkUpdateDialog(action: string) {
 }
 
 const perPageOptions = [5, 10, 25];
-const numOfRows = perPageOptions[0];
+const numOfRows = ref(perPageOptions[0]);
 
 // const filters = ref<Record<string, { value: string | number | boolean | null | Date; matchMode: any }>>({
 //     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
@@ -225,10 +239,9 @@ const numOfRows = perPageOptions[0];
 function onGlobalSearch() {
     filters.global = globalFilterValue.value;
 
-    console.log(filters);
     loadPageData({
         page: 0,
-        rows: numOfRows,
+        rows: numOfRows.value,
         sortField: sortField.value,
         sortOrder: sortOrder.value,
         filters: filters,
@@ -252,7 +265,10 @@ const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'pa
 const sortField = ref<string>('created_at');
 const sortOrder = ref<number>(-1);
 
-loadPageData({ page: 0, rows: numOfRows, filters: filters });
+onMounted(() => {
+    fetchCategories();
+    loadPageData({ page: 0, rows: numOfRows.value, filters: filters });
+});
 
 function onLazyLoad(event: { page: number; rows: number; sortField: string; sortOrder: number; filters?: Record<string, any> }) {
     sortField.value = event.sortField;
@@ -264,6 +280,7 @@ function onLazyLoad(event: { page: number; rows: number; sortField: string; sort
 }
 
 function onPage(event: { page: number; rows: number }) {
+    numOfRows.value = event.rows;
     loadPageData({
         page: event.page + 1,
         rows: event.rows,
@@ -293,7 +310,7 @@ function removePage(id: number, title?: string) {
         message,
         onAccept: async () => {
             await deletePage(id);
-            await loadPageData({ page: 0, rows: numOfRows });
+            await loadPageData({ page: 0, rows: numOfRows.value });
         },
         successMessage: 'Page deleted',
         errorMessage: 'Failed to delete page',
@@ -323,9 +340,9 @@ function showUpdateDialogForSingle(action: string, id: number) {
                     published_at: page.published_at || null,
                 };
                 break;
-            case 'category':
+            case 'page_category_id':
                 initialFormData.value = {
-                    category: page.category?.id || null,
+                    page_category_id: page.page_category_id || null,
                 };
                 break;
             case 'visibility':
@@ -356,7 +373,7 @@ async function bulkDeletePages(ids: number[]) {
 
         onAccept: async () => {
             await bulkUpdatePages('delete', ids);
-            await loadPageData({ page: currentPage.value, rows: numOfRows, sortField: sortField.value, sortOrder: sortOrder.value });
+            await loadPageData({ page: currentPage.value, rows: numOfRows.value, sortField: sortField.value, sortOrder: sortOrder.value });
             selectedRecords.value = [];
             selectedIds.value = [];
         },
@@ -391,7 +408,7 @@ async function submitBulkUpdate(formData: Record<string, any>) {
 
         loadPageData({
             page: currentPage.value,
-            rows: numOfRows,
+            rows: numOfRows.value,
             sortField: sortField.value,
             sortOrder: sortOrder.value,
         });
@@ -405,13 +422,11 @@ async function submitBulkUpdate(formData: Record<string, any>) {
 }
 
 function onFiltersChanged(newFilters: typeof filters) {
-    console.log('onFiltersChanged', newFilters);
     Object.assign(filters, newFilters);
-    console.log('onFiltersChanged', filters);
 
     loadPageData({
         page: 0,
-        rows: numOfRows,
+        rows: numOfRows.value,
         filters,
         sortField: sortField.value,
         sortOrder: sortOrder.value,

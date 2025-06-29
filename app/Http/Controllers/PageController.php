@@ -5,49 +5,35 @@ namespace App\Http\Controllers;
 use App\Enums\PageStatus;
 use App\Enums\PageType;
 use App\Enums\PageVisibility;
+use App\Filters\PageFilter;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Enum;
-
 class PageController extends Controller
 {
     // List all pages
     public function index(Request $request)
     {
-        $perPage = (int) $request->get('rows', 6);
+        $perPage = (int) $request->input('rows', 25);
 
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortDir = $request->get('sort_dir', 'desc');
+        $query = Page::with('category');
 
-        $search = $request->get('search', null);
+        $filter = new PageFilter($request);
 
-        $query = Page::query();
+        $filteredQuery = $filter->apply($query);
 
-        $query->with('category');
-
-        if ($sortBy === 'category') {
-            $query->join('page_categories', 'pages.page_category_id', '=', 'page_categories.id')
-                ->orderBy('page_categories.title', $sortDir)
-                ->select('pages.*');
+        if ($request->boolean('all')) {
+            // Return all results (no pagination)
+            $pages = $filteredQuery->get();
+            return PageResource::collection($pages);
         } else {
-            $query->orderBy($sortBy, $sortDir);
+            // Return paginated results
+            $pages = $filteredQuery->paginate($perPage);
+            return PageResource::collection($pages);
         }
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('status', 'like', "%{$search}%")
-                    ->orWhere('created_at', 'like', "%{$search}%");
-            });
-        }
-
-
-        $pages = $query->paginate($perPage);
-
-        return PageResource::collection($pages);
     }
 
     // Store a new page
@@ -172,7 +158,7 @@ class PageController extends Controller
     public function bulkUpdate(Request $request)
     {
         $validated = $request->validate([
-            'action' => 'required|string|in:delete,status,category,visibility,page_type',
+            'action' => 'required|string|in:delete,status,page_category_id,visibility,page_type',
             'ids' => 'required|array',
             'ids.*' => 'integer|exists:pages,id',
             'data' => 'nullable|array',
@@ -231,8 +217,8 @@ class PageController extends Controller
 
                 return response()->json(['message' => 'Status updated.']);
 
-            case 'category':
-                $pages->update(['category' => $validated['data']['category']]);
+            case 'page_category_id':
+                $pages->update(['page_category_id' => $validated['data']['page_category_id']]);
                 return response()->json(['message' => 'Category updated.']);
 
             case 'visibility':

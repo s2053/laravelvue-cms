@@ -14,7 +14,8 @@ export function usePageCategories() {
         loading.value = true;
         error.value = null;
         try {
-            categories.value = await PageCategoryService.getAll();
+            const res = await PageCategoryService.getAll();
+            categories.value = res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch categories';
@@ -25,7 +26,8 @@ export function usePageCategories() {
 
     const getCategoryById = async (id: number) => {
         try {
-            return await PageCategoryService.getById(id);
+            const res = await PageCategoryService.getById(id);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch category';
@@ -35,8 +37,8 @@ export function usePageCategories() {
 
     const createCategory = async (category: PageCategoryPayload) => {
         try {
-            await PageCategoryService.create(category);
-            await fetchCategories();
+            const res = await PageCategoryService.create(category);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to create category';
@@ -46,8 +48,8 @@ export function usePageCategories() {
 
     const updateCategory = async (id: number, category: PageCategoryPayload) => {
         try {
-            await PageCategoryService.update(id, category);
-            await fetchCategories();
+            const res = await PageCategoryService.update(id, category);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update category';
@@ -58,7 +60,6 @@ export function usePageCategories() {
     const deleteCategory = async (id: number) => {
         try {
             await PageCategoryService.delete(id);
-            await fetchCategories();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to delete category';
