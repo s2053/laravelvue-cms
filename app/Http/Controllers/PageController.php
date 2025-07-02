@@ -17,11 +17,12 @@ class PageController extends Controller
     // List all pages
     public function index(Request $request)
     {
+        $params = $request->all();
         $perPage = (int) $request->input('rows', 25);
 
         $query = Page::with('category');
 
-        $filter = new PageFilter($request);
+        $filter = new PageFilter($params);
 
         $filteredQuery = $filter->apply($query);
 

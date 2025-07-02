@@ -9,39 +9,59 @@ class PageFilter extends QueryFilter
     protected array $filters = [
         'status',
         'page_type',
-        'category',
+        'page_category_id',
         'visibility',
         'search',
     ];
 
+
+
+
     /** Filtering Methods **/
 
-    protected function status(string $value): void
+    protected function status(string|array $value): void
     {
-        $this->builder->where('status', $value);
+        if (is_array($value)) {
+            $this->builder->whereIn('status', $value);
+        } else {
+            $this->builder->where('status', $value);
+        }
     }
 
-    protected function page_type(string $value): void
+    protected function page_type(string|array $value): void
     {
-        $this->builder->where('page_type', $value);
+        if (is_array($value)) {
+            $this->builder->whereIn('page_type', $value);
+        } else {
+            $this->builder->where('page_type', $value);
+        }
     }
 
-    protected function category($value): void
+    protected function page_category_id(string|int|array|null $value): void
     {
-        $this->builder->where('page_category_id', $value);
+        if (is_array($value)) {
+            $this->builder->whereIn('page_category_id', $value);
+        } elseif ($value !== '' && $value !== null) {
+            $this->builder->where('page_category_id', $value);
+        }
     }
 
-    protected function visibility(string $value): void
+    protected function visibility(string|array $value): void
     {
-        $this->builder->where('visibility', $value);
+        if (is_array($value)) {
+            $this->builder->whereIn('visibility', $value);
+        } else {
+            $this->builder->where('visibility', $value);
+        }
     }
 
     protected function search(string $value): void
     {
+
         $this->builder->where(function (Builder $q) use ($value) {
-            $q->where('title', 'like', "%{$value}%")
-              ->orWhere('status', 'like', "%{$value}%")
-              ->orWhere('created_at', 'like', "%{$value}%");
+            $q->where('pages.title', 'like', "%{$value}%")
+                ->orWhere('pages.status', 'like', "%{$value}%")
+                ->orWhere('pages.created_at', 'like', "%{$value}%");
         });
     }
 
@@ -49,12 +69,22 @@ class PageFilter extends QueryFilter
 
     public function sort(): Builder
     {
-        $sortBy = $this->request->input('sort_by', 'created_at');
-        $sortDir = $this->request->input('sort_dir', 'desc');
+        $sortable = ['created_at', 'title', 'status', 'page_type', 'visibility', 'category'];
+
+        $sortBy = $this->input('sort_by', 'created_at');
+        $sortDir = $this->input('sort_dir', 'desc');
+
+        if (!in_array($sortBy, $sortable)) {
+            $sortBy = 'created_at';
+        }
+
+        if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
+            $sortDir = 'desc';
+        }
 
         if ($sortBy === 'category') {
             return $this->builder
-                ->join('page_categories', 'pages.page_category_id', '=', 'page_categories.id')
+                ->leftJoin('page_categories', 'pages.page_category_id', '=', 'page_categories.id')
                 ->orderBy('page_categories.title', $sortDir)
                 ->select('pages.*');
         }

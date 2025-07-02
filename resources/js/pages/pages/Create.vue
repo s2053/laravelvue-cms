@@ -74,8 +74,9 @@ onMounted(async () => {
 });
 
 function payloadToFormData(payload: PagePayload): FormData {
-    const formData = new FormData();
+    const nullables = ['page_category_id', 'status', 'visibility'];
 
+    const formData = new FormData();
     if (editingId.value) {
         formData.append('_method', 'PUT');
     }
@@ -84,6 +85,8 @@ function payloadToFormData(payload: PagePayload): FormData {
             formData.append('thumbnailFile', value as File);
         } else if (typeof value === 'boolean') {
             formData.append(key, value ? '1' : '0');
+        } else if (nullables.includes(key)) {
+            formData.append(key, value === null || value === undefined ? '' : String(value));
         } else if (value !== undefined && value !== null) {
             formData.append(key, value as any);
         }

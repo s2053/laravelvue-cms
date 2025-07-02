@@ -5,56 +5,64 @@
                 <!-- Status -->
                 <div>
                     <label for="status" class="mb-1 block font-semibold">Status</label>
-                    <Select
-                        v-model="filters.status"
+
+                    <MultiSelect
+                        v-model="localFilters.status"
                         :options="PageStatusOptions"
                         name="status"
                         optionLabel="label"
                         optionValue="value"
                         class="app-input-sm w-full"
                         placeholder="Select Status"
+                        showClear
                     />
                 </div>
 
                 <!-- Page Type -->
                 <div>
                     <label for="pageType" class="mb-1 block font-semibold">Page Type</label>
-                    <Select
-                        class="app-input-sm w-full"
-                        id="pageType"
+
+                    <MultiSelect
+                        v-model="localFilters.page_type"
                         :options="PageTypeOptions"
+                        name="pageType"
                         optionLabel="label"
                         optionValue="value"
-                        v-model="filters.page_type"
+                        class="app-input-sm w-full"
                         placeholder="Select Page Type"
+                        showClear
                     />
                 </div>
 
                 <!-- Category -->
                 <div>
                     <label for="category" class="mb-1 block font-semibold">Category</label>
-                    <Select
-                        class="app-input-sm w-full"
-                        id="category"
+
+                    <MultiSelect
+                        v-model="localFilters.page_category_id"
                         :options="categoryOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        v-model="filters.category"
+                        name="category"
+                        optionLabel="title"
+                        optionValue="id"
+                        class="app-input-sm w-full"
                         placeholder="Select Category"
+                        showClear
                     />
                 </div>
 
                 <!-- Visibility -->
                 <div>
                     <label for="visibility" class="mb-1 block font-semibold">Visibility</label>
-                    <Select
-                        class="app-input-sm w-full"
-                        id="visibility"
+
+                    <MultiSelect
+                        v-model="localFilters.visibility"
                         :options="PageVisibilityOptions"
+                        name="visibility"
                         optionLabel="label"
                         optionValue="value"
-                        v-model="filters.visibility"
+                        class="app-input-sm w-full"
                         placeholder="Select Visibility"
+                        showClear
                     />
                 </div>
             </div>
@@ -71,42 +79,42 @@
 import { PageStatusOptions } from '@/enums/pageStatus';
 import { PageTypeOptions } from '@/enums/pageType';
 import { PageVisibilityOptions } from '@/enums/pageVisibility';
-import { reactive } from 'vue';
+import { reactive, watch } from 'vue';
+
 const emit = defineEmits(['update:filters']);
 
-const filters = reactive({
-    status: null as string | null,
-    page_type: null as string | null,
-    category: null as number | null,
-    visibility: null as string | null,
-});
+const props = defineProps<{
+    filters: {
+        status: string[] | null;
+        page_type: string[] | null;
+        page_category_id: number[] | null;
+        visibility: string[] | null;
+        global?: string;
+    };
+    categoryOptions: { id: number; title: string }[];
+}>();
 
-// Example options, replace with your real data or props
-const statusOptions = [
-    { label: 'Published', value: 'published' },
-    { label: 'Draft', value: 'draft' },
-    { label: 'Archived', value: 'archived' },
-];
+// Create a local copy to edit
+const localFilters = reactive({ ...props.filters });
 
-const categoryOptions = [
-    { label: 'News', value: 1 },
-    { label: 'Tutorial', value: 2 },
-    { label: 'Review', value: 3 },
-];
+watch(
+    () => props.filters,
+    (newFilters) => {
+        Object.assign(localFilters, newFilters);
+    },
+);
 
+// Emit current filters to parent
 function emitFilters() {
-    emit('update:filters', { ...filters });
+    emit('update:filters', { ...localFilters });
 }
 
+// Reset filters
 function resetFilters() {
-    filters.status = null;
-    filters.page_type = null;
-    filters.category = null;
-    filters.visibility = null;
+    localFilters.status = [];
+    localFilters.page_type = [];
+    localFilters.page_category_id = [];
+    localFilters.visibility = [];
     emitFilters();
 }
 </script>
-
-<style scoped>
-/* optional styling */
-</style>

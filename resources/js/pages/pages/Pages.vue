@@ -54,7 +54,7 @@
                 </div>
 
                 <!-- Inline Filter Panel -->
-                <PageFilter v-if="openFilter" v-model:filters="filters" @update:filters="onFiltersChanged" />
+                <PageFilter v-if="openFilter" :filters="filters" :categoryOptions="categoryOptions" @update:filters="onFiltersChanged" />
             </template>
 
             <template #empty> No data found. </template>
@@ -66,7 +66,7 @@
                     {{ formatDateTimeString(data.created_at) }}
                 </template>
                 <template v-else-if="col.field === 'category'" #body="{ data }">
-                    {{ data.category ? data.category.title : '-' }}
+                    <div class="text-center">{{ data.category ? data.category.title : '-' }}</div>
                 </template>
                 <template v-else-if="col.field === 'title'" #body="{ data }">
                     <div v-if="data.thumbnail">
@@ -149,10 +149,10 @@ const categoryOptions = computed(() =>
     })),
 );
 const filters = reactive({
-    status: null,
-    page_type: null,
-    category: null,
-    visibility: null,
+    status: [] as string[],
+    page_type: [] as string[],
+    page_category_id: [] as number[],
+    visibility: [] as string[],
     global: '',
 });
 const openFilter = ref(false);
@@ -274,7 +274,13 @@ function onLazyLoad(event: { page: number; rows: number; sortField: string; sort
     sortField.value = event.sortField;
     sortOrder.value = event.sortOrder;
 
-    loadPageData(event);
+    loadPageData({
+        page: 0,
+        rows: numOfRows.value,
+        sortField: sortField.value,
+        sortOrder: sortOrder.value,
+        filters: filters,
+    });
     selectedRecords.value = [];
     selectedIds.value = [];
 }
@@ -422,7 +428,8 @@ async function submitBulkUpdate(formData: Record<string, any>) {
 }
 
 function onFiltersChanged(newFilters: typeof filters) {
-    Object.assign(filters, newFilters);
+    const { global: _global, ...filtersWithoutGlobal } = newFilters;
+    Object.assign(filters, filtersWithoutGlobal);
 
     loadPageData({
         page: 0,

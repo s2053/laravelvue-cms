@@ -166,6 +166,7 @@
                                 optionValue="id"
                                 class="w-full"
                                 placeholder="Select Category"
+                                showClear
                             />
                             <FieldError :formError="$form.page_category_id?.error?.message" :serverError="serverErrors?.page_category_id?.[0]" />
                         </div>
