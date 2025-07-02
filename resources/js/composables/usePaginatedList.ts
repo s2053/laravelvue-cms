@@ -1,4 +1,6 @@
 // usePaginatedTable.ts
+import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
+
 import { PaginatedResponse } from '@/types/apiResponse';
 import { ref } from 'vue';
 
@@ -12,6 +14,8 @@ export function usePaginatedTable<T>(
         [key: string]: any;
     }) => Promise<PaginatedResponse<T>>,
 ) {
+    const { handleError } = useApiErrorHandler();
+
     const items = ref<T[]>([]);
     const total = ref(0);
     const per_page = ref(10);
@@ -36,14 +40,17 @@ export function usePaginatedTable<T>(
         const page = event.page ?? 1;
         const rows = event.rows ?? per_page.value;
 
+        const { global, ...restFilters } = event.filters || {};
+
         try {
+            console.log(event.filters);
             const resp = await fetchFn({
                 page,
                 rows,
                 sort_by: event.sortField || 'created_at',
                 sort_dir: event.sortOrder === 1 ? 'asc' : 'desc',
-                search: event.filters?.global?.value || '',
-                ...filters.value,
+                search: global ?? '',
+                ...restFilters,
             });
 
             items.value = resp.data;
@@ -51,6 +58,7 @@ export function usePaginatedTable<T>(
             per_page.value = resp.meta.per_page;
             currentPage.value = resp.meta.current_page - 1;
         } catch (err: any) {
+            handleError(err);
             error.value = err.message || 'Error fetching data';
             console.error(err);
         } finally {

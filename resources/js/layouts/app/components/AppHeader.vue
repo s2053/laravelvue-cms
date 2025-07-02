@@ -11,7 +11,7 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
                 <i class="pi pi-bars"></i>
             </button>
             <router-link to="/" class="layout-topbar-logo">
-                <span>SAKAI</span>
+                <span>WORK</span>
             </router-link>
         </div>
 

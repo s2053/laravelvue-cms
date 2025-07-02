@@ -2,82 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Http\Requests\PageCategoryRequest;
+use App\Http\Resources\PageCategoryResource;
 use App\Models\PageCategory;
+use App\Services\PageCategoryService;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class PageCategoryController extends Controller
 {
-    // List all page categories
-    public function index()
+    protected PageCategoryService $service;
+
+    public function __construct(PageCategoryService $service)
     {
-        return PageCategory::all();
+        $this->service = $service;
     }
 
-    // Store a new page category
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => [
-                'nullable',
-                'string',
-                'max:255',
-                // Rule::unique('page_categories', 'slug'),
-            ],
-            'description' => 'nullable|string',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string|max:500',
-            'meta_keywords' => 'nullable|string|max:255',
-            'status' => 'boolean',
-        ]);
 
 
-        $category = PageCategory::create($validated);
+        $params = $request->all();
 
-        return response()->json($category, 201);
+        $perPage = (int) $request->input('rows', 25);
+        $all = $request->boolean('all', false);
+
+        $categories = $this->service->list($params,$perPage, $all);
+
+        return PageCategoryResource::collection($categories);
     }
 
-    // Show a specific page category
-    public function show($id)
+    public function store(PageCategoryRequest $request)
     {
-        return PageCategory::findOrFail($id);
+        $category = $this->service->create($request->validated());
+
+        return (new PageCategoryResource($category))
+            ->response()
+            ->setStatusCode(201);
     }
 
-    // Update a page category
-    public function update(Request $request, $id)
+    public function show(PageCategory $pageCategory)
     {
-        $category = PageCategory::findOrFail($id);
-
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'slug' => [
-                'nullable',
-                'string',
-                'max:255',
-                // Rule::unique('page_categories', 'slug')->ignore($category->id),
-            ],
-            'description' => 'nullable|string',
-            'meta_title' => 'nullable|string|max:255',
-            'meta_description' => 'nullable|string|max:500',
-            'meta_keywords' => 'nullable|string|max:255',
-            'status' => 'boolean',
-        ]);
-
-
-
-        $category->update($validated);
-
-
-        return $category;
+        return new PageCategoryResource($pageCategory);
     }
 
-    // Delete a page category
-    public function destroy($id)
+    public function update(PageCategoryRequest $request, PageCategory $pageCategory)
     {
-        $category = PageCategory::findOrFail($id);
-        $category->delete();
+        $category = $this->service->update($pageCategory, $request->validated());
+
+        return new PageCategoryResource($category);
+    }
+
+    public function destroy(PageCategory $pageCategory)
+    {
+        $this->service->delete($pageCategory);
 
         return response()->json(null, 204);
     }

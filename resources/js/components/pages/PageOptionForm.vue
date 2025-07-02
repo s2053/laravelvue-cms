@@ -17,9 +17,19 @@
             </div>
 
             <!-- Show category field only for category action -->
-            <div v-if="action === 'category'">
+            <div v-if="action === 'page_category_id'">
                 <label>Category</label>
-                <Dropdown v-model="form.category_id" :options="categoryOptions" placeholder="Select category" />
+                <Select
+                    v-model="form.page_category_id"
+                    :options="categoryOptions"
+                    name="page_category_id"
+                    optionLabel="title"
+                    optionValue="id"
+                    class="w-full"
+                    placeholder="Select Category"
+                    showClear
+                />
+                <FieldError :formError="$form.page_category_id?.error?.message" :serverError="serverErrors?.page_category_id?.[0]" />
             </div>
 
             <!-- Show visibility field only for visibility action -->
@@ -67,21 +77,15 @@ import FieldError from '@/components/common/FieldError.vue';
 import { PageStatus, PageStatusOptions } from '@/enums/pageStatus';
 import { PageVisibilityOptions } from '@/enums/pageVisibility';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { defineEmits, defineProps, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { z } from 'zod';
-
-// const props = defineProps({
-//     action: { type: String, required: true },
-//     initialData: { type: Object, default: () => ({}) },
-//         serverErrors?: { [key: string]: string[] }
-
-// });
 
 const props = withDefaults(
     defineProps<{
         action: string;
         initialData?: Record<string, any>;
         serverErrors?: Record<string, string[]>;
+        categoryOptions: { id: number; title: string }[];
     }>(),
     {
         initialData: () => ({}),
@@ -108,9 +112,12 @@ const resolver = zodResolver(
 
 function onSubmit({ valid }: { valid: boolean }) {
     if (valid) {
-        emit('submit', { ...form.value });
+        const dataToSubmit = { ...form.value };
 
-        // emit('submit', categoryForm.value);
+        if (props.action === 'page_category_id' && !dataToSubmit.page_category_id) {
+            dataToSubmit.page_category_id = null;
+        }
+        emit('submit', dataToSubmit);
     }
 }
 </script>
