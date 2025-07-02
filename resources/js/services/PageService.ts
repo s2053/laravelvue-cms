@@ -3,13 +3,19 @@ import { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 import type { Page } from '@/types/pages';
 
 const PageService = {
-    async getAll(params = {}): Promise<PaginatedResponse<Page>> {
+    async getPaginated(params = {}): Promise<PaginatedResponse<Page>> {
         const res = await api.get<PaginatedResponse<Page>>('/pages', { params });
         return res.data;
     },
+
+    async getAll(params = {}): Promise<Page[]> {
+        const res = await api.get<Page[]>('/pages', { params: { ...params, all: true } });
+        return res.data;
+    },
+
     async getById(id: number): Promise<Page> {
         const res = await api.get<ApiResponse<Page>>(`/pages/${id}`);
-        return res.data.data; // unwrap the "data" property
+        return res.data.data;
     },
     async create(data: Partial<FormData>): Promise<Page> {
         const res = await api.post<Page>('/pages', data);

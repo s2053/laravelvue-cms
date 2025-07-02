@@ -59,7 +59,6 @@ function isOutsideClicked(event) {
 }
 
 function getTransition(routeMetaTransition) {
-    // console.log(routeMetaTransition);
     if (routeMetaTransition == undefined) {
         return 'slide-left';
     } else {

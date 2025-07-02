@@ -14,6 +14,14 @@ export default defineConfigWithVueTs(
             'vue/multi-word-component-names': 'off',
             'vue/block-lang': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
+            '@typescript-eslint/no-unused-vars': [
+                'warn',
+                {
+                    argsIgnorePattern: '^_[^_].*$|^_$',
+                    varsIgnorePattern: '^_[^_].*$|^_$',
+                    caughtErrorsIgnorePattern: '^_[^_].*$|^_$',
+                },
+            ],
         },
     },
     prettier,

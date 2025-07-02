@@ -20,7 +20,6 @@
             :rows="per_page"
             :totalRecords="total"
             :paginator="true"
-            :filters="filters"
             paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown "
             :rowsPerPageOptions="perPageOptions"
             currentPageReportTemplate="{first} to {last} of {totalRecords}"
@@ -41,15 +40,21 @@
                     </div>
 
                     <!-- Search on the RIGHT with ml-auto -->
-                    <div class="ml-auto">
+                    <div class="ml-auto flex items-center gap-2">
                         <InputGroup class="!w-[200px]">
                             <InputText v-model="globalFilterValue" placeholder="Search" @keyup.enter="onGlobalSearch" />
                             <InputGroupAddon>
                                 <Button icon="pi pi-search" severity="secondary" @click="onGlobalSearch" />
                             </InputGroupAddon>
                         </InputGroup>
+
+                        <!-- Filter Button -->
+                        <Button icon="pi pi-filter" outlined severity="secondary" @click="openFilter = !openFilter" />
                     </div>
                 </div>
+
+                <!-- Inline Filter Panel -->
+                <PageFilter v-if="openFilter" :filters="filters" :categoryOptions="categoryOptions" @update:filters="onFiltersChanged" />
             </template>
 
             <template #empty> No data found. </template>
@@ -61,7 +66,7 @@
                     {{ formatDateTimeString(data.created_at) }}
                 </template>
                 <template v-else-if="col.field === 'category'" #body="{ data }">
-                    {{ data.category ? data.category.title : '-' }}
+                    <div class="text-center">{{ data.category ? data.category.title : '-' }}</div>
                 </template>
                 <template v-else-if="col.field === 'title'" #body="{ data }">
                     <div v-if="data.thumbnail">
@@ -73,19 +78,52 @@
             <!-- Action column: always visible -->
             <Column header="Action">
                 <template #body="{ data }">
-                    <Button icon="pi pi-pencil" @click="goToEditPage(data.id)" />
-                    <Button icon="pi pi-trash" severity="danger" @click="removePage(data.id, data.title)" />
+                    <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="goToEditPage(data.id)" />
+                    <Button
+                        icon="pi pi-trash"
+                        size="small"
+                        class="mr-2"
+                        outlined
+                        rounded
+                        severity="danger"
+                        @click="removePage(data.id, data.title)"
+                    />
+
+                    <Button icon="pi pi-ellipsis-v" size="small" severity="secondary" outlined rounded @click="toggleMenu(data.id, $event)" />
+                    <Menu
+                        :ref="(el) => setMenuRef(data.id, el)"
+                        popup
+                        :model="[
+                            { label: 'Edit', icon: 'pi pi-pencil', command: () => goToEditPage(data.id) },
+                            { label: 'Update Status', icon: 'pi pi-cog', command: () => showUpdateDialogForSingle('status', data.id) },
+                            { label: 'Update Visibility', icon: 'pi pi-eye', command: () => showUpdateDialogForSingle('visibility', data.id) },
+                            { label: 'Update Page Type', icon: 'pi pi-file', command: () => showUpdateDialogForSingle('page_type', data.id) },
+                            { label: 'Update Category', icon: 'pi pi-tags', command: () => showUpdateDialogForSingle('page_category_id', data.id) },
+                            { label: 'Remove', icon: 'pi pi-trash', command: () => removePage(data.id, data.title) },
+                        ]"
+                        class="!min-w-40"
+                    >
+                    </Menu>
                 </template>
             </Column>
         </DataTable>
 
         <Dialog v-model:visible="bulkDialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
-            <PageOptionForm :action="dialogAction" :initialData="{}" @submit="submitBulkUpdate" @cancel="bulkDialogVisible = false" />
+            <PageOptionForm
+                :categoryOptions="categoryOptions"
+                :action="dialogAction"
+                :initialData="initialFormData"
+                @submit="submitBulkUpdate"
+                @cancel="bulkDialogVisible = false"
+            />
         </Dialog>
     </AppContent>
 </template>
 
 <script setup lang="ts">
+import PageFilter from '@/components/pages/PageFilter.vue';
+import { usePageCategories } from '@/composables/usePageCategory';
+
 import PageOptionForm from '@/components/pages/PageOptionForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePages } from '@/composables/usePages';
@@ -93,23 +131,58 @@ import { usePaginatedTable } from '@/composables/usePaginatedList';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import PageService from '@/services/PageService';
 import { Page } from '@/types/pages';
-import { formatDateTimeString } from '@/utils/dateHelper';
+import { formatDateTimeString, isoToMySQLDatetime } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
-import { FilterMatchMode } from '@primevue/core/api';
 import { useToast } from 'primevue/usetoast';
-import { computed, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { localDateTimeToUTC, utcToLocalDateTime } from '../../utils/dateHelper';
 
 const toast = useToast();
 
 const router = useRouter();
+const { categories, fetchCategories } = usePageCategories();
+const categoryOptions = computed(() =>
+    (categories.value || []).map((cat) => ({
+        id: cat.id as number,
+        title: cat.title,
+    })),
+);
+const filters = reactive({
+    status: [] as string[],
+    page_type: [] as string[],
+    page_category_id: [] as number[],
+    visibility: [] as string[],
+    global: '',
+});
+const openFilter = ref(false);
+const menuRefs = ref<Record<string, any | null>>({});
+
+function setMenuRef(id: number, el: any | null) {
+    if (el) {
+        menuRefs.value[id] = el;
+    } else {
+        delete menuRefs.value[id];
+    }
+}
+
+function toggleMenu(id: number, event: Event) {
+    menuRefs.value[id]?.toggle(event);
+}
+
+const items = ref([
+    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
+    { label: 'Remove', icon: 'pi pi-fw pi-trash' },
+]);
 
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
 const { showDeleteConfirm } = useDeleteConfirm();
 const { deletePage, bulkUpdatePages } = usePages();
 
-const { items: pages, total, per_page, loading, currentPage, loadPage: loadPageData } = usePaginatedTable<Page>(PageService.getAll);
+const { items: pages, total, per_page, loading, currentPage, loadPage: loadPageData } = usePaginatedTable<Page>(PageService.getPaginated);
+
+const initialFormData = ref<Record<string, any>>({});
 
 const selectedRecords = ref<Page[]>([]);
 
@@ -119,7 +192,7 @@ const dialogTitle = ref('Bulk Update Pages');
 const bulkOptions = [
     { label: 'Delete Pages', value: 'delete' },
     { label: 'Update Status', value: 'status' },
-    { label: 'Update Category', value: 'category' },
+    { label: 'Update Category', value: 'page_category_id' },
     { label: 'Update Visibility', value: 'visibility' },
     { label: 'Update Page Type', value: 'page_type' },
 ];
@@ -138,7 +211,7 @@ async function applyBulkAction() {
         case 'status':
             showBulkUpdateDialog(bulkAction.value);
             break;
-        case 'category':
+        case 'page_category_id':
             showBulkUpdateDialog(bulkAction.value);
             break;
         case 'visibility':
@@ -150,33 +223,28 @@ async function applyBulkAction() {
     }
 }
 function showBulkUpdateDialog(action: string) {
-    console.log('Bulk update for:', selectedRecords.value);
+    initialFormData.value = {};
     bulkDialogVisible.value = true;
     dialogAction.value = action;
-    console.log(dialogAction.value);
 }
 
 const perPageOptions = [5, 10, 25];
-const numOfRows = perPageOptions[0];
+const numOfRows = ref(perPageOptions[0]);
 
-const filters = ref<Record<string, { value: string | number | boolean | null | Date; matchMode: any }>>({
-    global: { value: '', matchMode: FilterMatchMode.CONTAINS },
-    title: { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-    'country.name': { value: null, matchMode: FilterMatchMode.STARTS_WITH },
-    representative: { value: null, matchMode: FilterMatchMode.IN },
-    status: { value: null, matchMode: FilterMatchMode.EQUALS },
-    verified: { value: null, matchMode: FilterMatchMode.EQUALS },
-});
+// const filters = ref<Record<string, { value: string | number | boolean | null | Date; matchMode: any }>>({
+//     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
+//     status: { value: null, matchMode: FilterMatchMode.EQUALS },
+// });
 
 function onGlobalSearch() {
-    filters.value.global.value = globalFilterValue.value;
+    filters.global = globalFilterValue.value;
 
     loadPageData({
         page: 0,
-        rows: numOfRows,
+        rows: numOfRows.value,
         sortField: sortField.value,
         sortOrder: sortOrder.value,
-        filters: filters.value,
+        filters: filters,
     });
 }
 const globalFilterValue = ref('');
@@ -197,22 +265,34 @@ const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'pa
 const sortField = ref<string>('created_at');
 const sortOrder = ref<number>(-1);
 
-loadPageData({ page: 0, rows: numOfRows, filters: filters.value });
+onMounted(() => {
+    fetchCategories();
+    loadPageData({ page: 0, rows: numOfRows.value, filters: filters });
+});
 
 function onLazyLoad(event: { page: number; rows: number; sortField: string; sortOrder: number; filters?: Record<string, any> }) {
     sortField.value = event.sortField;
     sortOrder.value = event.sortOrder;
 
-    loadPageData(event);
+    loadPageData({
+        page: 0,
+        rows: numOfRows.value,
+        sortField: sortField.value,
+        sortOrder: sortOrder.value,
+        filters: filters,
+    });
+    selectedRecords.value = [];
+    selectedIds.value = [];
 }
 
 function onPage(event: { page: number; rows: number }) {
+    numOfRows.value = event.rows;
     loadPageData({
         page: event.page + 1,
         rows: event.rows,
         sortField: sortField.value,
         sortOrder: sortOrder.value,
-        filters: filters.value,
+        filters: filters,
     });
 }
 
@@ -236,11 +316,57 @@ function removePage(id: number, title?: string) {
         message,
         onAccept: async () => {
             await deletePage(id);
-            await loadPageData({ page: 0, rows: numOfRows });
+            await loadPageData({ page: 0, rows: numOfRows.value });
         },
         successMessage: 'Page deleted',
         errorMessage: 'Failed to delete page',
     });
+}
+const selectedIds = ref<number[]>([]);
+
+function showUpdateDialogForSingle(action: string, id: number) {
+    dialogAction.value = action;
+    dialogTitle.value = `Update ${action} for page`;
+
+    selectedIds.value = [id];
+
+    const page = pages.value.find((p) => p.id === id);
+
+    if (!page) {
+        initialFormData.value = {};
+    } else {
+        switch (action) {
+            case 'status':
+                if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
+                if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
+
+                initialFormData.value = {
+                    status: page.status,
+                    scheduled_at: page.scheduled_at || null,
+                    published_at: page.published_at || null,
+                };
+                break;
+            case 'page_category_id':
+                initialFormData.value = {
+                    page_category_id: page.page_category_id || null,
+                };
+                break;
+            case 'visibility':
+                initialFormData.value = {
+                    visibility: page.visibility,
+                };
+                break;
+            case 'page_type':
+                initialFormData.value = {
+                    page_type: page.page_type,
+                };
+                break;
+            default:
+                initialFormData.value = {};
+        }
+    }
+
+    bulkDialogVisible.value = true;
 }
 
 async function bulkDeletePages(ids: number[]) {
@@ -253,8 +379,9 @@ async function bulkDeletePages(ids: number[]) {
 
         onAccept: async () => {
             await bulkUpdatePages('delete', ids);
-            await loadPageData({ page: currentPage.value, rows: numOfRows, sortField: sortField.value, sortOrder: sortOrder.value });
-            selectedRecords.value = []; // Clear selection after deletion
+            await loadPageData({ page: currentPage.value, rows: numOfRows.value, sortField: sortField.value, sortOrder: sortOrder.value });
+            selectedRecords.value = [];
+            selectedIds.value = [];
         },
         successMessage: 'Pages deleted',
         errorMessage: 'Failed to delete pages',
@@ -262,31 +389,54 @@ async function bulkDeletePages(ids: number[]) {
 }
 
 async function submitBulkUpdate(formData: Record<string, any>) {
-    const ids = selectedRecords.value.map((p) => p.id).filter((id): id is number => typeof id === 'number');
+    const ids = selectedIds.value.length
+        ? selectedIds.value
+        : selectedRecords.value.map((p) => p.id).filter((id): id is number => typeof id === 'number');
     serverErrors.value = {};
 
     if (!ids.length) return;
 
+    if (formData.scheduled_at) {
+        formData.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(formData.scheduled_at));
+    }
+
+    if (formData.published_at) {
+        formData.published_at = isoToMySQLDatetime(localDateTimeToUTC(formData.published_at));
+    }
     try {
         await bulkUpdatePages(dialogAction.value, ids, formData);
         bulkDialogVisible.value = false;
         selectedRecords.value = [];
+        selectedIds.value = [];
+
         bulkAction.value = null;
         toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
 
         loadPageData({
             page: currentPage.value,
-            rows: numOfRows,
+            rows: numOfRows.value,
             sortField: sortField.value,
             sortOrder: sortOrder.value,
         });
-    } catch (err) {
-        console.error('Bulk update failed', err);
+    } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
             toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
         }
     }
+}
+
+function onFiltersChanged(newFilters: typeof filters) {
+    const { global: _global, ...filtersWithoutGlobal } = newFilters;
+    Object.assign(filters, filtersWithoutGlobal);
+
+    loadPageData({
+        page: 0,
+        rows: numOfRows.value,
+        filters,
+        sortField: sortField.value,
+        sortOrder: sortOrder.value,
+    });
 }
 </script>
