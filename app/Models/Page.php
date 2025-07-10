@@ -5,12 +5,15 @@ namespace App\Models;
 use App\Enums\PageStatus;
 use App\Enums\PageType;
 use App\Enums\PageVisibility;
+use App\Traits\HasImageUrls;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\HasSlug;
 
 class Page extends Model
 {
     use HasSlug;
+    use HasImageUrls;
+
 
     protected $fillable = [
         'title',

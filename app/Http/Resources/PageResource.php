@@ -24,9 +24,9 @@ class PageResource extends JsonResource
             'excerpt' => $this->excerpt,
             'body' => $this->body,
 
-            'thumbnail' => $this->thumbnail
-                ? Storage::url($this->thumbnail)
-                : null,
+
+
+            'thumbnail' => $this->thumbnail ? $this->makeImageUrl($this->thumbnail, 'thumb') : null,
 
             'featured_media_type' => $this->featured_media_type,
             'featured_media_url' => $this->featured_media_url,

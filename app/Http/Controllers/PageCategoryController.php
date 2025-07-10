@@ -26,7 +26,7 @@ class PageCategoryController extends Controller
         $perPage = (int) $request->input('rows', 25);
         $all = $request->boolean('all', false);
 
-        $categories = $this->service->list($params,$perPage, $all);
+        $categories = $this->service->list($params, $perPage, $all);
 
         return PageCategoryResource::collection($categories);
     }
@@ -42,6 +42,8 @@ class PageCategoryController extends Controller
 
     public function show(PageCategory $pageCategory)
     {
+        $pageCategory = $this->service->show($pageCategory);
+
         return new PageCategoryResource($pageCategory);
     }
 

@@ -38,6 +38,14 @@ class PageCategoryService
         return PageCategory::create($data);
     }
 
+
+        /**
+     * Get a specific page category.
+     */
+    public function show(PageCategory $category): PageCategory
+    {
+        return $category;
+    }
     /**
      * Update an existing page category.
      */
