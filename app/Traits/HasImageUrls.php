@@ -10,7 +10,7 @@ trait HasImageUrls
      * @param string $size       Desired size folder ('original', 'thumb', 'medium', etc.)
      * @return string|null
      */
-    public function makeImageUrl(?string $path, string $size = null): ?string
+    public function makeImageUrl(?string $path, ?string $size = null): ?string
     {
         if (!$path) {
             return null;
