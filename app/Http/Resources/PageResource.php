@@ -41,7 +41,7 @@ class PageResource extends JsonResource
             'scheduled_at' => $this->scheduled_at,
             'published_at' => $this->published_at,
 
-            'page_category_id' => $this->page_category_id,
+            'page_category_id' => (int)$this->page_category_id,
             'category' => $this->whenLoaded('category', function () {
                 return [
                     'id' => $this->category->id,

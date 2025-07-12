@@ -286,7 +286,7 @@ const saveItems = [
 ];
 
 const props = defineProps<{
-    modelValue: any;
+    initialForm: PagePayload;
     submitLabel: string;
     serverErrors?: { [key: string]: string[] };
     editingId: number | null;
@@ -294,7 +294,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits(['submit', 'cancel']);
 
-const form = ref<PagePayload>({ ...props.modelValue });
+const form = ref<PagePayload>({ ...props.initialForm });
 
 const isEditMode = computed(() => props.editingId !== null);
 const slugEdit = ref(false);
@@ -312,18 +312,19 @@ const formRef = ref();
 watch(
     () => form.value.status,
     (newStatus) => {
-        if (isEditMode.value && props.modelValue.status === PageStatus.SCHEDULED && newStatus == PageStatus.SCHEDULED) {
-            form.value.scheduled_at = props.modelValue.scheduled_at;
-        } else if (newStatus === PageStatus.SCHEDULED && (!isEditMode.value || props.modelValue.status.value !== PageStatus.SCHEDULED)) {
+        if (isEditMode.value && props.initialForm.status === PageStatus.SCHEDULED && newStatus == PageStatus.SCHEDULED) {
+            form.value.scheduled_at = props.initialForm.scheduled_at;
+        } else if (newStatus === PageStatus.SCHEDULED && (!isEditMode.value || props.initialForm.status.value !== PageStatus.SCHEDULED)) {
             form.value.scheduled_at = getDefaultScheduledDateTimeLocal();
         }
     },
 );
 
 watch(
-    () => props.modelValue,
+    () => props.initialForm,
     (val) => {
-        form.value = { ...val };
+        console.log('Initial form updated:', val);
+        Object.assign(form.value, val); // safer reactivity-wise
     },
 );
 
@@ -366,7 +367,7 @@ const resolver = zodResolver(
             .refine(
                 (val) => {
                     if (form.value.status === PageStatus.SCHEDULED) {
-                        if (!isEditMode.value || props.modelValue.status !== PageStatus.SCHEDULED) {
+                        if (!isEditMode.value || props.initialForm.status !== PageStatus.SCHEDULED) {
                             return val && val >= scheduledAtMin.value;
                         }
                     }

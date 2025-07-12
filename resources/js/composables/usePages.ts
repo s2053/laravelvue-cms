@@ -15,7 +15,8 @@ export function usePages() {
         loading.value = true;
         error.value = null;
         try {
-            pages.value = await PageService.getAll();
+            const res = await PageService.getAll();
+            pages.value = res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch pages';
@@ -26,7 +27,8 @@ export function usePages() {
 
     const getPageById = async (id: number) => {
         try {
-            return await PageService.getById(id);
+            const res = await PageService.getById(id);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch page';
@@ -46,7 +48,9 @@ export function usePages() {
 
     const updatePage = async (id: number, page: FormData) => {
         try {
-            await PageService.update(id, page);
+            const res = await PageService.update(id, page);
+            console.log('Page updated:', res.data);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update page';
