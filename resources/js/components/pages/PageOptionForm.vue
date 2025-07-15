@@ -18,7 +18,7 @@
 
             <!-- Show category field only for category action -->
             <div v-if="action === 'page_category_id'">
-                <label>Category</label>
+                <label for="status" class="mb-2 block font-bold">Category:</label>
                 <Select
                     v-model="form.page_category_id"
                     :options="categoryOptions"
