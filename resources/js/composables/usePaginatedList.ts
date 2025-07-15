@@ -43,7 +43,6 @@ export function usePaginatedTable<T>(
         const { global, ...restFilters } = event.filters || {};
 
         try {
-            console.log(event.filters);
             const resp = await fetchFn({
                 page,
                 rows,

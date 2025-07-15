@@ -64,7 +64,8 @@ onMounted(async () => {
             if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
             if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
 
-            Object.assign(formModel.value, page);
+            formModel.value = { ...page }; // This triggers the watcher in the child
+            //     Object.assign(formModel.value, page);
         } catch (err: any) {
             toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to fetch user', life: 4000 });
         } finally {
@@ -74,6 +75,13 @@ onMounted(async () => {
 });
 
 function payloadToFormData(payload: PagePayload): FormData {
+    if (payload.scheduled_at) {
+        payload.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(payload.scheduled_at));
+    }
+    if (payload.published_at) {
+        payload.published_at = isoToMySQLDatetime(localDateTimeToUTC(payload.published_at));
+    }
+
     const nullables = ['page_category_id', 'status', 'visibility'];
 
     const formData = new FormData();
@@ -100,18 +108,19 @@ async function handleSubmit(form: PagePayload) {
 
     // Clone and convert date fields to UTC ISO if they are not null/empty
     const payload = <PagePayload>{ ...form };
-    if (payload.scheduled_at) {
-        payload.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(payload.scheduled_at));
-    }
-    if (payload.published_at) {
-        payload.published_at = isoToMySQLDatetime(localDateTimeToUTC(payload.published_at));
-    }
 
     const formData = payloadToFormData(payload);
 
     try {
         if (editingId.value) {
-            await updatePage(editingId.value, formData);
+            const page = await updatePage(editingId.value, formData);
+
+            if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
+            if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
+
+            formModel.value = { ...page, thumbnailFile: null }; // This triggers the watcher in the child
+
+            //   Object.assign(formModel.value, page);
             toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
             //  redirectAfterSubmit();
         } else {
@@ -143,7 +152,7 @@ function handleCancel() {
         <div v-if="!editingId || (!loading && formModel.title)">
             <PageForm
                 :key="editingId || 'create'"
-                :modelValue="formModel"
+                :initialForm="formModel"
                 :submitLabel="editingId ? 'Update' : 'Create'"
                 :serverErrors="serverErrors"
                 :editingId="editingId"

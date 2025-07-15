@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import type { FileUploadSelectEvent } from 'primevue/fileupload';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     preview: {
@@ -48,6 +48,15 @@ function onSelect(event: FileUploadSelectEvent) {
         reader.readAsDataURL(selectedFile);
     }
 }
+
+watch(
+    () => file.value,
+    (newVal) => {
+        if (newVal === null) {
+            clearFile();
+        }
+    },
+);
 
 function clearFile() {
     previewUrl.value = '';

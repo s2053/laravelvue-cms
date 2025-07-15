@@ -8,21 +8,22 @@ const PageService = {
         return res.data;
     },
 
-    async getAll(params = {}): Promise<Page[]> {
-        const res = await api.get<Page[]>('/pages', { params: { ...params, all: true } });
+    async getAll(params = {}): Promise<ApiResponse<Page[]>> {
+        const res = await api.get<ApiResponse<Page[]>>('/pages', { params: { ...params, all: true } });
         return res.data;
     },
 
-    async getById(id: number): Promise<Page> {
+    async getById(id: number): Promise<ApiResponse<Page>> {
         const res = await api.get<ApiResponse<Page>>(`/pages/${id}`);
-        return res.data.data;
-    },
-    async create(data: Partial<FormData>): Promise<Page> {
-        const res = await api.post<Page>('/pages', data);
         return res.data;
     },
-    async update(id: number, data: Partial<FormData>): Promise<Page> {
-        const res = await api.post<Page>(`/pages/${id}`, data);
+
+    async create(data: Partial<FormData>): Promise<ApiResponse<Page>> {
+        const res = await api.post<ApiResponse<Page>>('/pages', data);
+        return res.data;
+    },
+    async update(id: number, data: Partial<FormData>): Promise<ApiResponse<Page>> {
+        const res = await api.post<ApiResponse<Page>>(`/pages/${id}`, data);
         return res.data;
     },
     async delete(id: number): Promise<void> {
