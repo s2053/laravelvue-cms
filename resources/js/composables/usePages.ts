@@ -49,7 +49,6 @@ export function usePages() {
     const updatePage = async (id: number, page: FormData) => {
         try {
             const res = await PageService.update(id, page);
-            console.log('Page updated:', res.data);
             return res.data;
         } catch (err: any) {
             handleError(err);

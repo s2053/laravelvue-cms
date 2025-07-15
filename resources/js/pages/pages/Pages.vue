@@ -6,248 +6,177 @@
             <Button icon="pi pi-plus" label="Add New Page" @click="goToCreatePage" />
         </div>
 
-        <DataTable
-            v-model:selection="selectedRecords"
-            dataKey="id"
-            :value="pages"
+        <AppDataTable
+            :items="pages"
             :loading="loading"
-            :lazy="true"
-            :first="currentPage * per_page"
+            :total="total"
+            :currentPage="currentPage"
+            :rows="per_page"
+            :selection="selectedRecords"
             :sortField="sortField"
             :sortOrder="sortOrder"
+            :rowsPerPageOptions="perPageOptions"
+            :paginatorTemplate="'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown'"
+            :currentPageReportTemplate="'{first} to {last} of {totalRecords}'"
+            dataKey="id"
             @page="onPage"
             @sort="onSort"
-            :rows="per_page"
-            :totalRecords="total"
-            :paginator="true"
-            paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown "
-            :rowsPerPageOptions="perPageOptions"
-            currentPageReportTemplate="{first} to {last} of {totalRecords}"
+            @selection-change="selectedRecords = $event"
         >
             <template #header>
-                <div class="flex items-center">
-                    <!-- Bulk actions on the LEFT -->
-                    <div v-if="selectedRecords.length" class="flex items-center space-x-2">
-                        <Select
-                            v-model="bulkAction"
-                            :options="bulkOptions"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Select action"
-                            class="w-48"
-                        />
-                        <Button label="Apply" icon="pi pi-check" :disabled="!bulkAction" @click="applyBulkAction" />
+                <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
+                    <div class="flex items-center">
+                        <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
+
+                        <!-- Search/filter group and other toolbar actions go here -->
+                        <div class="ml-auto flex items-center gap-2">
+                            <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
+                        </div>
                     </div>
-
-                    <!-- Search on the RIGHT with ml-auto -->
-                    <div class="ml-auto flex items-center gap-2">
-                        <InputGroup class="!w-[200px]">
-                            <InputText v-model="globalFilterValue" placeholder="Search" @keyup.enter="onGlobalSearch" />
-                            <InputGroupAddon>
-                                <Button icon="pi pi-search" severity="secondary" @click="onGlobalSearch" />
-                            </InputGroupAddon>
-                        </InputGroup>
-
-                        <!-- Filter Button -->
-                        <Button icon="pi pi-filter" outlined severity="secondary" @click="openFilter = !openFilter" />
-                    </div>
-                </div>
-
-                <!-- Inline Filter Panel -->
+                </TableToolBarWrapper>
                 <PageFilter v-if="openFilter" :filters="filters" :categoryOptions="categoryOptions" @update:filters="onFiltersChanged" />
             </template>
+            <template #columns>
+                <Column selectionMode="multiple" headerStyle="width: 3rem" />
 
-            <template #empty> No data found. </template>
-            <template #loading> Loading data. Please wait. </template>
-            <Column selectionMode="multiple" headerStyle="width: 3rem" />
+                <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" :sortable="true">
+                    <template v-if="col.field == 'created_at'" #body="{ data }">
+                        {{ formatDateTimeString(data.created_at) }}
+                    </template>
+                    <template v-else-if="col.field === 'category'" #body="{ data }">
+                        <div class="text-center">{{ data.category ? data.category.title : '-' }}</div>
+                    </template>
+                    <template v-else-if="col.field === 'title'" #body="{ data }">
+                        <div v-if="data.thumbnail">
+                            <img :src="data.thumbnail" alt="Thumbnail" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
+                        </div>
+                        {{ data.title }}
+                    </template>
+                </Column>
+            </template>
+            <template #actions>
+                <Column header="Action">
+                    <template #body="{ data }">
+                        <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="goToEditPage(data.id)" />
+                        <Button
+                            icon="pi pi-trash"
+                            size="small"
+                            class="mr-2"
+                            outlined
+                            rounded
+                            severity="danger"
+                            @click="removePage(data.id, data.title)"
+                        />
 
-            <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" :sortable="true">
-                <template v-if="col.field == 'created_at'" #body="{ data }">
-                    {{ formatDateTimeString(data.created_at) }}
-                </template>
-                <template v-else-if="col.field === 'category'" #body="{ data }">
-                    <div class="text-center">{{ data.category ? data.category.title : '-' }}</div>
-                </template>
-                <template v-else-if="col.field === 'title'" #body="{ data }">
-                    <div v-if="data.thumbnail">
-                        <img :src="data.thumbnail" alt="Thumbnail" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
-                    </div>
-                    {{ data.title }}
-                </template>
-            </Column>
-            <!-- Action column: always visible -->
-            <Column header="Action">
-                <template #body="{ data }">
-                    <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="goToEditPage(data.id)" />
-                    <Button
-                        icon="pi pi-trash"
-                        size="small"
-                        class="mr-2"
-                        outlined
-                        rounded
-                        severity="danger"
-                        @click="removePage(data.id, data.title)"
-                    />
+                        <Button icon="pi pi-ellipsis-v" size="small" severity="secondary" outlined rounded @click="toggleMenu(data.id, $event)" />
+                        <Menu
+                            :ref="(el) => setMenuRef(data.id, el)"
+                            popup
+                            :model="[
+                                { label: 'Edit', icon: 'pi pi-pencil', command: () => goToEditPage(data.id) },
+                                { label: 'Update Status', icon: 'pi pi-cog', command: () => showUpdateDialogForSingle('status', data.id) },
+                                { label: 'Update Visibility', icon: 'pi pi-eye', command: () => showUpdateDialogForSingle('visibility', data.id) },
+                                { label: 'Update Page Type', icon: 'pi pi-file', command: () => showUpdateDialogForSingle('page_type', data.id) },
+                                {
+                                    label: 'Update Category',
+                                    icon: 'pi pi-tags',
+                                    command: () => showUpdateDialogForSingle('page_category_id', data.id),
+                                },
+                                { label: 'Remove', icon: 'pi pi-trash', command: () => removePage(data.id, data.title) },
+                            ]"
+                            class="!min-w-40"
+                        >
+                        </Menu>
+                    </template>
+                </Column>
+            </template>
+        </AppDataTable>
 
-                    <Button icon="pi pi-ellipsis-v" size="small" severity="secondary" outlined rounded @click="toggleMenu(data.id, $event)" />
-                    <Menu
-                        :ref="(el) => setMenuRef(data.id, el)"
-                        popup
-                        :model="[
-                            { label: 'Edit', icon: 'pi pi-pencil', command: () => goToEditPage(data.id) },
-                            { label: 'Update Status', icon: 'pi pi-cog', command: () => showUpdateDialogForSingle('status', data.id) },
-                            { label: 'Update Visibility', icon: 'pi pi-eye', command: () => showUpdateDialogForSingle('visibility', data.id) },
-                            { label: 'Update Page Type', icon: 'pi pi-file', command: () => showUpdateDialogForSingle('page_type', data.id) },
-                            { label: 'Update Category', icon: 'pi pi-tags', command: () => showUpdateDialogForSingle('page_category_id', data.id) },
-                            { label: 'Remove', icon: 'pi pi-trash', command: () => removePage(data.id, data.title) },
-                        ]"
-                        class="!min-w-40"
-                    >
-                    </Menu>
-                </template>
-            </Column>
-        </DataTable>
-
-        <Dialog v-model:visible="bulkDialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
+        <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
             <PageOptionForm
                 :categoryOptions="categoryOptions"
-                :action="dialogAction"
-                :initialData="initialFormData"
-                @submit="submitBulkUpdate"
-                @cancel="bulkDialogVisible = false"
+                :action="actionDialogAction"
+                :initialData="actionDialogInitial"
+                @submit="submitActionUpdate"
+                @cancel="isActionDialogVisible = false"
             />
         </Dialog>
     </AppContent>
 </template>
 
 <script setup lang="ts">
-import PageFilter from '@/components/pages/PageFilter.vue';
-import { usePageCategories } from '@/composables/usePageCategory';
-
-import PageOptionForm from '@/components/pages/PageOptionForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { usePageActions } from '@/composables/usePageActions';
+import { usePageCategories } from '@/composables/usePageCategory';
 import { usePages } from '@/composables/usePages';
-import { usePaginatedTable } from '@/composables/usePaginatedList';
-import AppContent from '@/layouts/app/components/AppContent.vue';
-import PageService from '@/services/PageService';
-import { Page } from '@/types/pages';
-import { formatDateTimeString, isoToMySQLDatetime } from '@/utils/dateHelper';
-import { strTruncate } from '@/utils/stringHelper';
+import { usePageTable } from '@/composables/usePageTable';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { localDateTimeToUTC, utcToLocalDateTime } from '../../utils/dateHelper';
 
-const toast = useToast();
+// Utils
+import { formatDateTimeString } from '@/utils/dateHelper';
+import { strTruncate } from '@/utils/stringHelper';
 
-const router = useRouter();
+// UI components
+import AppDataTable from '@/components/common/datatables/AppDataTable.vue';
+import BulkActions from '@/components/common/datatables/BulkActions.vue';
+import TableToolBar from '@/components/common/datatables/TableToolBar.vue';
+import TableToolBarWrapper from '@/components/common/datatables/TableToolBarWrapper.vue';
+import PageFilter from '@/components/pages/PageFilter.vue';
+import PageOptionForm from '@/components/pages/PageOptionForm.vue';
+import AppContent from '@/layouts/app/components/AppContent.vue';
+
+// Table data / pagination / filters
+const {
+    items: pages,
+    total,
+    per_page,
+    loading,
+    currentPage,
+    selectedRecords,
+    sortField,
+    sortOrder,
+    perPageOptions,
+    numOfRows,
+    onPage,
+    onSort,
+    loadPage: loadPageData,
+    globalFilterValue,
+    filters,
+    openFilter,
+    onFiltersChanged,
+    onGlobalSearch,
+    reload: tableReload,
+} = usePageTable();
+
+// Bulk + single‑row actions (dialog, toasts, etc.)
+const {
+    bulkAction,
+    bulkOptions,
+    applyBulk,
+    openSingle,
+    dialog: actionDialog,
+    submit: submitActionUpdate,
+} = usePageActions({ selectedRecords, tableReload });
+
+// Aliases for dialog refs
+const { visible: isActionDialogVisible, title: actionDialogTitle, action: actionDialogAction, initial: actionDialogInitial } = actionDialog;
+
+// Categories for form selects
 const { categories, fetchCategories } = usePageCategories();
-const categoryOptions = computed(() =>
-    (categories.value || []).map((cat) => ({
-        id: cat.id as number,
-        title: cat.title,
-    })),
-);
-const filters = reactive({
-    status: [] as string[],
-    page_type: [] as string[],
-    page_category_id: [] as number[],
-    visibility: [] as string[],
-    global: '',
-});
-const openFilter = ref(false);
-const menuRefs = ref<Record<string, any | null>>({});
+const categoryOptions = computed(() => (categories.value ?? []).map((cat) => ({ id: cat.id as number, title: cat.title })));
 
-function setMenuRef(id: number, el: any | null) {
-    if (el) {
-        menuRefs.value[id] = el;
-    } else {
-        delete menuRefs.value[id];
-    }
-}
-
-function toggleMenu(id: number, event: Event) {
-    menuRefs.value[id]?.toggle(event);
-}
-
-const items = ref([
-    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-    { label: 'Remove', icon: 'pi pi-fw pi-trash' },
-]);
-
-const serverErrors = ref<{ [key: string]: string[] }>({});
-
+// Utils
+const toast = useToast();
+const router = useRouter();
 const { showDeleteConfirm } = useDeleteConfirm();
-const { deletePage, bulkUpdatePages } = usePages();
+const { deletePage } = usePages();
 
-const { items: pages, total, per_page, loading, currentPage, loadPage: loadPageData } = usePaginatedTable<Page>(PageService.getPaginated);
-
-const initialFormData = ref<Record<string, any>>({});
-
-const selectedRecords = ref<Page[]>([]);
-
-const bulkDialogVisible = ref(false);
-const dialogAction = ref('');
-const dialogTitle = ref('Bulk Update Pages');
-const bulkOptions = [
-    { label: 'Delete Pages', value: 'delete' },
-    { label: 'Update Status', value: 'status' },
-    { label: 'Update Category', value: 'page_category_id' },
-    { label: 'Update Visibility', value: 'visibility' },
-    { label: 'Update Page Type', value: 'page_type' },
-];
-
-const bulkAction = ref<string | null>(null);
-
-async function applyBulkAction() {
-    if (!bulkAction.value || !selectedRecords.value.length) return;
-
-    const selectedIds = selectedRecords.value.map((p) => p.id).filter((id): id is number => typeof id === 'number');
-
-    switch (bulkAction.value) {
-        case 'delete':
-            bulkDeletePages(selectedIds);
-            break;
-        case 'status':
-            showBulkUpdateDialog(bulkAction.value);
-            break;
-        case 'page_category_id':
-            showBulkUpdateDialog(bulkAction.value);
-            break;
-        case 'visibility':
-            showBulkUpdateDialog(bulkAction.value);
-            break;
-        case 'page_type':
-            showBulkUpdateDialog(bulkAction.value);
-            break;
-    }
-}
-function showBulkUpdateDialog(action: string) {
-    initialFormData.value = {};
-    bulkDialogVisible.value = true;
-    dialogAction.value = action;
-}
-
-const perPageOptions = [5, 10, 25];
-const numOfRows = ref(perPageOptions[0]);
-
-// const filters = ref<Record<string, { value: string | number | boolean | null | Date; matchMode: any }>>({
-//     global: { value: '', matchMode: FilterMatchMode.CONTAINS },
-//     status: { value: null, matchMode: FilterMatchMode.EQUALS },
-// });
-
-function onGlobalSearch() {
-    filters.global = globalFilterValue.value;
-
-    loadPageData({
-        page: 0,
-        rows: numOfRows.value,
-        sortField: sortField.value,
-        sortOrder: sortOrder.value,
-        filters: filters,
-    });
-}
-const globalFilterValue = ref('');
+onMounted(() => {
+    fetchCategories();
+    loadPageData({ page: 0, rows: numOfRows.value, filters });
+});
 
 const allColumns = [
     { field: 'id', label: 'Id' },
@@ -256,187 +185,42 @@ const allColumns = [
     { field: 'status', label: 'Status' },
     { field: 'page_type', label: 'Page Type' },
     { field: 'visibility', label: 'Visibility' },
-    { field: 'created_at', label: 'Created_at' },
+    { field: 'created_at', label: 'Created At' },
 ];
-
-const visibleCols = computed(() => allColumns.filter((col) => visibleColumns.value.includes(col.field)));
 const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'page_type', 'category', 'created_at']);
+const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
-const sortField = ref<string>('created_at');
-const sortOrder = ref<number>(-1);
-
-onMounted(() => {
-    fetchCategories();
-    loadPageData({ page: 0, rows: numOfRows.value, filters: filters });
-});
-
-function onLazyLoad(event: { page: number; rows: number; sortField: string; sortOrder: number; filters?: Record<string, any> }) {
-    sortField.value = event.sortField;
-    sortOrder.value = event.sortOrder;
-
-    loadPageData({
-        page: 0,
-        rows: numOfRows.value,
-        sortField: sortField.value,
-        sortOrder: sortOrder.value,
-        filters: filters,
-    });
-    selectedRecords.value = [];
-    selectedIds.value = [];
-}
-
-function onPage(event: { page: number; rows: number }) {
-    numOfRows.value = event.rows;
-    loadPageData({
-        page: event.page + 1,
-        rows: event.rows,
-        sortField: sortField.value,
-        sortOrder: sortOrder.value,
-        filters: filters,
-    });
-}
-
-const onSort = (event: any) => {
-    onLazyLoad(event);
+const menuRefs = ref<Record<number, any | null>>({});
+const setMenuRef = (id: number, el: any | null) => {
+    if (el) menuRefs.value[id] = el;
+    else delete menuRefs.value[id];
 };
+const toggleMenu = (id: number, ev: Event) => menuRefs.value[id]?.toggle(ev);
 
-function goToCreatePage() {
-    router.push({ name: 'pages.create' });
-}
+//Navigation helpers
+const goToCreatePage = () => router.push({ name: 'pages.create' });
+const goToEditPage = (id: number) => router.push({ name: 'pages.edit', params: { id } });
 
-function goToEditPage(id: number) {
-    router.push({ name: 'pages.edit', params: { id } });
-}
-
+// Row‑level Operation
 function removePage(id: number, title?: string) {
-    const recordTitle = title ? `"${strTruncate(title)}"` : 'this page';
-    const message = `Do you want to delete ${recordTitle}?`;
-
+    const message = `Do you want to delete ${title ? `\"${strTruncate(title)}\"` : 'this page'}?`;
     showDeleteConfirm({
         message,
         onAccept: async () => {
             await deletePage(id);
-            await loadPageData({ page: 0, rows: numOfRows.value });
+            await tableReload();
         },
         successMessage: 'Page deleted',
         errorMessage: 'Failed to delete page',
     });
 }
-const selectedIds = ref<number[]>([]);
 
 function showUpdateDialogForSingle(action: string, id: number) {
-    dialogAction.value = action;
-    dialogTitle.value = `Update ${action} for page`;
-
-    selectedIds.value = [id];
-
-    const page = pages.value.find((p) => p.id === id);
-
-    if (!page) {
-        initialFormData.value = {};
-    } else {
-        switch (action) {
-            case 'status':
-                if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
-                if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
-
-                initialFormData.value = {
-                    status: page.status,
-                    scheduled_at: page.scheduled_at || null,
-                    published_at: page.published_at || null,
-                };
-                break;
-            case 'page_category_id':
-                initialFormData.value = {
-                    page_category_id: page.page_category_id || null,
-                };
-                break;
-            case 'visibility':
-                initialFormData.value = {
-                    visibility: page.visibility,
-                };
-                break;
-            case 'page_type':
-                initialFormData.value = {
-                    page_type: page.page_type,
-                };
-                break;
-            default:
-                initialFormData.value = {};
-        }
+    const row = pages.value.find((p) => p.id === id);
+    if (!row) {
+        toast.add({ severity: 'warn', summary: 'Page not found', life: 2500 });
+        return;
     }
-
-    bulkDialogVisible.value = true;
-}
-
-async function bulkDeletePages(ids: number[]) {
-    if (ids.length === 0) return;
-    const count = ids.length;
-    const message = `Are you sure you want to delete ${count} selected page${count > 1 ? 's' : ''}?`;
-
-    showDeleteConfirm({
-        message,
-
-        onAccept: async () => {
-            await bulkUpdatePages('delete', ids);
-            await loadPageData({ page: currentPage.value, rows: numOfRows.value, sortField: sortField.value, sortOrder: sortOrder.value });
-            selectedRecords.value = [];
-            selectedIds.value = [];
-        },
-        successMessage: 'Pages deleted',
-        errorMessage: 'Failed to delete pages',
-    });
-}
-
-async function submitBulkUpdate(formData: Record<string, any>) {
-    const ids = selectedIds.value.length
-        ? selectedIds.value
-        : selectedRecords.value.map((p) => p.id).filter((id): id is number => typeof id === 'number');
-    serverErrors.value = {};
-
-    if (!ids.length) return;
-
-    if (formData.scheduled_at) {
-        formData.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(formData.scheduled_at));
-    }
-
-    if (formData.published_at) {
-        formData.published_at = isoToMySQLDatetime(localDateTimeToUTC(formData.published_at));
-    }
-    try {
-        await bulkUpdatePages(dialogAction.value, ids, formData);
-        bulkDialogVisible.value = false;
-        selectedRecords.value = [];
-        selectedIds.value = [];
-
-        bulkAction.value = null;
-        toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
-
-        loadPageData({
-            page: currentPage.value,
-            rows: numOfRows.value,
-            sortField: sortField.value,
-            sortOrder: sortOrder.value,
-        });
-    } catch (err: any) {
-        if (err.response?.status === 422 && err.response.data?.errors) {
-            serverErrors.value = err.response.data.errors;
-        } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
-        }
-    }
-}
-
-function onFiltersChanged(newFilters: typeof filters) {
-    const { global: _global, ...filtersWithoutGlobal } = newFilters;
-    Object.assign(filters, filtersWithoutGlobal);
-
-    loadPageData({
-        page: 0,
-        rows: numOfRows.value,
-        filters,
-        sortField: sortField.value,
-        sortOrder: sortOrder.value,
-    });
+    openSingle(action, row);
 }
 </script>

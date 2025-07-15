@@ -314,7 +314,7 @@ watch(
     (newStatus) => {
         if (isEditMode.value && props.initialForm.status === PageStatus.SCHEDULED && newStatus == PageStatus.SCHEDULED) {
             form.value.scheduled_at = props.initialForm.scheduled_at;
-        } else if (newStatus === PageStatus.SCHEDULED && (!isEditMode.value || props.initialForm.status.value !== PageStatus.SCHEDULED)) {
+        } else if (newStatus === PageStatus.SCHEDULED && (!isEditMode.value || props.initialForm.status !== PageStatus.SCHEDULED)) {
             form.value.scheduled_at = getDefaultScheduledDateTimeLocal();
         }
     },
@@ -323,8 +323,7 @@ watch(
 watch(
     () => props.initialForm,
     (val) => {
-        console.log('Initial form updated:', val);
-        Object.assign(form.value, val); // safer reactivity-wise
+        Object.assign(form.value, val);
     },
 );
 

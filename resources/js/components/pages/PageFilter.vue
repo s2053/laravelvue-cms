@@ -102,6 +102,7 @@ watch(
     (newFilters) => {
         Object.assign(localFilters, newFilters);
     },
+    { deep: true },
 );
 
 // Emit current filters to parent
