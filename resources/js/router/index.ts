@@ -1,3 +1,4 @@
+import { routes as pagesRoutes } from '@/features/pages/pages.routes';
 import AppLayout from '@/layouts/app/AppLayout.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -12,30 +13,8 @@ const routes = [
                 meta: { title: 'Dashboard' },
                 component: () => import('@/pages/Dashboard.vue'),
             },
-            {
-                path: 'page-categories',
-                name: 'page-categories.index',
-                meta: { title: 'Page Categories' },
-                component: () => import('@/pages/pages/PageCategory.vue'),
-            },
-            {
-                path: 'pages',
-                name: 'pages.index',
-                meta: { title: 'Pages' },
-                component: () => import('@/pages/pages/Pages.vue'),
-            },
-            {
-                path: 'pages/create',
-                name: 'pages.create',
-                meta: { title: 'Pages' },
-                component: () => import('@/pages/pages/Create.vue'),
-            },
+            ...pagesRoutes,
 
-            {
-                path: 'pages/:id/edit',
-                name: 'pages.edit',
-                component: () => import('@/pages/pages/Create.vue'),
-            },
             {
                 path: 'users',
                 name: 'users.index',

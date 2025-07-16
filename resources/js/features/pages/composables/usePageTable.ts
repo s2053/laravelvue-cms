@@ -1,5 +1,6 @@
 import { usePaginatedTable } from '@/composables/usePaginatedList';
-import PageService from '@/services/PageService';
+import type { PageFilters } from '@/features/pages/pages.types';
+import PageService from '@/features/pages/services/page.service';
 import { onMounted, reactive, ref } from 'vue';
 
 export function usePageTable() {
@@ -10,44 +11,75 @@ export function usePageTable() {
     const perPageOptions = [5, 10, 25];
     const numOfRows = ref(perPageOptions[0]);
     const globalFilterValue = ref('');
+    const openFilter = ref(false);
 
-    // Filter state
-    const filters = reactive({
+    // Filters state
+    const filters = reactive<PageFilters>({
         status: [],
         page_type: [],
         page_category_id: [],
         visibility: [],
         global: '',
     });
-    const openFilter = ref(false);
 
+    // Handle pagination event
     function onPage(event: { page: number; rows: number }) {
         numOfRows.value = event.rows;
-        loadPage({ page: event.page + 1, rows: event.rows, sortField: sortField.value, sortOrder: sortOrder.value, filters });
+        loadPage({
+            page: event.page + 1,
+            rows: event.rows,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
+            filters,
+        });
     }
+
+    // Handle sorting event
     function onSort(event: any) {
         sortField.value = event.sortField;
         sortOrder.value = event.sortOrder;
-        loadPage({ page: currentPage.value + 1, rows: numOfRows.value, sortField: sortField.value, sortOrder: sortOrder.value, filters });
+        loadPage({
+            page: currentPage.value + 1,
+            rows: numOfRows.value,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
+            filters,
+        });
     }
+
+    // Handle selection change
     function onSelectionChange(selection: any[]) {
         selectedRecords.value = selection;
     }
-    function onFiltersChanged(newFilters: typeof filters) {
+
+    // Handle filters change
+    function onFiltersChanged(newFilters: PageFilters) {
         Object.assign(filters, newFilters);
-        loadPage({ page: 1, rows: numOfRows.value, sortField: sortField.value, sortOrder: sortOrder.value, filters });
-    }
-    function onGlobalSearch(globalValue: string) {
-        globalValue = globalValue.trim();
-        if (globalValue == '') {
-            filters.global = '';
-            globalFilterValue.value = '';
-        } else {
-            filters.global = globalValue;
-        }
-        loadPage({ page: 1, rows: numOfRows.value, sortField: sortField.value, sortOrder: sortOrder.value, filters });
+        loadPage({
+            page: 1,
+            rows: numOfRows.value,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
+            filters,
+        });
     }
 
+    // Handle global search input
+    function onGlobalSearch(globalValue: string) {
+        const trimmed = globalValue.trim();
+        filters.global = trimmed;
+        globalFilterValue.value = trimmed;
+
+        loadPage({
+            page: 1,
+            rows: numOfRows.value,
+            sortField: sortField.value,
+            sortOrder: sortOrder.value,
+            filters,
+        });
+    }
+
+    // Reload current page or specified page (0-based)
     function reload(page = 0) {
         loadPage({
             page: page + 1,
@@ -57,6 +89,7 @@ export function usePageTable() {
             filters,
         });
     }
+
     onMounted(() => reload());
 
     return {

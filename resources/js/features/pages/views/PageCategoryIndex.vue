@@ -1,7 +1,9 @@
 <template>
     <AppContent>
         <h2>Page Category Management</h2>
+
         <Button icon="pi pi-plus" label="Add New Category" @click="openCreate" />
+
         <DataTable :value="categories" :loading="loading">
             <Column field="id" header="Id" />
             <Column field="title" header="Category Name" />
@@ -18,6 +20,7 @@
                 </template>
             </Column>
         </DataTable>
+
         <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
             <PageCategoryForm
                 :modelValue="formModel"
@@ -32,23 +35,28 @@
 </template>
 
 <script setup lang="ts">
-import PageCategoryForm from '@/components/pages/PageCategoryForm.vue';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { usePageCategories } from '@/composables/usePageCategory';
+import PageCategoryForm from '@/features/pages/components/PageCategoryForm.vue';
+import { usePageCategories } from '@/features/pages/composables/usePageCategory';
+import type { PageCategoryPayload } from '@/features/pages/pages.types';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
-import { PageCategoryPayload } from '../../types/pages';
 
 const { showDeleteConfirm } = useDeleteConfirm();
-const { categories, fetchCategories, loading, getCategoryById, createCategory, updateCategory, deleteCategory } = usePageCategories();
 const toast = useToast();
+
+const { categories, loading, fetchCategories, getCategoryById, createCategory, updateCategory, deleteCategory } = usePageCategories();
 
 onMounted(fetchCategories);
 
+// Dialog & form state
 const dialogVisible = ref(false);
 const dialogTitle = ref('Create Page Category');
 const dialogSubmitLabel = ref('Create');
+const editingId = ref<number | null>(null);
+const serverErrors = ref<{ [key: string]: string[] }>({});
+
 const formModel = ref<PageCategoryPayload>({
     title: '',
     slug: '',
@@ -58,12 +66,13 @@ const formModel = ref<PageCategoryPayload>({
     meta_keywords: '',
     status: true,
 });
-const editingId = ref<number | null>(null);
-const serverErrors = ref<{ [key: string]: string[] }>({});
 
+// Opens dialog for creating a new category
 function openCreate() {
     dialogTitle.value = 'Create Page Category';
     dialogSubmitLabel.value = 'Create';
+    editingId.value = null;
+    serverErrors.value = {};
     formModel.value = {
         title: '',
         slug: '',
@@ -73,16 +82,16 @@ function openCreate() {
         meta_keywords: '',
         status: true,
     };
-    editingId.value = null;
-    serverErrors.value = {};
     dialogVisible.value = true;
 }
 
+// Opens dialog for editing an existing category
 async function openEdit(category: any) {
     dialogTitle.value = 'Edit Page Category';
     dialogSubmitLabel.value = 'Update';
     editingId.value = category.id;
     serverErrors.value = {};
+
     try {
         const latest = await getCategoryById(category.id);
         formModel.value = {
@@ -96,10 +105,16 @@ async function openEdit(category: any) {
         };
         dialogVisible.value = true;
     } catch (err: any) {
-        toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to fetch category', life: 4000 });
+        toast.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err?.message || 'Failed to fetch category',
+            life: 4000,
+        });
     }
 }
 
+// Handles form submit for create or update
 async function handleSubmit(form: PageCategoryPayload) {
     serverErrors.value = {};
     try {
@@ -116,17 +131,23 @@ async function handleSubmit(form: PageCategoryPayload) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: err?.message || 'Operation failed',
+                life: 4000,
+            });
         }
     }
 }
 
+// Confirms and deletes category
 function removeCategory(id: number) {
     showDeleteConfirm({
         onAccept: async () => {
             await deleteCategory(id);
-
             await fetchCategories();
+            toast.add({ severity: 'success', summary: 'Page category deleted', life: 2000 });
         },
         successMessage: 'Page category deleted',
         errorMessage: 'Failed to delete page category',

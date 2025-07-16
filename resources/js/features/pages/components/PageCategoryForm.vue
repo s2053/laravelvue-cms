@@ -1,6 +1,7 @@
 <template>
     <Form v-slot="$form" :initialValues="categoryForm" :resolver="resolver" @submit="onSubmit">
         <Tabs v-model:value="activeTab">
+            <!-- Tab Navigation -->
             <TabList>
                 <Tab value="main" as="div">
                     <i class="pi pi-info-circle mr-2"></i>
@@ -11,12 +12,16 @@
                     <span class="font-bold whitespace-nowrap">Meta/SEO</span>
                 </Tab>
             </TabList>
+
+            <!-- Tab Content Panels -->
             <TabPanels>
+                <!-- Main Tab -->
                 <TabPanel value="main" as="div">
                     <div class="flex flex-col gap-4">
+                        <!-- Title Field -->
                         <div>
                             <label for="title" class="mb-2 block font-bold">Category title:</label>
-                            <InputText v-model="categoryForm.title" name="title" type="text" placeholder="Category title" class="w-full" />
+                            <InputText v-model="categoryForm.title" name="title" placeholder="Category title" class="w-full" />
                             <Message v-if="$form.title?.invalid" severity="error" size="small" variant="simple">
                                 {{ $form.title.error.message }}
                             </Message>
@@ -24,14 +29,11 @@
                                 {{ serverErrors.title[0] }}
                             </Message>
 
-                            <!-- Slug label and input on one line -->
-                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <!-- Slug Display & Edit -->
+                            <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
                                 <label for="slug" class="font-semibold whitespace-nowrap">Slug:</label>
                                 <template v-if="!slugEdit">
-                                    <span
-                                        class="w-0 max-w-full flex-1 truncate overflow-hidden text-sm whitespace-nowrap text-gray-600"
-                                        :title="categoryForm.slug"
-                                    >
+                                    <span :title="categoryForm.slug" class="w-0 max-w-full flex-1 truncate">
                                         {{ categoryForm.slug }}
                                     </span>
                                 </template>
@@ -39,9 +41,8 @@
                                     <InputText
                                         v-model="categoryForm.slug"
                                         name="slug"
-                                        type="text"
                                         placeholder="Slug"
-                                        class="mt-1 flex-grow text-sm"
+                                        class="flex-grow text-sm"
                                         @input="onSlugInput"
                                         size="small"
                                     />
@@ -66,9 +67,10 @@
                             </Message>
                         </div>
 
+                        <!-- Description Field -->
                         <div>
                             <label for="description" class="mb-2 block font-bold">Description:</label>
-                            <InputText v-model="categoryForm.description" name="description" type="text" placeholder="Description" class="w-full" />
+                            <InputText v-model="categoryForm.description" name="description" placeholder="Description" class="w-full" />
                             <Message v-if="$form.description?.invalid" severity="error" size="small" variant="simple">
                                 {{ $form.description.error.message }}
                             </Message>
@@ -76,6 +78,8 @@
                                 {{ serverErrors.description[0] }}
                             </Message>
                         </div>
+
+                        <!-- Status Field -->
                         <div>
                             <label for="status" class="mb-2 block font-bold">Status:</label>
                             <Select
@@ -90,54 +94,54 @@
                         </div>
                     </div>
                 </TabPanel>
+
+                <!-- Meta Tab -->
                 <TabPanel value="meta" as="div">
                     <div class="flex flex-col gap-4">
                         <div>
                             <label for="meta_title" class="mb-2 block font-bold">Meta Title:</label>
-                            <InputText v-model="categoryForm.meta_title" name="meta_title" type="text" placeholder="Meta Title" class="w-full" />
+                            <InputText v-model="categoryForm.meta_title" name="meta_title" placeholder="Meta Title" class="w-full" />
                         </div>
                         <div>
                             <label for="meta_description" class="mb-2 block font-bold">Meta Description:</label>
                             <InputText
                                 v-model="categoryForm.meta_description"
                                 name="meta_description"
-                                type="text"
                                 placeholder="Meta Description"
                                 class="w-full"
                             />
                         </div>
                         <div>
                             <label for="meta_keywords" class="mb-2 block font-bold">Meta Keywords:</label>
-                            <InputText
-                                v-model="categoryForm.meta_keywords"
-                                name="meta_keywords"
-                                type="text"
-                                placeholder="Meta Keywords"
-                                class="w-full"
-                            />
+                            <InputText v-model="categoryForm.meta_keywords" name="meta_keywords" placeholder="Meta Keywords" class="w-full" />
                         </div>
                     </div>
                 </TabPanel>
             </TabPanels>
         </Tabs>
+
+        <!-- Footer Actions -->
         <div class="mt-4 flex justify-end gap-2">
             <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" :label="submitLabel" severity="primary"></Button>
+            <Button type="submit" :label="submitLabel" severity="primary" />
         </div>
     </Form>
 </template>
 
 <script setup lang="ts">
-import { slugify } from '@/utils/slugify';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { computed, ref, watch } from 'vue';
+import { z } from 'zod';
+
+import { slugify } from '@/utils/slugify';
+
 import Tab from 'primevue/tab';
 import TabList from 'primevue/tablist';
 import TabPanel from 'primevue/tabpanel';
 import TabPanels from 'primevue/tabpanels';
 import Tabs from 'primevue/tabs';
-import { computed, ref, watch } from 'vue';
-import { z } from 'zod';
 
+// Props & Emits
 const props = defineProps<{
     modelValue: {
         title?: string | null;
@@ -149,24 +153,28 @@ const props = defineProps<{
         status?: boolean;
     };
     submitLabel: string;
-    serverErrors?: { [key: string]: string[] };
+    serverErrors?: Record<string, string[]>;
     editingId: number | null;
 }>();
+
 const emit = defineEmits(['submit', 'cancel']);
 
-const isEditMode = computed(() => props.editingId !== null);
+// Reactive state
 const slugEdit = ref(false);
+const activeTab = ref('main');
+const isEditMode = computed(() => props.editingId !== null);
 
 const categoryForm = ref({
-    title: props.modelValue.title ?? '',
-    slug: props.modelValue.slug ?? '',
-    description: props.modelValue.description ?? '',
-    meta_title: props.modelValue.meta_title ?? '',
-    meta_description: props.modelValue.meta_description ?? '',
-    meta_keywords: props.modelValue.meta_keywords ?? '',
-    status: props.modelValue.status ?? true,
+    title: '',
+    slug: '',
+    description: '',
+    meta_title: '',
+    meta_description: '',
+    meta_keywords: '',
+    status: true,
 });
 
+// Watchers
 watch(
     () => props.modelValue,
     () => {
@@ -183,6 +191,7 @@ watch(
     },
     { immediate: true },
 );
+
 watch(
     () => categoryForm.value.title,
     (newTitle) => {
@@ -192,18 +201,7 @@ watch(
     },
 );
 
-function onSlugInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    categoryForm.value.slug = slugify(input.value);
-}
-
-const activeTab = ref('main');
-
-const statusOptions = [
-    { label: 'Active', value: true },
-    { label: 'Inactive', value: false },
-];
-
+// Form validation resolver
 const resolver = zodResolver(
     z.object({
         title: z.string().min(1, { message: 'Category title is required.' }),
@@ -216,9 +214,20 @@ const resolver = zodResolver(
     }),
 );
 
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) {
-        emit('submit', categoryForm.value);
-    }
+// Handle slug input (enforce slug format)
+function onSlugInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    categoryForm.value.slug = slugify(input.value);
 }
+
+// Emit submit if valid
+function onSubmit({ valid }: { valid: boolean }) {
+    if (valid) emit('submit', categoryForm.value);
+}
+
+// Status dropdown options
+const statusOptions = [
+    { label: 'Active', value: true },
+    { label: 'Inactive', value: false },
+];
 </script>
