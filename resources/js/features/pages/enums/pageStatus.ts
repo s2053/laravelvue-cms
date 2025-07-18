@@ -1,3 +1,4 @@
+// Enum representing possible page statuses
 export enum PageStatus {
     DRAFT = 'draft',
     PUBLISHED = 'published',
@@ -5,6 +6,7 @@ export enum PageStatus {
     ARCHIVED = 'archived',
 }
 
+// Options for UI paired with labels
 export const PageStatusOptions = [
     { label: 'Draft', value: PageStatus.DRAFT },
     { label: 'Published', value: PageStatus.PUBLISHED },

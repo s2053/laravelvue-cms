@@ -260,134 +260,118 @@
 </template>
 
 <script setup lang="ts">
-import { PageStatus, PageStatusOptions } from '@/enums/pageStatus';
-import { PageType, PageTypeOptions } from '@/enums/pageType';
-import { PageVisibility, PageVisibilityOptions } from '@/enums/pageVisibility';
+// Imports
+import FieldError from '@/components/common/FieldError.vue';
+import MediaUploader from '@/components/common/MediaUploader.vue';
+import AppCard from '@/components/ui/AppCard.vue';
+import AppPanel from '@/components/ui/AppPanel.vue';
+import { PageStatus, PageStatusOptions, PageType, PageTypeOptions, PageVisibility, PageVisibilityOptions } from '@/features/pages/enums';
+import type { PagePayload } from '@/features/pages/pages.types';
+import { formatLocalDateTime, getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';
 import { slugify } from '@/utils/slugify';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 
-import FieldError from '@/components/common/FieldError.vue';
-import MediaUploader from '@/components/common/MediaUploader.vue';
-import AppCard from '@/components/ui/AppCard.vue';
-import AppPanel from '@/components/ui/AppPanel.vue';
-
-import { PagePayload } from '@/types/pages';
-import { formatLocalDateTime, getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';
-
-const saveItems = [
-    {
-        label: 'Save And Exit',
-        command: () => {
-            console.log('Save And Exit clicked');
-        },
-    },
-];
-
+// Props & emits
 const props = defineProps<{
     initialForm: PagePayload;
     submitLabel: string;
-    serverErrors?: { [key: string]: string[] };
+    serverErrors?: Record<string, string[]>;
     editingId: number | null;
     categoryOptions: { id: number; title: string }[];
 }>();
 const emit = defineEmits(['submit', 'cancel']);
 
+// Form state
 const form = ref<PagePayload>({ ...props.initialForm });
-
-const isEditMode = computed(() => props.editingId !== null);
+const formRef = ref();
 const slugEdit = ref(false);
-
 const optionsCollapsed = ref(true);
 const metaCollapsed = ref(true);
 const scheduledAtMin = ref(getDefaultScheduledDateTimeLocal());
 
-const filteredPageStatusOptions = computed(() =>
-    isEditMode.value ? PageStatusOptions : PageStatusOptions.filter((option) => option.value !== 'archived'),
+// Computed values
+const isEditMode = computed(() => props.editingId !== null);
+const filteredPageStatusOptions = computed(() => (isEditMode.value ? PageStatusOptions : PageStatusOptions.filter((o) => o.value !== 'archived')));
+
+// Sync form when editing existing
+watch(
+    () => props.initialForm,
+    (val) => Object.assign(form.value, val),
 );
 
-const formRef = ref();
+// Auto-update slug from title in create mode
+watch(
+    () => form.value.title,
+    (title) => {
+        if (!isEditMode.value) form.value.slug = slugify(title);
+    },
+);
 
+// Set default schedule time if needed
 watch(
     () => form.value.status,
     (newStatus) => {
-        if (isEditMode.value && props.initialForm.status === PageStatus.SCHEDULED && newStatus == PageStatus.SCHEDULED) {
+        const wasScheduled = props.initialForm.status === PageStatus.SCHEDULED;
+        if (isEditMode.value && wasScheduled && newStatus === PageStatus.SCHEDULED) {
             form.value.scheduled_at = props.initialForm.scheduled_at;
-        } else if (newStatus === PageStatus.SCHEDULED && (!isEditMode.value || props.initialForm.status !== PageStatus.SCHEDULED)) {
+        } else if (newStatus === PageStatus.SCHEDULED) {
             form.value.scheduled_at = getDefaultScheduledDateTimeLocal();
         }
     },
 );
 
-watch(
-    () => props.initialForm,
-    (val) => {
-        Object.assign(form.value, val);
-    },
-);
+// Handle slug input manually
+function onSlugInput(e: Event) {
+    form.value.slug = slugify((e.target as HTMLInputElement).value);
+}
 
-watch(
-    () => form.value.title,
-    (newTitle) => {
-        if (!isEditMode.value) {
-            form.value.slug = slugify(newTitle);
-        }
-    },
-);
-
+// Remove thumbnail from form
 function removeMedia() {
     form.value.thumbnail = '';
 }
 
-function onSlugInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    form.value.slug = slugify(input.value);
+// Submit form programmatically
+function submitForm() {
+    formRef.value?.submit();
 }
 
+// Handle form submit
+function onSubmit({ valid }: { valid: boolean }) {
+    if (valid) emit('submit', form.value);
+}
+
+// Form validation schema
 const resolver = zodResolver(
     z.object({
         title: z.string().min(1, { message: 'Title is required.' }),
         slug: z.string().optional(),
         page_type: z.enum(Object.values(PageType) as [string, ...string[]]),
         is_commentable: z.boolean(),
-        excerpt: z.string().optional().nullable(),
-        body: z.string().optional().nullable(),
-        thumbnail: z.string().optional().nullable(),
-        meta_title: z.string().optional().nullable(),
-        meta_description: z.string().optional().nullable(),
-        meta_keywords: z.string().optional().nullable(),
+        excerpt: z.string().nullable().optional(),
+        body: z.string().nullable().optional(),
+        thumbnail: z.string().nullable().optional(),
+        meta_title: z.string().nullable().optional(),
+        meta_description: z.string().nullable().optional(),
+        meta_keywords: z.string().nullable().optional(),
         status: z.enum(Object.values(PageStatus) as [string, ...string[]]),
         visibility: z.enum(Object.values(PageVisibility) as [string, ...string[]]),
         scheduled_at: z
             .string()
-            .optional()
             .nullable()
+            .optional()
             .refine(
-                (val) => {
-                    if (form.value.status === PageStatus.SCHEDULED) {
-                        if (!isEditMode.value || props.initialForm.status !== PageStatus.SCHEDULED) {
-                            return val && val >= scheduledAtMin.value;
-                        }
-                    }
-                    return true;
-                },
+                (val) =>
+                    form.value.status !== PageStatus.SCHEDULED ||
+                    (props.initialForm.status === PageStatus.SCHEDULED && isEditMode.value) ||
+                    (val && val >= scheduledAtMin.value),
                 {
                     message: `Scheduled date must be at least ${formatLocalDateTime(scheduledAtMin.value)}`,
                 },
             ),
-        published_at: z.string().optional().nullable(),
-        page_category_id: z.number().optional().nullable(),
+        published_at: z.string().nullable().optional(),
+        page_category_id: z.number().nullable().optional(),
     }),
 );
-
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) {
-        emit('submit', form.value);
-    }
-}
-
-function submitForm() {
-    formRef.value?.submit();
-}
 </script>
