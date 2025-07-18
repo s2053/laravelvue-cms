@@ -6,7 +6,7 @@
                 <Button icon="pi pi-search" severity="secondary" @click="querySearch" aria-label="Search" />
             </InputGroupAddon>
         </InputGroup>
-        <Button icon="pi pi-filter" outlined severity="secondary" @click="$emit('toggleFilter')" aria-label="Toggle filter" />
+        <Button v-if="showFilter" icon="pi pi-filter" outlined severity="secondary" @click="$emit('toggleFilter')" aria-label="Toggle filter" />
         <!-- Add more toolbar actions here -->
         <slot />
     </div>
@@ -16,6 +16,15 @@
 import { defineEmits } from 'vue';
 
 const query = defineModel<string>();
+
+withDefaults(
+    defineProps<{
+        showFilter?: boolean;
+    }>(),
+    {
+        showFilter: false,
+    },
+);
 
 const emit = defineEmits<{
     (e: 'search', value: string): void;

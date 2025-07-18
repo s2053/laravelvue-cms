@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import PageForm from '@/components/pages/PageForm.vue';
-import { usePageCategories } from '@/composables/usePageCategory';
-import { usePages } from '@/composables/usePages';
-import { PageType } from '@/enums/pageType';
+import { useToast } from 'primevue/usetoast';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import AppContent from '@/layouts/app/components/AppContent.vue';
-import { PagePayload } from '@/types/pages';
+
+import PageForm from '@/features/pages/components/PageForm.vue';
+import { usePageCategories, usePages } from '@/features/pages/composables';
+import { PageStatus, PageType, PageVisibility } from '@/features/pages/enums';
+import type { PagePayload } from '@/features/pages/pages.types';
+
 import {
     getCurrentDateTimeLocal,
     getDefaultScheduledDateTimeLocal,
@@ -12,20 +17,18 @@ import {
     localDateTimeToUTC,
     utcToLocalDateTime,
 } from '@/utils/dateHelper';
-import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const toast = useToast();
-
 const route = useRoute();
 const router = useRouter();
+
 const { getPageById, createPage, updatePage } = usePages();
 const { categories, fetchCategories } = usePageCategories();
 
 const editingId = ref<number | null>(route.params.id ? Number(route.params.id) : null);
 const loading = ref(false);
 
+// Initial form model with defaults
 const formModel = ref<PagePayload>({
     title: '',
     slug: '',
@@ -37,21 +40,25 @@ const formModel = ref<PagePayload>({
     meta_title: '',
     meta_description: '',
     meta_keywords: '',
-    status: 'draft',
-    visibility: 'public',
+    status: PageStatus.DRAFT,
+    visibility: PageVisibility.PUBLIC,
     scheduled_at: getDefaultScheduledDateTimeLocal(),
     published_at: getCurrentDateTimeLocal(),
     page_category_id: null,
-    thumbnailFile: null, // For file upload
+    thumbnailFile: null,
 });
+
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
+// Prepare category options for select dropdown
 const categoryOptions = computed(() =>
-    (categories.value || []).map((cat) => ({
+    categories.value.map((cat) => ({
         id: cat.id as number,
         title: cat.title,
     })),
 );
+
+// On component mount, fetch categories and if editing, fetch page details
 onMounted(async () => {
     await fetchCategories();
 
@@ -60,21 +67,27 @@ onMounted(async () => {
         try {
             const page = await getPageById(editingId.value);
 
-            // Convert UTC to local for input fields
+            // Convert UTC dates from backend to local datetime for inputs
             if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
             if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
 
-            formModel.value = { ...page }; // This triggers the watcher in the child
-            //     Object.assign(formModel.value, page);
+            formModel.value = { ...page };
         } catch (err: any) {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Failed to fetch user', life: 4000 });
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: err?.message || 'Failed to fetch page',
+                life: 4000,
+            });
         } finally {
             loading.value = false;
         }
     }
 });
 
+// Convert payload fields to FormData for sending multipart/form-data, including file upload
 function payloadToFormData(payload: PagePayload): FormData {
+    // Convert date fields from local to UTC MySQL format string
     if (payload.scheduled_at) {
         payload.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(payload.scheduled_at));
     }
@@ -83,18 +96,19 @@ function payloadToFormData(payload: PagePayload): FormData {
     }
 
     const nullables = ['page_category_id', 'status', 'visibility'];
-
     const formData = new FormData();
+
     if (editingId.value) {
         formData.append('_method', 'PUT');
     }
+
     Object.entries(payload).forEach(([key, value]) => {
         if (key === 'thumbnailFile' && value) {
             formData.append('thumbnailFile', value as File);
         } else if (typeof value === 'boolean') {
             formData.append(key, value ? '1' : '0');
         } else if (nullables.includes(key)) {
-            formData.append(key, value === null || value === undefined ? '' : String(value));
+            formData.append(key, value == null ? '' : String(value));
         } else if (value !== undefined && value !== null) {
             formData.append(key, value as any);
         }
@@ -103,26 +117,23 @@ function payloadToFormData(payload: PagePayload): FormData {
     return formData;
 }
 
+// Handles form submission for create or update
 async function handleSubmit(form: PagePayload) {
     serverErrors.value = {};
 
-    // Clone and convert date fields to UTC ISO if they are not null/empty
-    const payload = <PagePayload>{ ...form };
-
+    const payload = { ...form };
     const formData = payloadToFormData(payload);
 
     try {
         if (editingId.value) {
             const page = await updatePage(editingId.value, formData);
 
+            // Convert UTC dates returned by backend back to local
             if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
             if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
 
-            formModel.value = { ...page, thumbnailFile: null }; // This triggers the watcher in the child
-
-            //   Object.assign(formModel.value, page);
+            formModel.value = { ...page, thumbnailFile: null };
             toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
-            //  redirectAfterSubmit();
         } else {
             await createPage(formData);
             toast.add({ severity: 'success', summary: 'Page created', life: 2000 });
@@ -137,10 +148,12 @@ async function handleSubmit(form: PagePayload) {
     }
 }
 
+// Redirect to pages list after successful submit
 function redirectAfterSubmit() {
     router.push({ name: 'pages.index' });
 }
 
+// Cancel handler redirects to pages list
 function handleCancel() {
     router.push({ name: 'pages.index' });
 }
@@ -149,6 +162,7 @@ function handleCancel() {
 <template>
     <AppContent>
         <h2 class="mb-4">{{ editingId ? 'Edit Page' : 'Create Page' }}</h2>
+
         <div v-if="!editingId || (!loading && formModel.title)">
             <PageForm
                 :key="editingId || 'create'"
@@ -161,6 +175,7 @@ function handleCancel() {
                 @cancel="handleCancel"
             />
         </div>
+
         <div v-else class="py-8 text-center text-gray-500">Loading...</div>
     </AppContent>
 </template>

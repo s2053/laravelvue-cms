@@ -1,16 +1,17 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import PageService from '@/services/PageService';
-import type { Page } from '@/types/pages';
+import type { Page } from '@/features/pages/pages.types';
+import PageService from '@/features/pages/services/page.service';
 import { ref } from 'vue';
 
 export function usePages() {
     const { handleError } = useApiErrorHandler();
 
-    const paginatedRes = ref<any>({});
     const pages = ref<Page[]>([]);
+    const paginatedRes = ref<any>({});
     const loading = ref(false);
     const error = ref<string | null>(null);
 
+    // Fetch all pages
     const fetchPages = async () => {
         loading.value = true;
         error.value = null;
@@ -25,6 +26,7 @@ export function usePages() {
         }
     };
 
+    // Get page by ID
     const getPageById = async (id: number) => {
         try {
             const res = await PageService.getById(id);
@@ -36,6 +38,7 @@ export function usePages() {
         }
     };
 
+    // Create a new page
     const createPage = async (page: FormData) => {
         try {
             await PageService.create(page);
@@ -46,6 +49,7 @@ export function usePages() {
         }
     };
 
+    // Update existing page
     const updatePage = async (id: number, page: FormData) => {
         try {
             const res = await PageService.update(id, page);
@@ -57,6 +61,7 @@ export function usePages() {
         }
     };
 
+    // Delete a page
     const deletePage = async (id: number) => {
         try {
             await PageService.delete(id);
@@ -67,6 +72,7 @@ export function usePages() {
         }
     };
 
+    // Bulk update pages by action and IDs
     const bulkUpdatePages = async (action: string, ids: number[], data?: Record<string, any>) => {
         try {
             await PageService.bulkUpdate({ action, ids, data });
@@ -79,8 +85,8 @@ export function usePages() {
 
     return {
         pages,
-        loading,
         paginatedRes,
+        loading,
         error,
         fetchPages,
         getPageById,

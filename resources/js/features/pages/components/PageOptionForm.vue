@@ -69,55 +69,55 @@
         </div>
     </Form>
 </template>
-
 <script setup lang="ts">
-import { PageTypeOptions } from '@/enums/pageType';
-
+// imports
 import FieldError from '@/components/common/FieldError.vue';
-import { PageStatus, PageStatusOptions } from '@/enums/pageStatus';
-import { PageVisibilityOptions } from '@/enums/pageVisibility';
+import { PageStatus, PageStatusOptions, PageTypeOptions, PageVisibilityOptions } from '@/features/pages/enums';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
 
+// props / emits
 const props = withDefaults(
     defineProps<{
+        // action: 'status' | 'page_category_id' | 'visibility' | 'page_type';
+
         action: string;
         initialData?: Record<string, any>;
         serverErrors?: Record<string, string[]>;
         categoryOptions: { id: number; title: string }[];
     }>(),
-    {
-        initialData: () => ({}),
-    },
+    { initialData: () => ({}) },
 );
 const emit = defineEmits(['submit', 'cancel']);
 
+// local form state
 const form = ref({ ...props.initialData });
 
+// keep form in sync with incoming data
 watch(
     () => props.initialData,
-    (newData) => {
-        form.value = { ...newData };
-    },
+    (val) => Object.assign(form.value, val),
 );
 
-const filteredPageStatusOptions = PageStatusOptions;
-
+// validation
 const resolver = zodResolver(
     z.object({
         status: z.enum(Object.values(PageStatus) as [string, ...string[]]),
+        visibility: z.enum(PageVisibilityOptions.map((o) => o.value) as any),
+        page_type: z.enum(PageTypeOptions.map((o) => o.value) as any),
+        page_category_id: z.number().nullable(),
     }),
 );
 
+// submit
 function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) {
-        const dataToSubmit = { ...form.value };
-
-        if (props.action === 'page_category_id' && !dataToSubmit.page_category_id) {
-            dataToSubmit.page_category_id = null;
-        }
-        emit('submit', dataToSubmit);
-    }
+    if (!valid) return;
+    const payload = { ...form.value };
+    if (props.action === 'page_category_id' && !payload.page_category_id) payload.page_category_id = null;
+    emit('submit', payload);
 }
+
+// dropdown refs
+const filteredPageStatusOptions = PageStatusOptions;
 </script>

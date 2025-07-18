@@ -2,6 +2,7 @@
     <AppContent>
         <h2>Page Management</h2>
 
+        <!-- Top toolbar -->
         <div class="mb-3 flex justify-between">
             <Button icon="pi pi-plus" label="Add New Page" @click="goToCreatePage" />
         </div>
@@ -12,10 +13,10 @@
             :total="total"
             :currentPage="currentPage"
             :rows="per_page"
+            :rowsPerPageOptions="perPageOptions"
             :selection="selectedRecords"
             :sortField="sortField"
             :sortOrder="sortOrder"
-            :rowsPerPageOptions="perPageOptions"
             :paginatorTemplate="'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown'"
             :currentPageReportTemplate="'{first} to {last} of {totalRecords}'"
             dataKey="id"
@@ -23,29 +24,38 @@
             @sort="onSort"
             @selection-change="selectedRecords = $event"
         >
+            <!-- Table header with bulk actions + search -->
             <template #header>
                 <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
                     <div class="flex items-center">
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
 
-                        <!-- Search/filter group and other toolbar actions go here -->
                         <div class="ml-auto flex items-center gap-2">
-                            <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
+                            <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" showFilter @toggleFilter="openFilter = !openFilter" />
                         </div>
                     </div>
                 </TableToolBarWrapper>
+
+                <!-- Collapsible filter panel -->
                 <PageFilter v-if="openFilter" :filters="filters" :categoryOptions="categoryOptions" @update:filters="onFiltersChanged" />
             </template>
+
+            <!-- Dynamic columns -->
             <template #columns>
                 <Column selectionMode="multiple" headerStyle="width: 3rem" />
 
-                <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" :sortable="true">
-                    <template v-if="col.field == 'created_at'" #body="{ data }">
+                <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" sortable>
+                    <!-- Column-specific renderers -->
+                    <template v-if="col.field === 'created_at'" #body="{ data }">
                         {{ formatDateTimeString(data.created_at) }}
                     </template>
+
                     <template v-else-if="col.field === 'category'" #body="{ data }">
-                        <div class="text-center">{{ data.category ? data.category.title : '-' }}</div>
+                        <div class="text-center">
+                            {{ data.category ? data.category.title : '-' }}
+                        </div>
                     </template>
+
                     <template v-else-if="col.field === 'title'" #body="{ data }">
                         <div v-if="data.thumbnail">
                             <img :src="data.thumbnail" alt="Thumbnail" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
@@ -54,6 +64,8 @@
                     </template>
                 </Column>
             </template>
+
+            <!-- Row-level actions -->
             <template #actions>
                 <Column header="Action">
                     <template #body="{ data }">
@@ -61,14 +73,16 @@
                         <Button
                             icon="pi pi-trash"
                             size="small"
-                            class="mr-2"
+                            severity="danger"
                             outlined
                             rounded
-                            severity="danger"
+                            class="mr-2"
                             @click="removePage(data.id, data.title)"
                         />
 
                         <Button icon="pi pi-ellipsis-v" size="small" severity="secondary" outlined rounded @click="toggleMenu(data.id, $event)" />
+
+                        <!-- Popup menu -->
                         <Menu
                             :ref="(el) => setMenuRef(data.id, el)"
                             popup
@@ -85,18 +99,20 @@
                                 { label: 'Remove', icon: 'pi pi-trash', command: () => removePage(data.id, data.title) },
                             ]"
                             class="!min-w-40"
-                        >
-                        </Menu>
+                        />
                     </template>
                 </Column>
             </template>
         </AppDataTable>
 
+        <!-- Bulk/single option dialog -->
         <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
+            sdf
             <PageOptionForm
                 :categoryOptions="categoryOptions"
                 :action="actionDialogAction"
                 :initialData="actionDialogInitial"
+                :serverErrors="PageOptionFormServerErrors"
                 @submit="submitActionUpdate"
                 @cancel="isActionDialogVisible = false"
             />
@@ -106,10 +122,8 @@
 
 <script setup lang="ts">
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { usePageActions } from '@/composables/usePageActions';
-import { usePageCategories } from '@/composables/usePageCategory';
-import { usePages } from '@/composables/usePages';
-import { usePageTable } from '@/composables/usePageTable';
+import { usePageActions, usePageCategories, usePages, usePageTable } from '@/features/pages/composables';
+
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -119,13 +133,10 @@ import { formatDateTimeString } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
 
 // UI components
-import AppDataTable from '@/components/common/datatables/AppDataTable.vue';
-import BulkActions from '@/components/common/datatables/BulkActions.vue';
-import TableToolBar from '@/components/common/datatables/TableToolBar.vue';
-import TableToolBarWrapper from '@/components/common/datatables/TableToolBarWrapper.vue';
-import PageFilter from '@/components/pages/PageFilter.vue';
-import PageOptionForm from '@/components/pages/PageOptionForm.vue';
+import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
 import AppContent from '@/layouts/app/components/AppContent.vue';
+
+import { PageFilter, PageOptionForm } from '@/features/pages/components';
 
 // Table data / pagination / filters
 const {
@@ -158,6 +169,7 @@ const {
     openSingle,
     dialog: actionDialog,
     submit: submitActionUpdate,
+    serverErrors: PageOptionFormServerErrors,
 } = usePageActions({ selectedRecords, tableReload });
 
 // Aliases for dialog refs
@@ -208,7 +220,7 @@ function removePage(id: number, title?: string) {
         message,
         onAccept: async () => {
             await deletePage(id);
-            await tableReload();
+            tableReload();
         },
         successMessage: 'Page deleted',
         errorMessage: 'Failed to delete page',

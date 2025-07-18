@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import PageCategoryService from '@/services/PageCategoryService';
-import type { PageCategory, PageCategoryPayload } from '@/types/pages';
+import type { PageCategory, PageCategoryPayload } from '@/features/pages/pages.types';
+import PageCategoryService from '@/features/pages/services/pageCategory.service';
 import { ref } from 'vue';
 
 export function usePageCategories() {
@@ -10,6 +10,7 @@ export function usePageCategories() {
     const loading = ref(false);
     const error = ref<string | null>(null);
 
+    // Fetch all categories
     const fetchCategories = async () => {
         loading.value = true;
         error.value = null;
@@ -24,6 +25,7 @@ export function usePageCategories() {
         }
     };
 
+    // Get category by ID
     const getCategoryById = async (id: number) => {
         try {
             const res = await PageCategoryService.getById(id);
@@ -35,6 +37,7 @@ export function usePageCategories() {
         }
     };
 
+    // Create new category
     const createCategory = async (category: PageCategoryPayload) => {
         try {
             const res = await PageCategoryService.create(category);
@@ -46,6 +49,7 @@ export function usePageCategories() {
         }
     };
 
+    // Update existing category
     const updateCategory = async (id: number, category: PageCategoryPayload) => {
         try {
             const res = await PageCategoryService.update(id, category);
@@ -57,12 +61,24 @@ export function usePageCategories() {
         }
     };
 
+    // Delete category by ID
     const deleteCategory = async (id: number) => {
         try {
             await PageCategoryService.delete(id);
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to delete category';
+            throw err;
+        }
+    };
+
+    // Bulk update pages by action and IDs
+    const bulkUpdateCategories = async (action: string, ids: number[], data?: Record<string, any>) => {
+        try {
+            await PageCategoryService.bulkUpdate({ action, ids, data });
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }
     };
@@ -76,5 +92,6 @@ export function usePageCategories() {
         createCategory,
         updateCategory,
         deleteCategory,
+        bulkUpdateCategories,
     };
 }

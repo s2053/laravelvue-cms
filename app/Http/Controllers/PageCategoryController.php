@@ -17,12 +17,12 @@ class PageCategoryController extends Controller
         $this->service = $service;
     }
 
+    /**
+     * List page categories with optional pagination or full list.
+     */
     public function index(Request $request)
     {
-
-
         $params = $request->all();
-
         $perPage = (int) $request->input('rows', 25);
         $all = $request->boolean('all', false);
 
@@ -31,6 +31,9 @@ class PageCategoryController extends Controller
         return PageCategoryResource::collection($categories);
     }
 
+    /**
+     * Store a new page category.
+     */
     public function store(PageCategoryRequest $request)
     {
         $category = $this->service->create($request->validated());
@@ -40,6 +43,9 @@ class PageCategoryController extends Controller
             ->setStatusCode(201);
     }
 
+    /**
+     * Show a specific page category.
+     */
     public function show(PageCategory $pageCategory)
     {
         $pageCategory = $this->service->show($pageCategory);
@@ -47,6 +53,9 @@ class PageCategoryController extends Controller
         return new PageCategoryResource($pageCategory);
     }
 
+    /**
+     * Update an existing page category.
+     */
     public function update(PageCategoryRequest $request, PageCategory $pageCategory)
     {
         $category = $this->service->update($pageCategory, $request->validated());
@@ -54,10 +63,30 @@ class PageCategoryController extends Controller
         return new PageCategoryResource($category);
     }
 
+    /**
+     * Delete a page category.
+     */
     public function destroy(PageCategory $pageCategory)
     {
         $this->service->delete($pageCategory);
 
         return response()->json(null, 204);
+    }
+
+    /**
+     * Bulk update or delete page categories.
+     */
+    public function bulkUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'action' => 'required|string|in:delete,status',
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:page_categories,id',
+            'data' => 'nullable|array',
+        ]);
+
+        $result = $this->service->bulkUpdate($validated);
+
+        return response()->json($result);
     }
 }
