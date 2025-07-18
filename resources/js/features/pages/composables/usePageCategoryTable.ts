@@ -1,24 +1,22 @@
 import { usePaginatedTable } from '@/composables/usePaginatedList';
-import type { PageFilters } from '@/features/pages/pages.types';
-import PageService from '@/features/pages/services/page.service';
+import type { PageCategoryFilters } from '@/features/pages/pages.types';
+import PageCategoryService from '@/features/pages/services/pageCategory.service';
 import { reactive, ref } from 'vue';
 
-export function usePageTable() {
-    const { items, total, per_page, loading, currentPage, loadPage } = usePaginatedTable(PageService.getPaginated);
+export function usePageCategoryTable() {
+    const { items, total, per_page, loading, currentPage, loadPage } = usePaginatedTable(PageCategoryService.getPaginated);
     const selectedRecords = ref<any[]>([]);
     const sortField = ref('created_at');
     const sortOrder = ref(-1);
     const perPageOptions = [5, 10, 25, 50];
-    const numOfRows = ref(perPageOptions[0]);
+    const numOfRows = ref(perPageOptions[2]);
     const globalFilterValue = ref('');
     const openFilter = ref(false);
 
     // Filters state
-    const filters = reactive<PageFilters>({
+    const filters = reactive<PageCategoryFilters>({
         status: [],
-        page_type: [],
-        page_category_id: [],
-        visibility: [],
+        created_at: [],
         global: '',
     });
 
@@ -32,7 +30,6 @@ export function usePageTable() {
             sortOrder: sortOrder.value,
             filters,
         });
-
         selectedRecords.value = [];
     }
 
@@ -56,7 +53,7 @@ export function usePageTable() {
     }
 
     // Handle filters change
-    function onFiltersChanged(newFilters: PageFilters) {
+    function onFiltersChanged(newFilters: PageCategoryFilters) {
         Object.assign(filters, newFilters);
         loadPage({
             page: 1,
@@ -96,7 +93,7 @@ export function usePageTable() {
         selectedRecords.value = [];
     }
 
-    // onMounted(() => reload());
+    //  onMounted(() => reload());
 
     return {
         items,

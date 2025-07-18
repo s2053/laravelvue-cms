@@ -72,6 +72,17 @@ export function usePageCategories() {
         }
     };
 
+    // Bulk update pages by action and IDs
+    const bulkUpdateCategories = async (action: string, ids: number[], data?: Record<string, any>) => {
+        try {
+            await PageCategoryService.bulkUpdate({ action, ids, data });
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to perform bulk update';
+            throw err;
+        }
+    };
+
     return {
         categories,
         loading,
@@ -81,5 +92,6 @@ export function usePageCategories() {
         createCategory,
         updateCategory,
         deleteCategory,
+        bulkUpdateCategories,
     };
 }

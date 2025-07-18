@@ -31,7 +31,7 @@
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
 
                         <div class="ml-auto flex items-center gap-2">
-                            <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
+                            <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" showFilter @toggleFilter="openFilter = !openFilter" />
                         </div>
                     </div>
                 </TableToolBarWrapper>
@@ -107,6 +107,7 @@
 
         <!-- Bulk/single option dialog -->
         <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
+            sdf
             <PageOptionForm
                 :categoryOptions="categoryOptions"
                 :action="actionDialogAction"

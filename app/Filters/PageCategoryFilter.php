@@ -19,9 +19,13 @@ class PageCategoryFilter extends QueryFilter
     protected function status(string|array $value): void
     {
         if (is_array($value)) {
-            $this->builder->whereIn('status', $value);
+            $bools = array_map(fn($v) => filter_var($v, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE), $value);
+            $this->builder->whereIn('status', array_filter($bools, fn($v) => $v !== null));
         } else {
-            $this->builder->where('status', $value);
+            $bool = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($bool !== null) {
+                $this->builder->where('status', $bool);
+            }
         }
     }
 
@@ -58,4 +62,5 @@ class PageCategoryFilter extends QueryFilter
 
         return $this->builder->orderBy($sortBy, $sortDir);
     }
+
 }

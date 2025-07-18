@@ -1,11 +1,11 @@
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { usePages } from '@/features/pages/composables/usePages';
-import { Page } from '@/features/pages/pages.types';
+import { usePageCategories } from '@/features/pages/composables/usePageCategory';
+import { PageCategory } from '@/features/pages/pages.types';
 import { isoToMySQLDatetime, localDateTimeToUTC, utcToLocalDateTime } from '@/utils/dateHelper';
 import { useToast } from 'primevue/usetoast';
 import { Ref, ref } from 'vue';
 
-export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReload: () => void }) {
+export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategory[]>; tableReload: () => void }) {
     // Current bulk action selected
     const bulkAction = ref<string | null>(null);
 
@@ -13,9 +13,6 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
     const bulkOptions = [
         { label: 'Delete Pages', value: 'delete' },
         { label: 'Update Status', value: 'status' },
-        { label: 'Update Category', value: 'page_category_id' },
-        { label: 'Update Visibility', value: 'visibility' },
-        { label: 'Update Page Type', value: 'page_type' },
     ];
 
     // Validation errors from server
@@ -30,7 +27,7 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
 
     const toast = useToast();
     const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdatePages } = usePages();
+    const { bulkUpdateCategories } = usePageCategories();
 
     // Trigger bulk action, handle delete separately
     function applyBulk() {
@@ -46,7 +43,7 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
     }
 
     // Open dialog for single item action or confirm delete
-    function openSingle(action: string, row: Page) {
+    function openSingle(action: string, row: PageCategory) {
         if (!row?.id) return;
 
         selectedIds.value = [row.id];
@@ -59,7 +56,7 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
     }
 
     // Prepare and open the bulk/single update dialog
-    function openDialog(action: string, row?: Page) {
+    function openDialog(action: string, row?: PageCategory) {
         dialogAction.value = action;
         const selectedCount = selectedIds.value.length;
         dialogTitle.value = selectedCount > 1 ? `Bulk Update ${action} [${selectedCount} selected]` : `Update ${action}`;
@@ -82,9 +79,9 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
         preprocessDates(form);
 
         try {
-            await bulkUpdatePages(dialogAction.value, selectedIds.value, form);
+            await bulkUpdateCategories(dialogAction.value, selectedIds.value, form);
 
-            toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
+            toast.add({ severity: 'success', summary: 'Updated.', life: 2000 });
             closeDialog();
 
             selectedIds.value = [];
@@ -112,7 +109,7 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
         showDeleteConfirm({
             message,
             onAccept: async () => {
-                await bulkUpdatePages('delete', ids);
+                await bulkUpdateCategories('delete', ids);
                 table.tableReload();
                 table.selectedRecords.value = [];
                 selectedIds.value = [];

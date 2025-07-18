@@ -37,6 +37,12 @@ const PageCategoryService = {
     async delete(id: number): Promise<void> {
         await api.delete(`/page-categories/${id}`);
     },
+
+    // Perform bulk update on multiple pages based on action and data
+    async bulkUpdate<T extends string = string>(payload: { action: T; ids: number[]; data?: Record<string, any> }): Promise<ApiResponse<null>> {
+        const res = await api.post<ApiResponse<null>>('/page-categories/bulk-update', payload);
+        return res.data;
+    },
 };
 
 export default PageCategoryService;

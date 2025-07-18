@@ -39,7 +39,7 @@ class PageCategoryService
     }
 
 
-        /**
+    /**
      * Get a specific page category.
      */
     public function show(PageCategory $category): PageCategory
@@ -63,5 +63,37 @@ class PageCategoryService
         $category->delete();
     }
 
+
+    /**
+     * Bulk update.
+     *
+     * @param array $validated
+     * @return array
+     */
+    public function bulkUpdate(array $validated): array
+    {
+        $recs = PageCategory::whereIn('id', $validated['ids']);
+
+        switch ($validated['action']) {
+            case 'delete':
+                $recs = $recs->get();
+                foreach ($recs as $rec) {
+                    $this->delete($rec);
+                }
+                return ['message' => 'Pages deleted.'];
+
+            case 'status':
+                $data = $validated['data'];
+                $recs->update([
+                    'status' => $data['status']
+                ]);
+                return ['message' => 'Status updated.'];
+
+
+
+            default:
+                return ['message' => 'Invalid action'];
+        }
+    }
 
 }

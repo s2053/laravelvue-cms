@@ -55,3 +55,9 @@ export type PageFilters = {
     visibility: PageVisibility[];
     global: string;
 };
+
+export type PageCategoryFilters = {
+    status: PageStatus[];
+    created_at: string[];
+    global: string;
+};
