@@ -86,6 +86,10 @@ class PageService
      */
     public function update(Page $page, array $data): Page
     {
+
+                $page->thumbnail;
+
+
         // Handle thumbnail clearing
         if (array_key_exists('thumbnail', $data) && ($data['thumbnail'] === null || $data['thumbnail'] === '')) {
             if ($page->thumbnail) {

@@ -11,6 +11,9 @@ abstract class QueryFilter
 
     protected array $filters = [];
 
+    abstract public function sort(): Builder|\Illuminate\Database\Query\Builder;
+
+
     public function __construct(array $request)
     {
         $this->request = $request;

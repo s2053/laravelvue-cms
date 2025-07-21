@@ -4,6 +4,7 @@ use App\Http\Controllers\PageCategoryController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PermissionGroupController;
+use App\Http\Controllers\PostTagController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -43,5 +44,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/page-categories/bulk-update', [PageCategoryController::class, 'bulkUpdate']);
     Route::apiResource('pages', PageController::class);
     Route::post('/pages/bulk-update', [PageController::class, 'bulkUpdate'])->name('pages.bulk-update');
+
+    Route::apiResource('post-tags', PostTagController::class);
+
 
 });

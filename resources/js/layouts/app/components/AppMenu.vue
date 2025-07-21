@@ -12,6 +12,14 @@ const model = ref([
         ],
     },
     {
+        label: 'Posts',
+        items: [
+            { label: 'Posts', icon: 'pi pi-fw pi-id-card', to: '/dashboard/posts ' },
+            { label: 'Post Category', icon: 'pi pi-fw pi-circle', to: '/dashboard/post-categories' },
+            { label: 'Tags', icon: 'pi pi-fw pi-circle', to: '/dashboard/post-tags' },
+        ],
+    },
+    {
         label: 'Pages',
         items: [
             { label: 'Page Category', icon: 'pi pi-fw pi-id-card', to: '/dashboard/page-categories' },
