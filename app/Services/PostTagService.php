@@ -33,6 +33,16 @@ class PostTagService
             $query->whereDate('created_at', $params['created_at']);
         }
 
+
+        if (!empty($params['sort_by'])) {
+            $sortDir = strtolower($params['sort_dir'] ?? 'asc');
+            if (!in_array($sortDir, ['asc', 'desc'])) {
+                $sortDir = 'asc';
+            }
+
+            $query->orderBy($params['sort_by'], $sortDir);
+        }
+
         if ($all) {
             return $query->get();
         }

@@ -102,11 +102,12 @@ import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 
 // Utils
-import { usePostTagTable } from '@/features/posts/composables/';
-import { PostTagPayload } from '@/features/posts/posts.types';
+import { PostTagFilters, PostTagPayload } from '@/features/posts/posts.types';
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
+import { usePaginatedTable } from '../../../composables/usePaginatedList';
 import { usePostTagActions, usePostTags } from '../composables';
+import PostTagService from '../services/postTag.service';
 
 const { showDeleteConfirm } = useDeleteConfirm();
 const toast = useToast();
@@ -114,6 +115,7 @@ const toast = useToast();
 const { getPostTagById, createPostTag, updatePostTag, deletePostTag } = usePostTags();
 
 // Table data / pagination / filters
+
 const {
     items: records,
     total,
@@ -121,18 +123,27 @@ const {
     loading,
     currentPage,
     selectedRecords,
+    filters,
+    globalFilterValue,
     sortField,
     sortOrder,
-    perPageOptions,
-    numOfRows,
     onPage,
     onSort,
-    loadPage: loadPageData,
-    globalFilterValue,
-    filters,
     onGlobalSearch,
+    loadPage: loadPageData,
     reload: tableReload,
-} = usePostTagTable();
+    perPageOptions,
+    numOfRows,
+} = usePaginatedTable(PostTagService.getPaginated, {
+    initialFilters: {
+        created_at: [],
+        global: '',
+    } as PostTagFilters,
+    initialSortField: 'created_at',
+    initialSortOrder: -1,
+    initialPerPage: 25,
+    perPageOptions: [10, 25, 50, 50],
+});
 
 // Bulk + single‑row actions (dialog, toasts, etc.)
 const { bulkAction, bulkOptions, applyBulk } = usePostTagActions({ selectedRecords, tableReload });
@@ -148,7 +159,7 @@ const visibleColumns = ref<string[]>(['id', 'title', 'created_at']);
 const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 onMounted(() => {
-    loadPageData({ page: 0, rows: numOfRows.value, filters });
+    loadPageData({ page: 1, rows: numOfRows.value, filters });
 });
 
 // Dialog & form state

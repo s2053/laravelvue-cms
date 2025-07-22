@@ -30,8 +30,6 @@ export function usePostTagActions(table: { selectedRecords: Ref<PostTag[]>; tabl
 
             return confirmDelete(selectedIds.value);
         }
-
-        // openDialog(bulkAction.value);
     }
 
     // Show delete confirmation and execute delete if confirmed

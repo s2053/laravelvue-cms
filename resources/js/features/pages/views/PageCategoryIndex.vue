@@ -106,15 +106,17 @@
 <script setup lang="ts">
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { PageCategoryFilter, PageCategoryForm, PageCategoryOptionForm } from '@/features/pages/components';
-import { usePageCategories, usePageCategoryActions, usePageCategoryTable } from '@/features/pages/composables';
+import { usePageCategories, usePageCategoryActions } from '@/features/pages/composables';
 
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import type { PageCategoryPayload } from '@/features/pages/pages.types';
+import type { PageCategoryFilters, PageCategoryPayload } from '@/features/pages/pages.types';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 
 // Utils
+import { usePaginatedTable } from '@/composables/usePaginatedList';
+import PageCategoryService from '@/features/pages/services/pageCategory.service';
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { strTruncate } from '@/utils/stringHelper';
 
@@ -123,7 +125,6 @@ const toast = useToast();
 
 const { getCategoryById, createCategory, updateCategory, deleteCategory } = usePageCategories();
 
-// Table data / pagination / filters
 const {
     items: records,
     total,
@@ -131,20 +132,26 @@ const {
     loading,
     currentPage,
     selectedRecords,
+    filters,
+    globalFilterValue,
     sortField,
     sortOrder,
-    perPageOptions,
-    numOfRows,
     onPage,
     onSort,
+    onGlobalSearch,
     loadPage: loadPageData,
-    globalFilterValue,
-    filters,
+    reload: tableReload,
+    perPageOptions,
     openFilter,
     onFiltersChanged,
-    onGlobalSearch,
-    reload: tableReload,
-} = usePageCategoryTable();
+    numOfRows,
+} = usePaginatedTable(PageCategoryService.getPaginated, {
+    initialFilters: {
+        status: [],
+        created_at: [],
+        global: '',
+    } as PageCategoryFilters,
+});
 
 // Bulk + single‑row actions (dialog, toasts, etc.)
 const {
