@@ -46,6 +46,8 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/pages/bulk-update', [PageController::class, 'bulkUpdate'])->name('pages.bulk-update');
 
     Route::apiResource('post-tags', PostTagController::class);
+    Route::post('/post-tags/bulk-update', [PostTagController::class, 'bulkUpdate']);
+
 
 
 });

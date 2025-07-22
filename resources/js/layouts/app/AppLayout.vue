@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
 
 import { useLayout } from '@/layouts/app/composables/layout';

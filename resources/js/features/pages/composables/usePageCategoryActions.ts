@@ -1,7 +1,6 @@
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePageCategories } from '@/features/pages/composables/usePageCategory';
 import { PageCategory } from '@/features/pages/pages.types';
-import { isoToMySQLDatetime, localDateTimeToUTC, utcToLocalDateTime } from '@/utils/dateHelper';
 import { useToast } from 'primevue/usetoast';
 import { Ref, ref } from 'vue';
 
@@ -36,6 +35,10 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
         selectedIds.value = table.selectedRecords.value.map((r) => r.id).filter((id): id is number => typeof id === 'number');
 
         if (bulkAction.value === 'delete') {
+            if (selectedIds.value.length == 1) {
+                return confirmDelete(selectedIds.value, table.selectedRecords.value[0].title);
+            }
+
             return confirmDelete(selectedIds.value);
         }
 
@@ -76,7 +79,6 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
         if (!selectedIds.value.length) return;
 
         serverErrors.value = {};
-        preprocessDates(form);
 
         try {
             await bulkUpdateCategories(dialogAction.value, selectedIds.value, form);
@@ -104,7 +106,7 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
 
     // Show delete confirmation and execute delete if confirmed
     function confirmDelete(ids: number[], title?: string) {
-        const message = ids.length === 1 ? `Delete "${title ?? 'this page'}"?` : `Delete ${ids.length} selected pages?`;
+        const message = ids.length === 1 ? `Delete "${title ?? 'this page category'}"?` : `Delete ${ids.length} selected page categories?`;
 
         showDeleteConfirm({
             message,
@@ -114,8 +116,8 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
                 table.selectedRecords.value = [];
                 selectedIds.value = [];
             },
-            successMessage: 'Page deleted',
-            errorMessage: 'Failed to delete page',
+            successMessage: 'Record deleted',
+            errorMessage: 'Failed to delete record',
         });
     }
 
@@ -153,23 +155,9 @@ function buildInitialForm(action: string, row?: any) {
     switch (action) {
         case 'status':
             return {
-                status: row.status ?? 'draft',
-                scheduled_at: row.scheduled_at ? utcToLocalDateTime(row.scheduled_at) : null,
-                published_at: row.published_at ? utcToLocalDateTime(row.published_at) : null,
+                status: row.status ?? true,
             };
-        case 'page_category_id':
-            return { page_category_id: row.page_category_id ?? null };
-        case 'visibility':
-            return { visibility: row.visibility ?? 'public' };
-        case 'page_type':
-            return { page_type: row.page_type ?? 'default' };
         default:
             return {};
     }
-}
-
-// Convert local date strings to MySQL datetime format for scheduled and published dates
-function preprocessDates(obj: Record<string, any>) {
-    if (obj.scheduled_at) obj.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(obj.scheduled_at));
-    if (obj.published_at) obj.published_at = isoToMySQLDatetime(localDateTimeToUTC(obj.published_at));
 }

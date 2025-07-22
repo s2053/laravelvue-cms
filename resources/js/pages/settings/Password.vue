@@ -42,7 +42,7 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import Password from 'primevue/password';
 import { ref, watch } from 'vue';
 

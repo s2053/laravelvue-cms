@@ -20,9 +20,18 @@ class PostTagService
     {
         $query = PostTag::query();
 
-        // Add filters if needed
-        // $filter = new PostTagFilter($params);
-        // $query = $filter->apply($query);
+        if (!empty($params['search'])) {
+            $search = $params['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%$search%")
+                    ->orWhere('created_at', 'like', "%{$search}%");
+
+            });
+        }
+
+        if (!empty($params['created_at'])) {
+            $query->whereDate('created_at', $params['created_at']);
+        }
 
         if ($all) {
             return $query->get();

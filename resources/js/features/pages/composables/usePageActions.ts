@@ -39,6 +39,10 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
         selectedIds.value = table.selectedRecords.value.map((r) => r.id).filter((id): id is number => typeof id === 'number');
 
         if (bulkAction.value === 'delete') {
+            if (selectedIds.value.length == 1) {
+                return confirmDelete(selectedIds.value, table.selectedRecords.value[0].title);
+            }
+
             return confirmDelete(selectedIds.value);
         }
 
