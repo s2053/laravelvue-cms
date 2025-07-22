@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
@@ -9,6 +9,14 @@ const model = ref([
         items: [
             { label: 'Dashboard', icon: 'pi pi-fw pi-home', to: '/dashboard' },
             { label: 'Users', icon: 'pi pi-fw pi-home', to: '/dashboard/users' },
+        ],
+    },
+    {
+        label: 'Posts',
+        items: [
+            { label: 'Posts', icon: 'pi pi-fw pi-id-card', to: '/dashboard/posts' },
+            { label: 'Post Category', icon: 'pi pi-fw pi-circle', to: '/dashboard/post-categories' },
+            { label: 'Tags', icon: 'pi pi-fw pi-circle', to: '/dashboard/post-tags' },
         ],
     },
     {

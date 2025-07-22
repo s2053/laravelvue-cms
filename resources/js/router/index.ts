@@ -1,4 +1,5 @@
 import { routes as pagesRoutes } from '@/features/pages/pages.routes';
+import { routes as postsRoutes } from '@/features/posts/posts.routes';
 import AppLayout from '@/layouts/app/AppLayout.vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -14,6 +15,7 @@ const routes = [
                 component: () => import('@/pages/Dashboard.vue'),
             },
             ...pagesRoutes,
+            ...postsRoutes,
 
             {
                 path: 'users',
