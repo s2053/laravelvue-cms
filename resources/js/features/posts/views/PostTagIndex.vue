@@ -106,9 +106,9 @@ import { PostTagFilters, PostTagPayload } from '@/features/posts/posts.types';
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 import { strTruncate } from '@/utils/stringHelper';
-import { usePaginatedTable } from '../../../composables/usePaginatedList';
-import { usePostTagActions, usePostTags } from '../composables';
-import PostTagService from '../services/postTag.service';
+import { usePaginatedTable } from '@/composables/usePaginatedList';
+import { usePostTagActions, usePostTags } from '@/features/posts/composables';
+import PostTagService from '@/features/posts/services/postTag.service';
 
 const { showDeleteConfirm } = useDeleteConfirm();
 const toast = useToast();
