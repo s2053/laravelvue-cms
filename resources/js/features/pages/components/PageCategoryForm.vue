@@ -135,6 +135,7 @@ import { z } from 'zod';
 
 import { slugify } from '@/utils/slugify';
 
+import { PageCategoryPayload } from '@/features/pages/pages.types';
 import Tab from 'primevue/tab';
 import TabList from 'primevue/tablist';
 import TabPanel from 'primevue/tabpanel';
@@ -143,15 +144,7 @@ import Tabs from 'primevue/tabs';
 
 // Props & Emits
 const props = defineProps<{
-    modelValue: {
-        title?: string | null;
-        slug?: string | null;
-        description?: string | null;
-        meta_title?: string | null;
-        meta_description?: string | null;
-        meta_keywords?: string | null;
-        status?: boolean;
-    };
+    initialForm: PageCategoryPayload;
     submitLabel: string;
     serverErrors?: Record<string, string[]>;
     editingId: number | null;
@@ -164,30 +157,13 @@ const slugEdit = ref(false);
 const activeTab = ref('main');
 const isEditMode = computed(() => props.editingId !== null);
 
-const categoryForm = ref({
-    title: '',
-    slug: '',
-    description: '',
-    meta_title: '',
-    meta_description: '',
-    meta_keywords: '',
-    status: true,
-});
+const categoryForm = ref<PageCategoryPayload>({ ...props.initialForm });
 
 // Watchers
 watch(
-    () => props.modelValue,
-    () => {
-        categoryForm.value = {
-            title: props.modelValue.title ?? '',
-            slug: props.modelValue.slug ?? '',
-            description: props.modelValue.description ?? '',
-            meta_title: props.modelValue.meta_title ?? '',
-            meta_description: props.modelValue.meta_description ?? '',
-            meta_keywords: props.modelValue.meta_keywords ?? '',
-            status: props.modelValue.status ?? true,
-        };
-        slugEdit.value = false;
+    () => props.initialForm,
+    (newVal) => {
+        categoryForm.value = { ...newVal };
     },
     { immediate: true },
 );
@@ -206,10 +182,10 @@ const resolver = zodResolver(
     z.object({
         title: z.string().min(1, { message: 'Category title is required.' }),
         slug: z.string().optional(),
-        description: z.string().optional(),
-        meta_title: z.string().optional(),
-        meta_description: z.string().optional(),
-        meta_keywords: z.string().optional(),
+        description: z.string().nullable().optional(),
+        meta_title: z.string().nullable().optional(),
+        meta_description: z.string().nullable().optional(),
+        meta_keywords: z.string().nullable().optional(),
         status: z.boolean(),
     }),
 );

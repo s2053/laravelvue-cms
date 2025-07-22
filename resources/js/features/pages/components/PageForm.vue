@@ -298,7 +298,9 @@ const filteredPageStatusOptions = computed(() => (isEditMode.value ? PageStatusO
 // Sync form when editing existing
 watch(
     () => props.initialForm,
-    (val) => Object.assign(form.value, val),
+    (val) => {
+        form.value = { ...val };
+    },
 );
 
 // Auto-update slug from title in create mode

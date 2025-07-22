@@ -81,7 +81,7 @@
 
         <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
             <PageCategoryForm
-                :modelValue="formModel"
+                :initialForm="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
                 :editingId="editingId"
@@ -118,6 +118,7 @@ import { computed, onMounted, ref } from 'vue';
 import { usePaginatedTable } from '@/composables/usePaginatedList';
 import PageCategoryService from '@/features/pages/services/pageCategory.service';
 import { formatDateTimeString } from '@/utils/dateHelper';
+import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 import { strTruncate } from '@/utils/stringHelper';
 
 const { showDeleteConfirm } = useDeleteConfirm();
@@ -186,7 +187,7 @@ const dialogSubmitLabel = ref('Create');
 const editingId = ref<number | null>(null);
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
-const formModel = ref<PageCategoryPayload>({
+const initialFormPayload: PageCategoryPayload = {
     title: '',
     slug: '',
     description: '',
@@ -194,7 +195,9 @@ const formModel = ref<PageCategoryPayload>({
     meta_description: '',
     meta_keywords: '',
     status: true,
-});
+};
+
+const formModel = ref<PageCategoryPayload>({ ...initialFormPayload });
 
 // Opens dialog for creating a new category
 function openCreate() {
@@ -202,15 +205,7 @@ function openCreate() {
     dialogSubmitLabel.value = 'Create';
     editingId.value = null;
     serverErrors.value = {};
-    formModel.value = {
-        title: '',
-        slug: '',
-        description: '',
-        meta_title: '',
-        meta_description: '',
-        meta_keywords: '',
-        status: true,
-    };
+    formModel.value = { ...initialFormPayload };
     dialogVisible.value = true;
 }
 
@@ -223,15 +218,7 @@ async function openEdit(category: any) {
 
     try {
         const latest = await getCategoryById(category.id);
-        formModel.value = {
-            title: latest.title ?? '',
-            slug: latest.slug ?? '',
-            description: latest.description ?? '',
-            meta_title: latest.meta_title ?? '',
-            meta_description: latest.meta_description ?? '',
-            meta_keywords: latest.meta_keywords ?? '',
-            status: !!latest.status,
-        };
+        formModel.value = { ...pickMatchData(latest, initialFormPayload) };
         dialogVisible.value = true;
     } catch (err: any) {
         toast.add({
@@ -247,11 +234,13 @@ async function openEdit(category: any) {
 async function handleSubmit(form: PageCategoryPayload) {
     serverErrors.value = {};
     try {
+        const payload = pickCleanData({ ...form }, initialFormPayload);
+
         if (editingId.value) {
-            await updateCategory(editingId.value, form);
+            await updateCategory(editingId.value, payload);
             toast.add({ severity: 'success', summary: 'Category updated', life: 2000 });
         } else {
-            await createCategory(form);
+            await createCategory(payload);
             toast.add({ severity: 'success', summary: 'Category created', life: 2000 });
         }
         dialogVisible.value = false;

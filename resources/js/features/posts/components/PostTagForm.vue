@@ -1,10 +1,10 @@
 <template>
-    <Form v-slot="$form" :initialValues="categoryForm" :resolver="resolver" @submit="onSubmit">
+    <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
         <div class="flex flex-col gap-4">
             <!-- Title Field -->
             <div>
                 <label for="title" class="mb-2 block font-bold">Title:</label>
-                <InputText v-model="categoryForm.title" name="title" placeholder="Title" class="w-full" />
+                <InputText v-model="form.title" name="title" placeholder="Title" class="w-full" />
                 <Message v-if="$form.title?.invalid" severity="error" size="small" variant="simple">
                     {{ $form.title.error.message }}
                 </Message>
@@ -16,19 +16,12 @@
                 <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
                     <label for="slug" class="font-semibold whitespace-nowrap">Slug:</label>
                     <template v-if="!slugEdit">
-                        <span :title="categoryForm.slug" class="w-0 max-w-full flex-1 truncate">
-                            {{ categoryForm.slug }}
+                        <span :title="form.slug" class="w-0 max-w-full flex-1 truncate">
+                            {{ form.slug }}
                         </span>
                     </template>
                     <template v-else>
-                        <InputText
-                            v-model="categoryForm.slug"
-                            name="slug"
-                            placeholder="Slug"
-                            class="flex-grow text-sm"
-                            @input="onSlugInput"
-                            size="small"
-                        />
+                        <InputText v-model="form.slug" name="slug" placeholder="Slug" class="flex-grow text-sm" @input="onSlugInput" size="small" />
                     </template>
                     <Button
                         icon="pi pi-pencil"
@@ -53,7 +46,7 @@
             <!-- Description Field -->
             <div>
                 <label for="description" class="mb-2 block font-bold">Description:</label>
-                <InputText v-model="categoryForm.description" name="description" placeholder="Description" class="w-full" />
+                <InputText v-model="form.description" name="description" placeholder="Description" class="w-full" />
                 <Message v-if="$form.description?.invalid" severity="error" size="small" variant="simple">
                     {{ $form.description.error.message }}
                 </Message>
@@ -76,15 +69,12 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 
+import { PostTagPayload } from '@/features/posts/posts.types';
 import { slugify } from '@/utils/slugify';
 
 // Props & Emits
 const props = defineProps<{
-    modelValue: {
-        title?: string | null;
-        slug?: string | null;
-        description?: string | null;
-    };
+    initialForm: PostTagPayload;
     submitLabel: string;
     serverErrors?: Record<string, string[]>;
     editingId: number | null;
@@ -94,34 +84,24 @@ const emit = defineEmits(['submit', 'cancel']);
 
 // Reactive state
 const slugEdit = ref(false);
-const activeTab = ref('main');
 const isEditMode = computed(() => props.editingId !== null);
 
-const categoryForm = ref({
-    title: '',
-    slug: '',
-    description: '',
-});
+const form = ref<PostTagPayload>({ ...props.initialForm });
 
 // Watchers
 watch(
-    () => props.modelValue,
-    () => {
-        categoryForm.value = {
-            title: props.modelValue.title ?? '',
-            slug: props.modelValue.slug ?? '',
-            description: props.modelValue.description ?? '',
-        };
-        slugEdit.value = false;
+    () => props.initialForm,
+    (newVal) => {
+        form.value = { ...newVal };
     },
     { immediate: true },
 );
 
 watch(
-    () => categoryForm.value.title,
+    () => form.value.title,
     (newTitle) => {
         if (!isEditMode.value) {
-            categoryForm.value.slug = slugify(newTitle);
+            form.value.slug = slugify(newTitle);
         }
     },
 );
@@ -129,26 +109,20 @@ watch(
 // Form validation resolver
 const resolver = zodResolver(
     z.object({
-        title: z.string().min(1, { message: 'Category title is required.' }),
+        title: z.string().min(1, { message: 'Title is required.' }),
         slug: z.string().optional(),
-        description: z.string().optional(),
+        description: z.string().optional().nullable(),
     }),
 );
 
 // Handle slug input (enforce slug format)
 function onSlugInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    categoryForm.value.slug = slugify(input.value);
+    form.value.slug = slugify(input.value);
 }
 
 // Emit submit if valid
 function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) emit('submit', categoryForm.value);
+    if (valid) emit('submit', form.value);
 }
-
-// Status dropdown options
-const statusOptions = [
-    { label: 'Active', value: true },
-    { label: 'Inactive', value: false },
-];
 </script>
