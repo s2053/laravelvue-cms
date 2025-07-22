@@ -17,6 +17,8 @@ import {
     localDateTimeToUTC,
     utcToLocalDateTime,
 } from '@/utils/dateHelper';
+import { pickMatchData } from '@/utils/objectHelpers';
+import { pickCleanData } from '../../../utils/objectHelpers';
 
 const toast = useToast();
 const route = useRoute();
@@ -29,7 +31,8 @@ const editingId = ref<number | null>(route.params.id ? Number(route.params.id) :
 const loading = ref(false);
 
 // Initial form model with defaults
-const formModel = ref<PagePayload>({
+
+const initialFormPayload: PagePayload = {
     title: '',
     slug: '',
     page_type: PageType.DEFAULT,
@@ -46,7 +49,9 @@ const formModel = ref<PagePayload>({
     published_at: getCurrentDateTimeLocal(),
     page_category_id: null,
     thumbnailFile: null,
-});
+};
+
+const formModel = ref<PagePayload>({ ...initialFormPayload });
 
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
@@ -71,7 +76,7 @@ onMounted(async () => {
             if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
             if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
 
-            formModel.value = { ...page };
+            formModel.value = { ...pickMatchData(page, initialFormPayload) };
         } catch (err: any) {
             toast.add({
                 severity: 'error',
@@ -86,7 +91,7 @@ onMounted(async () => {
 });
 
 // Convert payload fields to FormData for sending multipart/form-data, including file upload
-function payloadToFormData(payload: PagePayload): FormData {
+function payloadToFormData(payload: Partial<PagePayload>): FormData {
     // Convert date fields from local to UTC MySQL format string
     if (payload.scheduled_at) {
         payload.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(payload.scheduled_at));
@@ -121,7 +126,8 @@ function payloadToFormData(payload: PagePayload): FormData {
 async function handleSubmit(form: PagePayload) {
     serverErrors.value = {};
 
-    const payload = { ...form };
+    const payload = pickCleanData({ ...form }, initialFormPayload);
+
     const formData = payloadToFormData(payload);
 
     try {
@@ -132,7 +138,8 @@ async function handleSubmit(form: PagePayload) {
             if (page.scheduled_at) page.scheduled_at = utcToLocalDateTime(page.scheduled_at);
             if (page.published_at) page.published_at = utcToLocalDateTime(page.published_at);
 
-            formModel.value = { ...page, thumbnailFile: null };
+            formModel.value = { ...pickMatchData(page, initialFormPayload) };
+
             toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
         } else {
             await createPage(formData);
