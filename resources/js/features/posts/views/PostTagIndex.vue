@@ -4,7 +4,7 @@
 
         <!-- Top toolbar -->
         <div class="mb-3 flex justify-between">
-            <Button icon="pi pi-plus" label="Add New Page" @click="openCreate" />
+            <Button icon="pi pi-plus" label="Add New" @click="openCreate" />
         </div>
 
         <AppDataTable
@@ -81,7 +81,7 @@
 
         <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
             <PostTagForm
-                :modelValue="formModel"
+                :initialForm="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
                 :editingId="editingId"
@@ -104,10 +104,11 @@ import { computed, onMounted, ref } from 'vue';
 // Utils
 import { PostTagFilters, PostTagPayload } from '@/features/posts/posts.types';
 import { formatDateTimeString } from '@/utils/dateHelper';
+import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 import { strTruncate } from '@/utils/stringHelper';
-import { usePaginatedTable } from '../../../composables/usePaginatedList';
-import { usePostTagActions, usePostTags } from '../composables';
-import PostTagService from '../services/postTag.service';
+import { usePaginatedTable } from '@/composables/usePaginatedList';
+import { usePostTagActions, usePostTags } from '@/features/posts/composables';
+import PostTagService from '@/features/posts/services/postTag.service';
 
 const { showDeleteConfirm } = useDeleteConfirm();
 const toast = useToast();
@@ -169,11 +170,13 @@ const dialogSubmitLabel = ref('Create');
 const editingId = ref<number | null>(null);
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
-const formModel = ref<PostTagPayload>({
+const initialFormPayload: PostTagPayload = {
     title: '',
     slug: '',
     description: '',
-});
+};
+
+const formModel = ref<PostTagPayload>({ ...initialFormPayload });
 
 // Opens dialog for creating a new category
 function openCreate() {
@@ -181,11 +184,7 @@ function openCreate() {
     dialogSubmitLabel.value = 'Create';
     editingId.value = null;
     serverErrors.value = {};
-    formModel.value = {
-        title: '',
-        slug: '',
-        description: '',
-    };
+    formModel.value = { ...initialFormPayload };
     dialogVisible.value = true;
 }
 
@@ -198,11 +197,7 @@ async function openEdit(category: any) {
 
     try {
         const latest = await getPostTagById(category.id);
-        formModel.value = {
-            title: latest.title ?? '',
-            slug: latest.slug ?? '',
-            description: latest.description ?? '',
-        };
+        formModel.value = { ...pickMatchData(latest, initialFormPayload) };
         dialogVisible.value = true;
     } catch (err: any) {
         toast.add({
@@ -218,11 +213,13 @@ async function openEdit(category: any) {
 async function handleSubmit(form: PostTagPayload) {
     serverErrors.value = {};
     try {
+        const payload = pickCleanData({ ...form }, initialFormPayload);
+
         if (editingId.value) {
-            await updatePostTag(editingId.value, form);
+            await updatePostTag(editingId.value, payload);
             toast.add({ severity: 'success', summary: 'Record updated', life: 2000 });
         } else {
-            await createPostTag(form);
+            await createPostTag(payload);
             toast.add({ severity: 'success', summary: 'Record created', life: 2000 });
         }
         dialogVisible.value = false;
