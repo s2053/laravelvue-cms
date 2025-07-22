@@ -72,7 +72,7 @@ export function usePageCategories() {
         }
     };
 
-    // Bulk update pages by action and IDs
+    // Bulk update catgeories by action and IDs
     const bulkUpdateCategories = async (action: string, ids: number[], data?: Record<string, any>) => {
         try {
             await PageCategoryService.bulkUpdate({ action, ids, data });

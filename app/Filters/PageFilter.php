@@ -67,7 +67,7 @@ class PageFilter extends QueryFilter
 
     /** Sorting Method **/
 
-    public function sort(): Builder
+    public function sort(): Builder|\Illuminate\Database\Query\Builder
     {
         $sortable = ['created_at', 'title', 'status', 'page_type', 'visibility', 'category'];
 

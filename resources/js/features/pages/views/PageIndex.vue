@@ -122,7 +122,7 @@
 
 <script setup lang="ts">
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { usePageActions, usePageCategories, usePages, usePageTable } from '@/features/pages/composables';
+import { usePageActions, usePageCategories, usePages } from '@/features/pages/composables';
 
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
@@ -136,9 +136,11 @@ import { strTruncate } from '@/utils/stringHelper';
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 
+import { usePaginatedTable } from '@/composables/usePaginatedList';
 import { PageFilter, PageOptionForm } from '@/features/pages/components';
+import { PageFilters } from '@/features/pages/pages.types';
+import PageService from '@/features/pages/services/page.service';
 
-// Table data / pagination / filters
 const {
     items: pages,
     total,
@@ -146,20 +148,28 @@ const {
     loading,
     currentPage,
     selectedRecords,
+    filters,
+    globalFilterValue,
     sortField,
     sortOrder,
-    perPageOptions,
-    numOfRows,
     onPage,
     onSort,
+    onGlobalSearch,
     loadPage: loadPageData,
-    globalFilterValue,
-    filters,
+    reload: tableReload,
+    perPageOptions,
     openFilter,
     onFiltersChanged,
-    onGlobalSearch,
-    reload: tableReload,
-} = usePageTable();
+    numOfRows,
+} = usePaginatedTable(PageService.getPaginated, {
+    initialFilters: {
+        status: [],
+        page_type: [],
+        page_category_id: [],
+        visibility: [],
+        global: '',
+    } as PageFilters,
+});
 
 // Bulk + single‑row actions (dialog, toasts, etc.)
 const {

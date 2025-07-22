@@ -53,6 +53,7 @@ export type PageFilters = {
     page_type: PageType[];
     page_category_id: number[];
     visibility: PageVisibility[];
+    created_at?: string[];
     global: string;
 };
 
