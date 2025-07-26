@@ -107,7 +107,6 @@
 
         <!-- Bulk/single option dialog -->
         <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
-            sdf
             <PageOptionForm
                 :categoryOptions="categoryOptions"
                 :action="actionDialogAction"
