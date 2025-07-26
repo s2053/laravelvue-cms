@@ -17,7 +17,7 @@ import {
     localDateTimeToUTC,
     utcToLocalDateTime,
 } from '@/utils/dateHelper';
-import { pickMatchData, pickCleanData } from '@/utils/objectHelpers';
+import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
 const toast = useToast();
 const route = useRoute();
