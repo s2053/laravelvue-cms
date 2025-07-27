@@ -1,4 +1,4 @@
-import api from '@/lib/axios';
+import { api } from '@/lib/axios';
 import type { User, UserPayload } from '@/types/user';
 
 export default {

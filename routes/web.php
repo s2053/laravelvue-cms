@@ -17,10 +17,15 @@ Route::get('/', function () {
 //     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 // });
 
+$spaRoutes = ['login', 'register', 'forgot-password', 'reset-password'];
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard/{any?}', function () {
-        return view('dashboard');
-    })->where('any', '.*')->name('dashboard');
-});
-require __DIR__.'/auth.php';
+foreach ($spaRoutes as $route) {
+    Route::get("/$route", function () {
+        return view('dashboard');  // Your SPA blade view
+    });
+}
+Route::get('/dashboard/{any?}', function () {
+    return view(view: 'dashboard');
+})->where('any', '.*')->name('dashboard');
+
+// require __DIR__ . '/auth.php';
