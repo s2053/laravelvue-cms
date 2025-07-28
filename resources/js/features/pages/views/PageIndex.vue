@@ -84,7 +84,7 @@
 
                         <!-- Popup menu -->
                         <Menu
-                            :ref="(el) => setMenuRef(data.id, el)"
+                            :ref="(el: any) => setMenuRef(data.id, el)"
                             popup
                             :model="[
                                 { label: 'Edit', icon: 'pi pi-pencil', command: () => goToEditPage(data.id) },

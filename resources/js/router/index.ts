@@ -1,4 +1,5 @@
 import { routes as authRoutes } from '@/features/auth/auth.routes';
+import { useAuthStore } from '@/features/auth/auth.store';
 import { routes as pagesRoutes } from '@/features/pages/pages.routes';
 import { routes as postsRoutes } from '@/features/posts/posts.routes';
 import AppLayout from '@/layouts/app/AppLayout.vue';
@@ -73,6 +74,24 @@ const routes = [
 const router = createRouter({
     history: createWebHistory(),
     routes,
+});
+
+router.beforeEach((to, from, next) => {
+    const auth = useAuthStore();
+
+    const isLoggedIn = auth.isAuthenticated;
+    const isDashboardRoute = to.path.startsWith('/dashboard');
+    const isAuthPage = to.name?.toString().includes('login');
+
+    if (isDashboardRoute && !isLoggedIn) {
+        // Block access to dashboard if not logged in
+        next({ path: '/login' });
+    } else if (isAuthPage && isLoggedIn) {
+        //  Already logged in, go to dashboard
+        next({ name: 'dashboard' });
+    } else {
+        next();
+    }
 });
 
 // Dynamic page titles

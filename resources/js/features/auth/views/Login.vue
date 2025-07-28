@@ -47,20 +47,18 @@ import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 import { z } from 'zod';
 
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import Checkbox from 'primevue/checkbox';
-import InputText from 'primevue/inputtext';
-import Password from 'primevue/password';
-
 import FieldError from '@/components/common/FieldError.vue';
 import type { LoginPayload } from '@/features/auth/auth.types';
 
-import { useAuth } from '@/features/auth/composables/useAuth';
+import { useAuthStore } from '@/features/auth/auth.store';
+
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const toast = useToast();
 
-const { login, loading } = useAuth();
+const { login, loading } = useAuthStore();
 
 // Server validation errors container
 const serverErrors = ref<{ [key: string]: string[] }>({});
@@ -82,14 +80,17 @@ function onSubmit({ valid }: { valid: boolean }) {
 
 // Async login process simulation
 async function handleSubmit(form: LoginPayload) {
-    if (loading.value) return;
+    if (loading) return;
     serverErrors.value = {};
     try {
-        // Simulate API call here
         const payload = { ...form };
         await login(payload);
 
         toast.add({ severity: 'success', summary: 'Login Successful!!!', life: 2000 });
+
+        setTimeout(() => {
+            router.push({ name: 'dashboard' });
+        }, 300);
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
@@ -104,11 +105,23 @@ async function handleSubmit(form: LoginPayload) {
     }
 }
 
+const schema = z.object({
+    email: z.email({ message: 'Valid email is required.' }),
+    password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+});
+
+const result = schema.safeParse({
+    email: 'ass@a.com',
+    password: 'ass',
+});
+
+console.log(result);
+
 // Zod schema resolver for form validation
 const resolver = zodResolver(
     z.object({
-        email: z.string().email({ message: 'Valid email is required.' }),
-        password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
+        email: z.email({ error: 'Valid email is required.' }),
+        password: z.string().min(6, { error: () => 'Password must be at least 6 characters.' }),
     }),
 );
 </script>
