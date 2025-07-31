@@ -6,11 +6,22 @@ use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\Auth;
+
 
 class RegisterController extends Controller
 {
     public function register(Request $request)
     {
+
+    //         Mail::raw('This is a simple test email from controller.', function ($message) {
+    //     $message->to('shrestha2053@gmail.com')
+    //             ->subject('Simple Test Email');
+    // });
+
+    // dd(222);
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
@@ -23,9 +34,12 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
+        event(new Registered(user: $user));
+
 
         Auth::login($user);
+
+    //    $user->sendEmailVerificationNotification();
 
         return response()->json([
             'message' => 'Registration successful.',

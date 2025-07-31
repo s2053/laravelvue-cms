@@ -33,8 +33,8 @@
 
                 <!-- Links -->
                 <div class="flex justify-between text-sm">
-                    <router-link to="/register" class="text-primary hover:underline">Register</router-link>
-                    <a href="#" class="-secondary hover:underline">Forgot password?</a>
+                    <router-link to="/register" class="text-primary hover:!underline">Register</router-link>
+                    <router-link to="/forgot-password" class="text-secondary hover:!underline">Forgot Password?</router-link>
                 </div>
             </Form>
         </template>

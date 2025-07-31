@@ -76,22 +76,37 @@ const router = createRouter({
     routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const auth = useAuthStore();
 
     const isLoggedIn = auth.isAuthenticated;
+    const user = auth.user; // You must load this from the API after login
+
     const isDashboardRoute = to.path.startsWith('/dashboard');
     const isAuthPage = to.name?.toString().includes('login');
+    const isVerifyPage = to.name === 'verify-email';
 
+    // 1. Not logged in? Block dashboard
     if (isDashboardRoute && !isLoggedIn) {
-        // Block access to dashboard if not logged in
-        next({ path: '/login' });
-    } else if (isAuthPage && isLoggedIn) {
-        //  Already logged in, go to dashboard
-        next({ name: 'dashboard' });
-    } else {
-        next();
+        return next({ path: '/login' });
     }
+
+    // 2. Already logged in? Block login page
+    if (isAuthPage && isLoggedIn) {
+        return next({ name: 'dashboard' });
+    }
+
+    // 3. Logged in but not verified? Block dashboard
+    if (isDashboardRoute && isLoggedIn && user && !user.email_verified_at) {
+        return next({ name: 'verify-email' });
+    }
+
+    // 4. Logged in and verified, but trying to access verify page? Go to dashboard
+    if (isVerifyPage && isLoggedIn && user && user.email_verified_at) {
+        return next({ name: 'dashboard' });
+    }
+
+    next();
 });
 
 // Dynamic page titles

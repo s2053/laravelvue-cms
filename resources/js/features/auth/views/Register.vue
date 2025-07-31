@@ -6,11 +6,11 @@
 
         <template #content>
             <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
-                <!-- Username -->
+                <!-- name -->
                 <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium" for="username">Username</label>
-                    <InputText name="username" v-model="form.username" type="text" class="w-full" />
-                    <FieldError :formError="$form.username?.error?.message" :serverError="serverErrors?.username?.[0]" />
+                    <label class="mb-1 block text-sm font-medium" for="name">Username</label>
+                    <InputText name="name" v-model="form.name" type="text" class="w-full" />
+                    <FieldError :formError="$form.name?.error?.message" :serverError="serverErrors?.name?.[0]" />
                 </div>
 
                 <!-- Email -->
@@ -36,12 +36,12 @@
 
                 <!-- Submit Button -->
                 <div class="mb-4">
-                    <Button type="submit" label="Register" severity="primary" class="w-full" />
+                    <Button type="submit" :disabled="loading" label="Register" severity="primary" class="w-full" />
                 </div>
 
                 <!-- Links -->
                 <div class="flex justify-between text-sm">
-                    <router-link to="/login" class="text-primary hover:underline">Already have an account? Log in</router-link>
+                    <router-link to="/login" class="text-primary hover:!underline">Already have an account? Log in</router-link>
                 </div>
             </Form>
         </template>
@@ -54,23 +54,26 @@ import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 import { z } from 'zod';
 
-import Button from 'primevue/button';
-import Card from 'primevue/card';
-import InputText from 'primevue/inputtext';
-import Password from 'primevue/password';
-
 import type { RegisterPayload } from '@/features/auth/auth.types';
 
 import FieldError from '@/components/common/FieldError.vue';
 
+import { useAuthStore } from '@/features/auth/auth.store';
+
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
 const toast = useToast();
+
+const { register, loading } = useAuthStore();
 
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
 // Initial form state with types
 
 const initialFormPayload: RegisterPayload = {
-    username: '',
+    name: '',
     email: '',
     password: '',
     password_confirmation: '',
@@ -85,9 +88,16 @@ function onSubmit({ valid }: { valid: boolean }) {
 
 // Simulated async registration handler
 async function handleSubmit(form: RegisterPayload) {
+    if (loading) return;
+
     serverErrors.value = {};
     try {
-        // Simulate API call here
+        const payload = { ...form };
+        await register(payload);
+
+        setTimeout(() => {
+            router.push({ name: 'dashboard' });
+        }, 300);
         toast.add({ severity: 'success', summary: 'Registration Successful!!!', life: 2000 });
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
@@ -107,7 +117,7 @@ async function handleSubmit(form: RegisterPayload) {
 const resolver = zodResolver(
     z
         .object({
-            username: z.string().trim().min(3, { message: 'Username must be at least 3 characters.' }),
+            name: z.string().trim().min(3, { message: 'name must be at least 3 characters.' }),
             email: z.string().trim().email({ message: 'Valid email is required.' }),
             password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
             password_confirmation: z.string().min(6, { message: 'Confirm password is required.' }),
