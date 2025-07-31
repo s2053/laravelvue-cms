@@ -1,5 +1,5 @@
 import type { PageCategory, PageCategoryPayload } from '@/features/pages/pages.types';
-import api from '@/lib/axios';
+import { api } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
 const PageCategoryService = {

@@ -39,12 +39,20 @@ export function useApiErrorHandler() {
                     break;
             }
 
-            toast.add({
-                severity: getSeverityByStatus(status),
-                summary,
-                detail: customMessage || message,
-                life: 5000,
-            });
+            if (status != 422) {
+                toast.add({
+                    severity: getSeverityByStatus(status),
+                    summary,
+                    detail: customMessage || message,
+                    life: 5000,
+                });
+            }
+            // toast.add({
+            //     severity: getSeverityByStatus(status),
+            //     summary,
+            //     detail: customMessage || message,
+            //     life: 5000,
+            // });
         } else if (error instanceof Error) {
             toast.add({
                 severity: 'error',

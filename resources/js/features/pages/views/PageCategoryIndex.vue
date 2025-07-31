@@ -177,7 +177,7 @@ const visibleColumns = ref<string[]>(['id', 'title', 'status', 'created_at']);
 const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 onMounted(() => {
-    loadPageData({ page: 0, rows: numOfRows.value, filters });
+    loadPageData({ page: 1, rows: numOfRows.value, filters });
 });
 
 // Dialog & form state

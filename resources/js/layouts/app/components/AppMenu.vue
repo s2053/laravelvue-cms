@@ -3,6 +3,14 @@ import { ref } from 'vue';
 
 import AppMenuItem from './AppMenuItem.vue';
 
+import { useAuthStore } from '@/features/auth/auth.store';
+import { useToast } from 'primevue/usetoast';
+import { useRouter } from 'vue-router';
+
+const toast = useToast();
+const router = useRouter();
+const auth = useAuthStore();
+
 const model = ref([
     {
         label: 'Home',
@@ -41,8 +49,23 @@ const model = ref([
             { label: 'Prfile', icon: 'pi pi-fw pi-id-card', to: '/dashboard/settings/profile' },
             { label: 'password', icon: 'pi pi-fw pi-clone', to: '/dashboard/settings/password' },
             { label: 'Appearcnce', icon: 'pi pi-fw pi-circle', to: '/dashboard/settings/appearance' },
+            {
+                label: 'Logout',
+                icon: 'pi pi-fw pi-sign-out',
+
+                command: async () => {
+                    await auth.logout(); // wait for logout to finish
+
+                    // show toast on successful logout
+                    toast.add({ severity: 'success', summary: 'Logged out', detail: 'You have successfully logged out.' });
+
+                    // redirect after logout
+                    router.push('/login');
+                },
+            },
         ],
     },
+
     // {
     //     label: 'Pages',
     //     icon: 'pi pi-fw pi-briefcase',

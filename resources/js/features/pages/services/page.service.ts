@@ -1,5 +1,5 @@
 import type { Page } from '@/features/pages/pages.types';
-import api from '@/lib/axios';
+import { api } from '@/lib/axios';
 import { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
 const PageService = {

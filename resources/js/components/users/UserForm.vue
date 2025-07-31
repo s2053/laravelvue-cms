@@ -132,7 +132,7 @@ const resolver = zodResolver(
                 .string()
                 .min(1, { message: 'User name is required.' })
                 .transform((val) => val.trim()),
-            email: z.string().email({ message: 'Valid email is required.' }),
+            email: z.email({ message: 'Valid email is required.' }),
             password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
             password_confirmation: z.string().min(6, { message: 'Password confirmation is required.' }),
             role_ids: z.array(z.number()).min(1, { message: 'Select at least one role.' }),
