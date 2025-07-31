@@ -1,5 +1,5 @@
 import type { PostTag, PostTagPayload } from '@/features/posts/posts.types';
-import api from '@/lib/axios';
+import { api } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
 const PostTagService = {

@@ -1,5 +1,5 @@
 // src/services/RoleService.ts
-import api from '@/lib/axios';
+import { api } from '@/lib/axios';
 import type { Permission } from '@/types/rbac';
 
 export default {

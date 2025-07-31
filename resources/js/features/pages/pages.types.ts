@@ -1,7 +1,7 @@
 import { PageStatus, PageType, PageVisibility } from '@/features/pages/enums';
 
 export interface PageCategory {
-    id?: number;
+    id: number;
     title: string;
     slug: string;
     description?: string | null;
@@ -16,7 +16,7 @@ export interface PageCategory {
 export type PageCategoryPayload = Omit<PageCategory, 'id' | 'created_at' | 'updated_at'>;
 
 export interface Page {
-    id?: number;
+    id: number;
     title: string;
     slug: string;
     page_category_id?: number | null;

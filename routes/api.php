@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\PasswordResetController;
+use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\PageCategoryController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PermissionController;
@@ -10,13 +13,27 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
 
-Route::middleware(['web', 'auth'])->group(function () {
+Route::middleware('web')->group(function () {
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [RegisterController::class, 'register']);
+    Route::post('/forgot-password', [PasswordResetController::class, 'forgot']);
+    Route::post('/reset-password', [PasswordResetController::class, 'reset']);
+});
 
+
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+
+});
+
+Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
     Route::get('/roles', [RoleController::class, 'index']);
     Route::post('/roles', [RoleController::class, 'store']);

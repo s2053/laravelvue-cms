@@ -3,6 +3,14 @@ import axios from 'axios';
 
 const api = axios.create({
     baseURL: '/api',
+    withCredentials: true,
+    withXSRFToken: true,
+});
+
+// For CSRF cookie request (no /api prefix)
+const csrfClient = axios.create({
+    baseURL: '/', // or your full backend URL without /api
+    withCredentials: true,
 });
 
 api.interceptors.request.use(
@@ -26,4 +34,4 @@ api.interceptors.response.use(
     },
 );
 
-export default api;
+export { api, csrfClient };

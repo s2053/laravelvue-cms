@@ -1,5 +1,5 @@
 export interface PostTag {
-    id?: number;
+    id: number;
     title: string;
     slug: string;
     description?: string | null;

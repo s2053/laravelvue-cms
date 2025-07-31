@@ -84,7 +84,7 @@
 
                         <!-- Popup menu -->
                         <Menu
-                            :ref="(el) => setMenuRef(data.id, el)"
+                            :ref="(el: any) => setMenuRef(data.id, el)"
                             popup
                             :model="[
                                 { label: 'Edit', icon: 'pi pi-pencil', command: () => goToEditPage(data.id) },
@@ -107,7 +107,6 @@
 
         <!-- Bulk/single option dialog -->
         <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
-            sdf
             <PageOptionForm
                 :categoryOptions="categoryOptions"
                 :action="actionDialogAction"

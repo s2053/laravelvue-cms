@@ -3,6 +3,7 @@ import type { Role } from '@/types/rbac';
 export interface User {
     id: number;
     name: string;
+    email_verified_at: string | null;
     email: string;
     roles: Role[];
 }
