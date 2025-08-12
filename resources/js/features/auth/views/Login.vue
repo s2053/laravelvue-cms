@@ -1,6 +1,10 @@
 <template>
     <Card class="mx-auto w-full max-w-md">
         <template #title>
+            <div v-if="localMessage" class="text-primary mb-4 text-center text-sm">
+                {{ localMessage }}
+                <!-- <Message severity="info">Info Message</Message> -->
+            </div>
             <div class="text-center text-2xl font-bold">Login to your account</div>
         </template>
 
@@ -28,7 +32,7 @@
 
                 <!-- Submit Button -->
                 <div class="mb-4">
-                    <Button type="submit" label="Log in" severity="primary" class="w-full" :disabled="loading" />
+                    <Button type="submit" label="Log in" severity="primary" class="w-full" :disabled="submitting" />
                 </div>
 
                 <!-- Links -->
@@ -44,7 +48,7 @@
 <script setup lang="ts">
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { z } from 'zod';
 
 import FieldError from '@/components/common/FieldError.vue';
@@ -52,18 +56,35 @@ import type { LoginPayload } from '@/features/auth/auth.types';
 
 import { useAuthStore } from '@/features/auth/auth.store';
 
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
 
 const toast = useToast();
 
-const { login, loading } = useAuthStore();
+const { login, notificationMessage, setNotificationMessage, clearNotificationMessage } = useAuthStore();
 
 // Server validation errors container
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
-// Initial form data with types
+const localMessage = ref(notificationMessage);
+const submitting = ref(false);
+
+onMounted(async () => {
+    if (route.query.verified === '1') {
+        localMessage.value = setNotificationMessage('Email verified successfully!');
+
+        setTimeout(() => {
+            router.replace({ path: '/login' });
+        }, 500);
+    }
+
+    setTimeout(() => {
+        clearNotificationMessage();
+    }, 2000);
+});
+
 const initialFormPayload: LoginPayload = {
     email: '',
     password: '',
@@ -78,9 +99,10 @@ function onSubmit({ valid }: { valid: boolean }) {
     if (valid) handleSubmit(form.value);
 }
 
-// Async login process simulation
+// Async login process
 async function handleSubmit(form: LoginPayload) {
-    if (loading) return;
+    if (submitting.value) return;
+    submitting.value = true;
     serverErrors.value = {};
     try {
         const payload = { ...form };
@@ -102,26 +124,15 @@ async function handleSubmit(form: LoginPayload) {
                 life: 4000,
             });
         }
+    } finally {
+        submitting.value = false;
     }
 }
 
-const schema = z.object({
-    email: z.email({ message: 'Valid email is required.' }),
-    password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
-});
-
-const result = schema.safeParse({
-    email: 'ass@a.com',
-    password: 'ass',
-});
-
-console.log(result);
-
-// Zod schema resolver for form validation
 const resolver = zodResolver(
     z.object({
         email: z.email({ error: 'Valid email is required.' }),
-        password: z.string().min(6, { error: () => 'Password must be at least 6 characters.' }),
+        password: z.string().min(8, { error: () => 'Password must be at least 8 characters.' }),
     }),
 );
 </script>

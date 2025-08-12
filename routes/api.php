@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\CustomEmailVerificationController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\PageCategoryController;
@@ -28,6 +29,7 @@ Route::middleware('web')->group(function () {
 
 
 Route::middleware(['auth:sanctum'])->group(function () {
+    Route::post('/email/verification-notification', [CustomEmailVerificationController::class, 'resend']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 

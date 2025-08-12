@@ -36,7 +36,7 @@
 
                 <!-- Submit Button -->
                 <div class="mb-4">
-                    <Button type="submit" :disabled="loading" label="Register" severity="primary" class="w-full" />
+                    <Button type="submit" :disabled="submitting" label="Register" severity="primary" class="w-full" />
                 </div>
 
                 <!-- Links -->
@@ -66,7 +66,9 @@ const router = useRouter();
 
 const toast = useToast();
 
-const { register, loading } = useAuthStore();
+const { register } = useAuthStore();
+
+const submitting = ref(false);
 
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
@@ -88,8 +90,9 @@ function onSubmit({ valid }: { valid: boolean }) {
 
 // Simulated async registration handler
 async function handleSubmit(form: RegisterPayload) {
-    if (loading) return;
+    if (submitting.value) return;
 
+    submitting.value = true;
     serverErrors.value = {};
     try {
         const payload = { ...form };
@@ -97,7 +100,7 @@ async function handleSubmit(form: RegisterPayload) {
 
         setTimeout(() => {
             router.push({ name: 'dashboard' });
-        }, 300);
+        }, 1000);
         toast.add({ severity: 'success', summary: 'Registration Successful!!!', life: 2000 });
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
@@ -110,6 +113,10 @@ async function handleSubmit(form: RegisterPayload) {
                 life: 4000,
             });
         }
+    } finally {
+        setTimeout(() => {
+            submitting.value = false;
+        }, 2000);
     }
 }
 
@@ -117,14 +124,19 @@ async function handleSubmit(form: RegisterPayload) {
 const resolver = zodResolver(
     z
         .object({
-            name: z.string().trim().min(3, { message: 'name must be at least 3 characters.' }),
-            email: z.string().trim().email({ message: 'Valid email is required.' }),
-            password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
-            password_confirmation: z.string().min(6, { message: 'Confirm password is required.' }),
+            name: z.string().trim().min(3, { message: 'Name must be at least 3 characters.' }),
+            email: z.email({ message: 'Valid email is required.' }),
+            password: z.string().min(8, { message: 'Password must be at least 8 characters.' }),
+            password_confirmation: z.string().min(8, { message: 'Confirm password is required.' }),
         })
-        .refine((data) => data.password === data.password_confirmation, {
-            message: "Passwords don't match.",
-            path: ['password_confirmation'],
+        .superRefine(({ password, password_confirmation }, ctx) => {
+            if (password !== password_confirmation) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['password_confirmation'],
+                    message: "Passwords don't match.",
+                });
+            }
         }),
 );
 </script>
