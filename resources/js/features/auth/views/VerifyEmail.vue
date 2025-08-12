@@ -43,8 +43,18 @@ const loggingOut = ref(false);
 async function handleResend() {
     resending.value = true;
     try {
-        // await new Promise((resolve) => setTimeout(resolve, 3000));
-        //  await auth.resendVerificationEmail();
+        await auth.fetchUser();
+        if (auth.user?.email_verified_at) {
+            toast.add({
+                severity: 'info',
+                summary: 'Email Already Verified',
+                life: 3000,
+            });
+            router.push({ name: 'dashboard' });
+            return;
+        }
+
+        await auth.resendVerificationEmail();
         toast.add({
             severity: 'success',
             summary: 'Verification email resent!',

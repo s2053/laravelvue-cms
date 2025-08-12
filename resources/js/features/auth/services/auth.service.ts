@@ -40,6 +40,12 @@ const AuthService = {
         return res.data;
     },
 
+    // 🔹 Resend email verification link
+    async resendVerificationEmail(): Promise<ApiResponse<{ message: string }>> {
+        const res = await api.post<ApiResponse<{ message: string }>>('/email/verification-notification');
+        return res.data;
+    },
+
     // Logout user
     async logout(): Promise<ApiResponse<{ message: string }>> {
         const res = await api.post<ApiResponse<{ message: string }>>('/logout');
