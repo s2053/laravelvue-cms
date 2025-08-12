@@ -76,33 +76,40 @@ const router = createRouter({
     routes,
 });
 
+const blockedAuthRoutes: string[] = ['login', 'register', 'forgot-password', 'reset-password'];
+
 router.beforeEach(async (to, from, next) => {
     const auth = useAuthStore();
 
     const isLoggedIn = auth.isAuthenticated;
-    const user = auth.user; // You must load this from the API after login
-
+    const user = auth.user;
     const isDashboardRoute = to.path.startsWith('/dashboard');
-    const isAuthPage = to.name?.toString().includes('login');
+    // const isAuthPage = to.name?.toString().includes('login');
+    const isAuthPage = blockedAuthRoutes.includes(to.name as string);
+
     const isVerifyPage = to.name === 'verify-email';
 
-    // 1. Not logged in? Block dashboard
+    if (isAuthPage && to.query.verified === '1' && isLoggedIn) {
+        await auth.fetchUser();
+    }
+
+    // Not logged in? Block dashboard
     if (isDashboardRoute && !isLoggedIn) {
         return next({ path: '/login' });
     }
 
-    // 2. Already logged in? Block login page
+    // Already logged in? Block login
     if (isAuthPage && isLoggedIn) {
         return next({ name: 'dashboard' });
     }
 
-    // 3. Logged in but not verified? Block dashboard
-    if (isDashboardRoute && isLoggedIn && user && !user.email_verified_at) {
+    // Logged in but not verified? Block dashboard
+    if (isDashboardRoute && isLoggedIn && auth.user && !auth.user.email_verified_at) {
         return next({ name: 'verify-email' });
     }
 
-    // 4. Logged in and verified, but trying to access verify page? Go to dashboard
-    if (isVerifyPage && isLoggedIn && user && user.email_verified_at) {
+    // Verified user trying to access verify-email? Redirect to dashboard
+    if (isVerifyPage && isLoggedIn && auth.user && auth.user.email_verified_at) {
         return next({ name: 'dashboard' });
     }
 
