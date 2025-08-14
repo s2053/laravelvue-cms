@@ -25,7 +25,10 @@ class RoleController extends Controller
             'permissions' => 'array',
             'permissions.*' => 'integer|exists:permissions,id',
         ]);
-        $role = Role::create(['name' => $validated['name']]);
+        $role = Role::create([
+            'name' => $validated['name'],
+            'guard_name' => 'web'
+        ]);
         if (!empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
         }
@@ -52,7 +55,10 @@ class RoleController extends Controller
             'permissions' => 'array',
             'permissions.*' => 'integer|exists:permissions,id',
         ]);
-        $role = Role::findOrFail($id);
+        // dd($id);
+        $role = Role::where('id', $id)
+            ->where('guard_name', 'web')
+            ->firstOrFail();
         $role->name = $validated['name'];
         $role->save();
         if (isset($validated['permissions'])) {
