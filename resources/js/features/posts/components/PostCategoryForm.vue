@@ -25,6 +25,7 @@
                 </div>
 
                 <FieldError :formError="$form.slug?.error?.message" :serverError="serverErrors?.slug?.[0]" />
+
             </div>
 
             <!-- Description Field -->
@@ -33,13 +34,14 @@
                 <InputText v-model="form.description" name="description" placeholder="Description" class="w-full" />
                 <FieldError :formError="$form.description?.error?.message"
                     :serverError="serverErrors?.description?.[0]" />
+
             </div>
         </div>
 
         <!-- Footer Actions -->
         <div class="mt-4 flex justify-end gap-2">
             <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" :label="submitLabel" severity="primary" />
+            <Button type="submit" :label="submitLabel" severity="primary" :disabled="submitting" />
         </div>
     </Form>
 </template>
@@ -50,15 +52,16 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 
-import { PostTagPayload } from '@/features/posts/posts.types';
+import { PostCategoryPayload } from '@/features/posts/posts.types';
 import { slugify } from '@/utils/slugify';
 
 // Props & Emits
 const props = defineProps<{
-    initialForm: PostTagPayload;
+    initialForm: PostCategoryPayload;
     submitLabel: string;
     serverErrors?: Record<string, string[]>;
     editingId: number | null;
+    submitting: boolean;
 }>();
 
 const emit = defineEmits(['submit', 'cancel']);
@@ -67,7 +70,7 @@ const emit = defineEmits(['submit', 'cancel']);
 const slugEdit = ref(false);
 const isEditMode = computed(() => props.editingId !== null);
 
-const form = ref<PostTagPayload>({ ...props.initialForm });
+const form = ref<PostCategoryPayload>({ ...props.initialForm });
 
 // Watchers
 watch(
