@@ -5,12 +5,7 @@
             <div>
                 <label for="title" class="mb-2 block font-bold">Title:</label>
                 <InputText v-model="form.title" name="title" placeholder="Title" class="w-full" />
-                <Message v-if="$form.title?.invalid" severity="error" size="small" variant="simple">
-                    {{ $form.title.error.message }}
-                </Message>
-                <Message v-else-if="serverErrors?.title" severity="error" size="small" variant="simple">
-                    {{ serverErrors.title[0] }}
-                </Message>
+                <FieldError :formError="$form.title?.error?.message" :serverError="serverErrors?.title?.[0]" />
 
                 <!-- Slug Display & Edit -->
                 <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
@@ -35,24 +30,14 @@
                     />
                 </div>
 
-                <Message v-if="$form.slug?.invalid" severity="error" size="small" variant="simple" class="mt-1">
-                    {{ $form.slug.error.message }}
-                </Message>
-                <Message v-else-if="serverErrors?.slug" severity="error" size="small" variant="simple" class="mt-1">
-                    {{ serverErrors.slug[0] }}
-                </Message>
+                <FieldError :formError="$form.slug?.error?.message" :serverError="serverErrors?.slug?.[0]" />
             </div>
 
             <!-- Description Field -->
             <div>
                 <label for="description" class="mb-2 block font-bold">Description:</label>
                 <InputText v-model="form.description" name="description" placeholder="Description" class="w-full" />
-                <Message v-if="$form.description?.invalid" severity="error" size="small" variant="simple">
-                    {{ $form.description.error.message }}
-                </Message>
-                <Message v-else-if="serverErrors?.description" severity="error" size="small" variant="simple">
-                    {{ serverErrors.description[0] }}
-                </Message>
+                <FieldError :formError="$form.description?.error?.message" :serverError="serverErrors?.description?.[0]" />
             </div>
         </div>
 
@@ -65,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import FieldError from '@/components/common/FieldError.vue';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';

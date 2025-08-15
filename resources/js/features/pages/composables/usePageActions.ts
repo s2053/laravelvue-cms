@@ -66,7 +66,15 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
     function openDialog(action: string, row?: Page) {
         dialogAction.value = action;
         const selectedCount = selectedIds.value.length;
-        dialogTitle.value = selectedCount > 1 ? `Bulk Update ${action} [${selectedCount} selected]` : `Update ${action}`;
+
+        let actionTitle = 'Dialog Title';
+        if (action == 'page_category_id') {
+            actionTitle = 'Page Category';
+        } else {
+            actionTitle = action;
+        }
+
+        dialogTitle.value = selectedCount > 1 ? `Bulk Update ${actionTitle} [${selectedCount} selected]` : `Update ${actionTitle}`;
 
         initialForm.value = buildInitialForm(action, row);
         console.log('Initial form data:', initialForm.value);
