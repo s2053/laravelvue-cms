@@ -98,8 +98,16 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
         }
     }
 
+    let initialLoadFinished = false;
+
     // Handle pagination change
     function onPage(event: { page: number; rows: number }) {
+        if (!initialLoadFinished && event.page === 0) {
+            initialLoadFinished = true;
+            return; // Skip initial load
+        }
+        initialLoadFinished = true;
+
         numOfRows.value = event.rows;
         loadPage({
             page: event.page + 1,

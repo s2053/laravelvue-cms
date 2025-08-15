@@ -16,12 +16,18 @@
                         </span>
                     </template>
                     <template v-else>
-                        <InputText v-model="form.slug" name="slug" placeholder="Slug" class="flex-grow text-sm"
-                            @input="onSlugInput" size="small" />
+                        <InputText v-model="form.slug" name="slug" placeholder="Slug" class="flex-grow text-sm" @input="onSlugInput" size="small" />
                     </template>
-                    <Button icon="pi pi-pencil" size="small" type="button" @click="slugEdit = !slugEdit"
-                        :severity="slugEdit ? 'success' : 'secondary'" class="h-6 min-w-6 text-xs" variant="text"
-                        :title="'Edit Slug'" />
+                    <Button
+                        icon="pi pi-pencil"
+                        size="small"
+                        type="button"
+                        @click="slugEdit = !slugEdit"
+                        :severity="slugEdit ? 'success' : 'secondary'"
+                        class="h-6 min-w-6 text-xs"
+                        variant="text"
+                        :title="'Edit Slug'"
+                    />
                 </div>
 
                 <FieldError :formError="$form.slug?.error?.message" :serverError="serverErrors?.slug?.[0]" />
@@ -31,8 +37,7 @@
             <div>
                 <label for="description" class="mb-2 block font-bold">Description:</label>
                 <InputText v-model="form.description" name="description" placeholder="Description" class="w-full" />
-                <FieldError :formError="$form.description?.error?.message"
-                    :serverError="serverErrors?.description?.[0]" />
+                <FieldError :formError="$form.description?.error?.message" :serverError="serverErrors?.description?.[0]" />
             </div>
         </div>
 

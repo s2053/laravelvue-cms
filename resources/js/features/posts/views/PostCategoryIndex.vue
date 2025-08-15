@@ -69,11 +69,18 @@
                 :editingId="editingId" :submitting="submitting" @submit="handleSubmit"
                 @cancel="dialogVisible = false" />
         </Dialog>
+
+        <!-- Bulk/single option dialog -->
+        <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
+            <PostCategoryOptionForm :action="actionDialogAction" :initialData="actionDialogInitial"
+                :serverErrors="optionFormServerErrors" @submit="submitActionUpdate"
+                @cancel="isActionDialogVisible = false" />
+        </Dialog>
     </AppContent>
 </template>
 <script setup lang="ts">
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { PostCategoryForm } from '@/features/posts/components';
+import { PostCategoryForm, PostCategoryOptionForm } from '@/features/posts/components';
 
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
 import AppContent from '@/layouts/app/components/AppContent.vue';
@@ -82,7 +89,7 @@ import { computed, onMounted, ref } from 'vue';
 
 // Utils
 import { usePaginatedTable } from '@/composables/usePaginatedList';
-import { usePostCategoryActions, usePostCategory } from '@/features/posts/composables';
+import { usePostCategory, usePostCategoryActions } from '@/features/posts/composables';
 import { PostCategoryFilters, PostCategoryPayload } from '@/features/posts/posts.types';
 import PostCategoryService from '@/features/posts/services/postCategory.service';
 import { formatDateTimeString } from '@/utils/dateHelper';
@@ -125,15 +132,26 @@ const {
 });
 
 // Bulk actions
-const { bulkAction, bulkOptions, applyBulk } = usePostCategoryActions({ selectedRecords, tableReload });
+const {
+    bulkAction,
+    bulkOptions,
+    applyBulk,
+    dialog: actionDialog,
+    submit: submitActionUpdate,
+    serverErrors: optionFormServerErrors,
+} = usePostCategoryActions({ selectedRecords, tableReload });
+
+// Aliases for dialog refs
+const { visible: isActionDialogVisible, title: actionDialogTitle, action: actionDialogAction, initial: actionDialogInitial } = actionDialog;
 
 // Columns
 const allColumns = [
     { field: 'id', label: 'Id' },
     { field: 'title', label: 'Title' },
+    { field: 'status', label: 'Status' },
     { field: 'created_at', label: 'Created At' },
 ];
-const visibleColumns = ref<string[]>(['id', 'title', 'created_at']);
+const visibleColumns = ref<string[]>(['id', 'title', 'status', 'created_at']);
 const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 onMounted(() => {
@@ -149,11 +167,13 @@ const serverErrors = ref<{ [key: string]: string[] }>({});
 
 const submitting = ref(false);
 
-
 const initialFormPayload: PostCategoryPayload = {
     title: '',
     slug: '',
     description: '',
+    meta_title: '',
+    meta_description: '',
+    status: true,
 };
 
 const formModel = ref<PostCategoryPayload>({ ...initialFormPayload });

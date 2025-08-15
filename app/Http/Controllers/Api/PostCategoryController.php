@@ -80,9 +80,9 @@ class PostCategoryController extends Controller
     public function bulkUpdate(Request $request)
     {
         $validated = $request->validate([
-            'action' => 'required|string|in:delete',
+            'action' => 'required|string|in:delete,status',
             'ids' => 'required|array',
-            // 'ids.*' => 'integer|exists:post_categories,id',
+            'ids.*' => 'integer|exists:post_categories,id',
             'data' => 'nullable|array',
         ]);
 

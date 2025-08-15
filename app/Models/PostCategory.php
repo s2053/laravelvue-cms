@@ -8,12 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class PostCategory extends Model
 {
     use HasSlug;
-
-    protected $table = "post_categories";
     protected $fillable = [
         'title',
         'slug',
         'description',
+        'meta_title',
+        'meta_description',
+        'status',
+    ];
+
+
+    protected $casts = [
+        'status' => 'boolean',
     ];
 }
 

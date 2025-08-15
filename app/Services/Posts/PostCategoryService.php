@@ -88,10 +88,24 @@ class PostCategoryService
      */
     public function bulkUpdate(array $validated): array
     {
+        $recs = PostCategory::whereIn('id', $validated['ids']);
+
         switch ($validated['action']) {
             case 'delete':
-                PostCategory::whereIn('id', $validated['ids'])->delete();
-                return ['message' => 'Post categories deleted.'];
+                $recs = $recs->get();
+                foreach ($recs as $rec) {
+                    $this->delete($rec);
+                }
+                return ['message' => 'Pages deleted.'];
+
+            case 'status':
+                $data = $validated['data'];
+                $recs->update([
+                    'status' => $data['status']
+                ]);
+                return ['message' => 'Status updated.'];
+
+
 
             default:
                 return ['message' => 'Invalid action'];

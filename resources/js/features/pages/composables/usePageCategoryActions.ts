@@ -140,23 +140,8 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
 
 // Prepare initial form data for dialog based on action and row data
 function buildInitialForm(action: string, row?: any) {
-    if (!row) {
-        // Provide default values per action when no row provided
-        switch (action) {
-            case 'page_category_id':
-                return { page_category_id: null };
-
-            default:
-                return {};
-        }
-    }
-
-    // When row is provided, extract values or fallback to defaults
+    // Provide default values per action when no row provided
     switch (action) {
-        case 'status':
-            return {
-                status: row.status ?? true,
-            };
         default:
             return {};
     }

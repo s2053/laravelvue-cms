@@ -56,7 +56,6 @@ const resolver = zodResolver(
         status: z.boolean({ message: 'Status is required' }),
     }),
 );
-
 // submit
 function onSubmit({ valid }: { valid: boolean }) {
     if (!valid) return;
