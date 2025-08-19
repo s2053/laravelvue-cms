@@ -5,9 +5,7 @@ namespace App\Services;
 use App\Enums\PageStatus;
 use App\Filters\PageFilter;
 use App\Models\Page;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use App\Services\FileUploadService;
 
 class PageService

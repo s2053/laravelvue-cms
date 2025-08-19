@@ -12,13 +12,14 @@ class PostCategoryResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-   public function toArray(Request $request): array
+    public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
             'title' => $this->title,
             'slug' => $this->slug,
             'description' => $this->description,
+            'featured_image' => $this->featured_image ? $this->makeImageUrl($this->featured_image, 'thumb') : null,
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
             'status' => $this->status,

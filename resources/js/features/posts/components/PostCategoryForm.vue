@@ -1,5 +1,5 @@
 <template>
-    <Form v-slot="$form" :initialValues="categoryForm" :resolver="resolver" @submit="onSubmit">
+    <Form v-slot="$form" :initialValues="categoryForm" :resolver="resolver" :key="editingId || 'create'" @submit="onSubmit">
         <Tabs v-model:value="activeTab">
             <!-- Tab Navigation -->
             <TabList>
@@ -80,6 +80,37 @@
                             <FieldError :formError="$form.parent_id?.error?.message" :serverError="serverErrors?.parent_id?.[0]" />
                         </div>
 
+                        <!-- Featured image -->
+                        <div>
+                            <label for="featured_image" class="mb-2 block font-bold">Featured Image:</label>
+                            <div v-if="categoryForm.featured_image" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                                <img
+                                    :src="categoryForm.featured_image"
+                                    alt="Thumbnail preview"
+                                    class="block max-h-32 w-full max-w-xs rounded object-contain"
+                                />
+
+                                <!-- Remove button/icon (top-right corner) -->
+                                <div class="absolute top-0 right-0">
+                                    <Button
+                                        @click="removeMedia"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        aria-label="Cancel"
+                                        size="small"
+                                        title="Remove"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <MediaUploader v-model:file="categoryForm.featured_image_file" />
+                            </div>
+                            <FieldError
+                                :formError="$form.featured_image_file?.error?.message"
+                                :serverError="serverErrors?.featured_image_file?.[0]"
+                            />
+                        </div>
+
                         <!-- Status and sort Field -->
                         <div class="flex gap-4">
                             <!-- Status Field -->
@@ -148,6 +179,8 @@
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
+
+import MediaUploader from '@/components/common/MediaUploader.vue';
 
 import FieldError from '@/components/common/FieldError.vue';
 
@@ -234,6 +267,11 @@ const resolver = zodResolver(
 function onSlugInput(event: Event) {
     const input = event.target as HTMLInputElement;
     categoryForm.value.slug = slugify(input.value);
+}
+
+// Remove thumbnail from form
+function removeMedia() {
+    categoryForm.value.featured_image = null;
 }
 
 // Emit submit if valid

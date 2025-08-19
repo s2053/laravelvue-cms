@@ -47,14 +47,14 @@
                     </template>
 
                     <template v-else-if="col.field === 'title'" #body="{ data }">
-                        <div v-if="data.thumbnail">
-                            <img :src="data.thumbnail" alt="Featured image" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
+                        <div v-if="data.featured_image">
+                            <img :src="data.featured_image" alt="Featured image" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
                         </div>
                         {{ data.title }}
                     </template>
 
                     <template v-else-if="col.field === 'parent_id'" #body="{ data }">
-                        <div class="text-center">
+                        <div class="">
                             {{ data.parent ? data.parent.title : '-' }}
                         </div>
                     </template>
@@ -217,6 +217,8 @@ const initialFormPayload: PostCategoryPayload = {
     status: true,
     parent_id: null,
     sort_order: 0,
+    featured_image: null,
+    featured_image_file: null,
 };
 
 const formModel = ref<PostCategoryPayload>({ ...initialFormPayload });
@@ -258,18 +260,42 @@ async function openEdit(category: PostCategory) {
     }
 }
 
+function payloadToFormData(payload: Partial<PostCategoryPayload>): FormData {
+    const nullables = ['featured_image', 'parent_id', 'status'];
+    const formData = new FormData();
+
+    if (editingId.value) {
+        formData.append('_method', 'PUT');
+    }
+
+    Object.entries(payload).forEach(([key, value]) => {
+        if (key === 'featured_image_file' && value) {
+            formData.append('featured_image_file', value as File);
+        } else if (typeof value === 'boolean') {
+            formData.append(key, value ? '1' : '0');
+        } else if (nullables.includes(key)) {
+            formData.append(key, value == null ? '' : String(value));
+        } else if (value !== undefined && value !== null) {
+            formData.append(key, value as any);
+        }
+    });
+
+    return formData;
+}
+
 async function handleSubmit(form: PostCategoryPayload) {
     if (submitting.value) return;
     submitting.value = true;
     serverErrors.value = {};
     try {
         const payload = pickCleanData({ ...form }, initialFormPayload);
+        const formData = payloadToFormData(payload);
 
         if (editingId.value) {
-            await updatePostCategory(editingId.value, payload);
+            await updatePostCategory(editingId.value, formData);
             toast.add({ severity: 'success', summary: 'Record updated', life: 2000 });
         } else {
-            await createPostCategory(payload);
+            await createPostCategory(formData);
             toast.add({ severity: 'success', summary: 'Record created', life: 2000 });
         }
         dialogVisible.value = false;

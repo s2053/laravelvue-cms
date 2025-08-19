@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\HasImageUrls;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Model;
 
 class PostCategory extends Model
 {
     use HasSlug;
+    use HasImageUrls;
+
     protected $fillable = [
         'title',
         'slug',

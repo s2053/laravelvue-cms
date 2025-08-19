@@ -20,6 +20,7 @@ export interface PostCategory {
     parent?: PostCategory | null;
     parent_id?: number | null;
     sort_order?: number | null;
+    featured_image?: string | null;
     description?: string | null;
     meta_title?: string | null;
     meta_description?: string | null;
@@ -28,7 +29,9 @@ export interface PostCategory {
     updated_at?: string;
 }
 
-export type PostCategoryPayload = Omit<PostCategory, 'id' | 'created_at' | 'updated_at'>;
+export type PostCategoryPayload = Omit<PostCategory, 'id' | 'created_at' | 'updated_at'> & {
+    featured_image_file?: File | null;
+};
 
 export type PostCategoryFilters = {
     created_at: string[];

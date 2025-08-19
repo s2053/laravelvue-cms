@@ -1,5 +1,5 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import type { PostCategory, PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
+import type { PostCategory, PostCategoryOption } from '@/features/posts/posts.types';
 import PostCategoryService from '@/features/posts/services/postCategory.service';
 import { ref } from 'vue';
 
@@ -54,7 +54,7 @@ export function usePostCategory() {
     };
 
     // Create new post category
-    const createPostCategory = async (payload: PostCategoryPayload) => {
+    const createPostCategory = async (payload: FormData) => {
         try {
             const res = await PostCategoryService.create(payload);
             return res.data;
@@ -66,7 +66,7 @@ export function usePostCategory() {
     };
 
     // Update existing post category
-    const updatePostCategory = async (id: number, payload: PostCategoryPayload) => {
+    const updatePostCategory = async (id: number, payload: FormData) => {
         try {
             const res = await PostCategoryService.update(id, payload);
             return res.data;

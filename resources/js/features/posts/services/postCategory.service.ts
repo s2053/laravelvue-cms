@@ -1,4 +1,4 @@
-import type { PostCategory, PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
+import type { PostCategory, PostCategoryOption } from '@/features/posts/posts.types';
 import { api } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
@@ -28,14 +28,14 @@ const PostCategoryService = {
     },
 
     // Create a new post category
-    async create(data: Partial<PostCategoryPayload>): Promise<ApiResponse<PostCategory>> {
+    async create(data: FormData): Promise<ApiResponse<PostCategory>> {
         const res = await api.post<ApiResponse<PostCategory>>('/post-categories', data);
         return res.data;
     },
 
     // Update an existing post category by ID
-    async update(id: number, data: Partial<PostCategoryPayload>): Promise<ApiResponse<PostCategory>> {
-        const res = await api.put<ApiResponse<PostCategory>>(`/post-categories/${id}`, data);
+    async update(id: number, data: FormData): Promise<ApiResponse<PostCategory>> {
+        const res = await api.post<ApiResponse<PostCategory>>(`/post-categories/${id}`, data);
         return res.data;
     },
 

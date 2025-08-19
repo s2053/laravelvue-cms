@@ -32,6 +32,8 @@ class PostCategoryRequest extends FormRequest
                 'max:255',
             ],
             'description' => 'nullable|string',
+            'featured_image' => 'nullable|string',
+            'featured_image_file' => 'nullable|image|max:2048',
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'status' => 'boolean',
