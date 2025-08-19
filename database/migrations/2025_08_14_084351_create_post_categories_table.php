@@ -14,10 +14,15 @@ return new class extends Migration {
             $table->string('title');
             $table->string('slug')->unique();
 
-
-            // Content
-            $table->text('excerpt')->nullable();
             $table->longText('description')->nullable();
+
+
+            $table->foreignId('parent_id')->nullable()
+                ->constrained('post_categories')
+                ->nullOnDelete();
+
+            $table->unsignedInteger('sort_order')->default(0);
+
 
             // Featured Media
             $table->string('featured_image')->nullable(); // direct image upload

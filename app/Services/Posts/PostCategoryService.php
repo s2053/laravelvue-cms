@@ -18,7 +18,7 @@ class PostCategoryService
      */
     public function list(array $params, int $perPage = 25, bool $all = false)
     {
-        $query = PostCategory::query();
+        $query = PostCategory::with('parent');
 
         if (!empty($params['search'])) {
             $search = $params['search'];
@@ -81,6 +81,32 @@ class PostCategoryService
     public function delete(PostCategory $record): void
     {
         $record->delete();
+    }
+
+
+
+    /**
+     * Get categories for dropdown or search.
+     *
+     * @param string|null $search
+     * @param bool $all
+     * @return \Illuminate\Support\Collection
+     */
+    public function getOptions(?string $search = null, bool $all = false)
+    {
+        $query = PostCategory::query();
+
+        if ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        $categories = $all ? $query->get() : $query->limit(20)->get(); 
+
+        return $categories->map(fn($c) => [
+            'id' => $c->id,
+            'title' => $c->title,
+            'parent_id' => $c->parent_id
+        ]);
     }
 
     /**

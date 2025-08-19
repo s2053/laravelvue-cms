@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class PostCategoryRequest extends FormRequest
 {
@@ -21,6 +22,8 @@ class PostCategoryRequest extends FormRequest
      */
     public function rules(): array
     {
+        $editingId = $this->route('post_category')?->id;
+
         return [
             'title' => 'required|string|max:255',
             'slug' => [
@@ -32,6 +35,13 @@ class PostCategoryRequest extends FormRequest
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string|max:500',
             'status' => 'boolean',
+            'parent_id' => [
+                'nullable',
+                'integer',
+                'exists:post_categories,id',
+                $editingId ? Rule::notIn([$editingId]) : null,
+            ],
+            'sort_order' => 'nullable|integer|min:0',
         ];
 
     }

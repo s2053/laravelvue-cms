@@ -90,4 +90,17 @@ class PostCategoryController extends Controller
 
         return response()->json($result);
     }
+
+
+    public function options(Request $request)
+    {
+        $search = $request->input('search', null);
+        $all = $request->boolean('all', false);
+
+        $records = $this->service->getOptions($search, $all);
+
+        return response()->json([
+            'data' => $records
+        ]);
+    }
 }

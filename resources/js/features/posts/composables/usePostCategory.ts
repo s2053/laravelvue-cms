@@ -1,5 +1,5 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import type { PostCategory, PostCategoryPayload } from '@/features/posts/posts.types';
+import type { PostCategory, PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
 import PostCategoryService from '@/features/posts/services/postCategory.service';
 import { ref } from 'vue';
 
@@ -7,6 +7,8 @@ export function usePostCategory() {
     const { handleError } = useApiErrorHandler();
 
     const postCategories = ref<PostCategory[]>([]);
+    const options = ref<PostCategoryOption[]>([]);
+
     const loading = ref(false);
     const error = ref<string | null>(null);
 
@@ -34,6 +36,20 @@ export function usePostCategory() {
             handleError(err);
             error.value = err.message || 'Failed to fetch post category';
             throw err;
+        }
+    };
+
+    //Fetch for dropdowns
+    const fetchOptions = async (all = true, search?: string) => {
+        error.value = null;
+        try {
+            const res = await PostCategoryService.getOptions(all, search);
+            options.value = res.data; // assumes service wraps data in `data`
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to fetch post category options';
+        } finally {
+            loading.value = false;
         }
     };
 
@@ -85,9 +101,11 @@ export function usePostCategory() {
 
     return {
         postCategories,
+        options,
         loading,
         error,
         fetchPostCategories,
+        fetchOptions,
         getPostCategoryById,
         createPostCategory,
         updatePostCategory,

@@ -1,4 +1,4 @@
-import type { PostCategory, PostCategoryPayload } from '@/features/posts/posts.types';
+import type { PostCategory, PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
 import { api } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
@@ -18,6 +18,12 @@ const PostCategoryService = {
     // Fetch a single post category by ID
     async getById(id: number): Promise<ApiResponse<PostCategory>> {
         const res = await api.get<ApiResponse<PostCategory>>(`/post-categories/${id}`);
+        return res.data;
+    },
+
+    // Fetch options for dropdown with optional search
+    async getOptions(all = false, search?: string): Promise<ApiResponse<PostCategoryOption[]>> {
+        const res = await api.get<ApiResponse<PostCategoryOption[]>>('/post-categoriess/get-list', { params: { search, all } });
         return res.data;
     },
 

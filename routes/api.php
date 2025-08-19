@@ -72,6 +72,10 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
     Route::apiResource('post-categories', PostCategoryController::class);
     Route::post('/post-categories/bulk-update', [PostCategoryController::class, 'bulkUpdate']);
 
+    Route::get('/post-categoriess/get-list', action: [PostCategoryController::class, 'options']);
+    Route::apiResource('post-categories', PostCategoryController::class);
+    Route::post('/post-categories/bulk-update', [PostCategoryController::class, 'bulkUpdate']);
+
 
 
 
