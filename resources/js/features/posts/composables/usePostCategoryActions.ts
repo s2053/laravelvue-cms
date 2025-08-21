@@ -1,16 +1,15 @@
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { usePageCategories } from '@/features/pages/composables/usePageCategory';
-import { PageCategory } from '@/features/pages/pages.types';
+import { usePostCategory } from '@/features/posts/composables/usePostCategory';
+import { PostCategory } from '@/features/posts/posts.types';
 import { useToast } from 'primevue/usetoast';
 import { Ref, ref } from 'vue';
 
-export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategory[]>; tableReload: () => void }) {
+export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategory[]>; tableReload: () => void }) {
     // Current bulk action selected
     const bulkAction = ref<string | null>(null);
-
     // Options for bulk actions
     const bulkOptions = [
-        { label: 'Delete Pages', value: 'delete' },
+        { label: 'Delete', value: 'delete' },
         { label: 'Update Status', value: 'status' },
     ];
 
@@ -26,7 +25,7 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
 
     const toast = useToast();
     const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdateCategories } = usePageCategories();
+    const { bulkUpdatePostCategories } = usePostCategory();
 
     // Trigger bulk action, handle delete separately
     function applyBulk() {
@@ -45,21 +44,25 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
         openDialog(bulkAction.value);
     }
 
-    // Open dialog for single item action or confirm delete
-    function openSingle(action: string, row: PageCategory) {
-        if (!row?.id) return;
+    // Show delete confirmation and execute delete if confirmed
+    function confirmDelete(ids: number[], title?: string) {
+        const message = ids.length === 1 ? `Delete "${title ?? 'this record'}"?` : `Delete ${ids.length} selected records?`;
 
-        selectedIds.value = [row.id];
-
-        if (action === 'delete') {
-            return confirmDelete([row.id], row.title);
-        }
-
-        openDialog(action, row);
+        showDeleteConfirm({
+            message,
+            onAccept: async () => {
+                await bulkUpdatePostCategories('delete', ids);
+                table.tableReload();
+                table.selectedRecords.value = [];
+                selectedIds.value = [];
+            },
+            successMessage: 'Record deleted',
+            errorMessage: 'Failed to delete record',
+        });
     }
 
     // Prepare and open the bulk/single update dialog
-    function openDialog(action: string, row?: PageCategory) {
+    function openDialog(action: string, row?: PostCategory) {
         dialogAction.value = action;
         const selectedCount = selectedIds.value.length;
         dialogTitle.value = selectedCount > 1 ? `Bulk Update ${action} [${selectedCount} selected]` : `Update ${action}`;
@@ -81,7 +84,7 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
         serverErrors.value = {};
 
         try {
-            await bulkUpdateCategories(dialogAction.value, selectedIds.value, form);
+            await bulkUpdatePostCategories(dialogAction.value, selectedIds.value, form);
 
             toast.add({ severity: 'success', summary: 'Updated.', life: 2000 });
             closeDialog();
@@ -104,28 +107,10 @@ export function usePageCategoryActions(table: { selectedRecords: Ref<PageCategor
         }
     }
 
-    // Show delete confirmation and execute delete if confirmed
-    function confirmDelete(ids: number[], title?: string) {
-        const message = ids.length === 1 ? `Delete "${title ?? 'this page category'}"?` : `Delete ${ids.length} selected page categories?`;
-
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdateCategories('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Record deleted',
-            errorMessage: 'Failed to delete record',
-        });
-    }
-
     return {
         bulkOptions,
         bulkAction,
         applyBulk,
-        openSingle,
         serverErrors,
         dialog: {
             visible: dialogVisible,

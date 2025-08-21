@@ -136,7 +136,6 @@ export const useAuthStore = defineStore(
             error.value = null;
             try {
                 const res = await AuthService.resendVerificationEmail();
-                setNotificationMessage('Verification email resent successfully.');
                 return res;
             } catch (err: any) {
                 handleError(err);

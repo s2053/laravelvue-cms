@@ -4,14 +4,12 @@ namespace App\Filters;
 
 use Illuminate\Database\Eloquent\Builder;
 
-class PageCategoryFilter extends QueryFilter
+class CategoryFilter extends QueryFilter
 {
     protected array $filters = [
         'status',
         'created_at',
         'search',
-
-
     ];
 
     /** Filtering Methods **/

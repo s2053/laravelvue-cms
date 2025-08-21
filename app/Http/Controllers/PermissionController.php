@@ -35,6 +35,7 @@ class PermissionController extends Controller
         ]);
         $permission = Permission::create([
             'name' => $validated['name'],
+            'guard_name' => 'web',
             'permission_group_id' => $validated['permission_group_id'] ?? null,
         ]);
         return response()->json($permission, 201);
@@ -65,7 +66,9 @@ class PermissionController extends Controller
         ], [
             'name.regex' => 'The permission name may only contain letters, numbers, underscores, and dots.',
         ]);
-        $permission = Permission::findOrFail($id);
+        $permission = Permission::where('id', $id)
+            ->where('guard_name', 'web')
+            ->firstOrFail();
         $permission->name = $validated['name'];
         $permission->permission_group_id = $validated['permission_group_id'] ?? null;
         $permission->save();

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Filters\PageCategoryFilter;
+use App\Filters\CategoryFilter;
 use App\Models\PageCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
@@ -20,7 +20,7 @@ class PageCategoryService
 
         $query = PageCategory::query();
 
-        $filter = new PageCategoryFilter($params);
+        $filter = new CategoryFilter($params);
         $query = $filter->apply($query);
 
         if ($all) {
