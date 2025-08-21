@@ -1,5 +1,5 @@
 <template>
-    <Form v-slot="$form" :initialValues="categoryForm" :resolver="resolver" @submit="onSubmit">
+    <Form v-slot="$form" :initialValues="categoryForm" :resolver="resolver" :key="editingId || 'create'" @submit="onSubmit">
         <Tabs v-model:value="activeTab">
             <!-- Tab Navigation -->
             <TabList>
@@ -64,19 +64,82 @@
                             <FieldError :formError="$form.description?.error?.message" :serverError="serverErrors?.description?.[0]" />
                         </div>
 
-                        <!-- Status Field -->
+                        <!-- Category -->
                         <div>
-                            <label for="status" class="mb-2 block font-bold">Status:</label>
+                            <label for="parent_id" class="mb-2 block font-bold">Parent Category:</label>
                             <Select
-                                v-model="categoryForm.status"
-                                :options="statusOptions"
-                                name="status"
-                                optionLabel="label"
-                                optionValue="value"
+                                v-model="categoryForm.parent_id"
+                                :options="categoryOptions"
+                                name="parent_id"
+                                optionLabel="title"
+                                optionValue="id"
                                 class="w-full"
-                                placeholder="Select Status"
+                                placeholder="Select Category"
+                                showClear
                             />
-                            <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
+                            <FieldError :formError="$form.parent_id?.error?.message" :serverError="serverErrors?.parent_id?.[0]" />
+                        </div>
+
+                        <!-- Featured image -->
+                        <div>
+                            <label for="featured_image" class="mb-2 block font-bold">Featured Image:</label>
+                            <div v-if="categoryForm.featured_image" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                                <img
+                                    :src="categoryForm.featured_image"
+                                    alt="Thumbnail preview"
+                                    class="block max-h-32 w-full max-w-xs rounded object-contain"
+                                />
+
+                                <!-- Remove button/icon (top-right corner) -->
+                                <div class="absolute top-0 right-0">
+                                    <Button
+                                        @click="removeMedia"
+                                        icon="pi pi-trash"
+                                        severity="danger"
+                                        aria-label="Cancel"
+                                        size="small"
+                                        title="Remove"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <MediaUploader v-model:file="categoryForm.featured_image_file" />
+                            </div>
+                            <FieldError
+                                :formError="$form.featured_image_file?.error?.message"
+                                :serverError="serverErrors?.featured_image_file?.[0]"
+                            />
+                        </div>
+
+                        <!-- Status and sort Field -->
+                        <div class="flex gap-4">
+                            <!-- Status Field -->
+                            <div class="flex-1">
+                                <label for="status" class="mb-2 block font-bold">Status:</label>
+                                <Select
+                                    v-model="categoryForm.status"
+                                    :options="statusOptions"
+                                    name="status"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    class="w-full"
+                                    placeholder="Select Status"
+                                />
+                                <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
+                            </div>
+
+                            <!-- Sort Order Field -->
+                            <div class="flex-1">
+                                <label for="sort_order" class="mb-2 block font-bold">Sort Order:</label>
+                                <InputNumber
+                                    v-model="categoryForm.sort_order"
+                                    name="sort_order"
+                                    :min="0"
+                                    class="w-full"
+                                    placeholder="Enter Sort Order"
+                                />
+                                <FieldError :formError="$form.sort_order?.error?.message" :serverError="serverErrors?.sort_order?.[0]" />
+                            </div>
                         </div>
                     </div>
                 </TabPanel>
@@ -117,11 +180,13 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 
+import MediaUploader from '@/components/common/MediaUploader.vue';
+
 import FieldError from '@/components/common/FieldError.vue';
 
 import { slugify } from '@/utils/slugify';
 
-import { PostCategoryPayload } from '@/features/posts/posts.types';
+import { PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
 import Tab from 'primevue/tab';
 import TabList from 'primevue/tablist';
 import TabPanel from 'primevue/tabpanel';
@@ -136,6 +201,7 @@ const props = defineProps<{
     serverErrors?: Record<string, string[]>;
     editingId: number | null;
     submitting: boolean;
+    categoryOptions: PostCategoryOption[];
 }>();
 
 const emit = defineEmits(['submit', 'cancel']);
@@ -167,20 +233,45 @@ watch(
 
 // Form validation resolver
 const resolver = zodResolver(
-    z.object({
-        title: z.string().min(1, { message: 'Category title is required.' }),
-        slug: z.string().optional(),
-        description: z.string().nullable().optional(),
-        meta_title: z.string().nullable().optional(),
-        meta_description: z.string().nullable().optional(),
-        status: z.boolean(),
-    }),
+    z
+        .object({
+            title: z.string().min(1, { message: 'Category title is required.' }),
+            slug: z.string().optional(),
+            description: z.string().nullable().optional(),
+            meta_title: z.string().nullable().optional(),
+            meta_description: z.string().nullable().optional(),
+            status: z.boolean(),
+            parent_id: z.number({ message: 'Parent category must be a number' }).nullable().optional(),
+            sort_order: z
+                .number({ message: 'Sort order must be a number' })
+                .min(0, { message: 'Sort order must be zero or greater' })
+                .nullable()
+                .optional(),
+        })
+        .superRefine((data, ctx) => {
+            const { parent_id } = data;
+
+            if (parent_id == null) return;
+
+            if (props.editingId && parent_id === props.editingId) {
+                ctx.addIssue({
+                    code: 'custom',
+                    path: ['parent_id'],
+                    message: 'Category cannot be its own parent.',
+                });
+            }
+        }),
 );
 
 // Handle slug input (enforce slug format)
 function onSlugInput(event: Event) {
     const input = event.target as HTMLInputElement;
     categoryForm.value.slug = slugify(input.value);
+}
+
+// Remove thumbnail from form
+function removeMedia() {
+    categoryForm.value.featured_image = null;
 }
 
 // Emit submit if valid

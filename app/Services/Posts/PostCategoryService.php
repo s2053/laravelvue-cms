@@ -2,12 +2,25 @@
 
 namespace App\Services\Posts;
 
+use App\Filters\CategoryFilter;
 use App\Models\PostCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use App\Services\FileUploadService;
 class PostCategoryService
 {
+
+    protected string $defaultStoragePath = 'post-categories';
+    protected FileUploadService $fileUpload;
+
+    public function __construct(FileUploadService $fileUpload)
+    {
+        $this->fileUpload = $fileUpload;
+    }
+
+
     /**
      * List post categories with optional pagination.
      *
@@ -18,30 +31,10 @@ class PostCategoryService
      */
     public function list(array $params, int $perPage = 25, bool $all = false)
     {
-        $query = PostCategory::query();
+        $query = PostCategory::with('parent');
 
-        if (!empty($params['search'])) {
-            $search = $params['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%$search%")
-                    ->orWhere('created_at', 'like', "%{$search}%");
-
-            });
-        }
-
-        if (!empty($params['created_at'])) {
-            $query->whereDate('created_at', $params['created_at']);
-        }
-
-
-        if (!empty($params['sort_by'])) {
-            $sortDir = strtolower($params['sort_dir'] ?? 'asc');
-            if (!in_array($sortDir, ['asc', 'desc'])) {
-                $sortDir = 'asc';
-            }
-
-            $query->orderBy($params['sort_by'], $sortDir);
-        }
+        $filter = new CategoryFilter($params);
+        $query = $filter->apply($query);
 
         if ($all) {
             return $query->get();
@@ -55,6 +48,10 @@ class PostCategoryService
      */
     public function create(array $data): PostCategory
     {
+        if (!empty($data['featured_image_file']) && $data['featured_image_file'] instanceof UploadedFile) {
+            $data['featured_image'] = $this->storeFile($data['featured_image_file']);
+            unset($data['featured_image_file']);
+        }
         return PostCategory::create($data);
     }
 
@@ -71,6 +68,27 @@ class PostCategoryService
      */
     public function update(PostCategory $record, array $data): PostCategory
     {
+
+        // Handle featured image clearing
+        if (array_key_exists('featured_image', $data) && ($data['featured_image'] === null || $data['featured_image'] === '')) {
+            if ($record->featured_image) {
+                $this->deleteFile($record->featured_image);
+            }
+            $data['featured_image'] = null;
+        } else {
+            unset($data['featured_image']);
+        }
+
+        // Handle new featured image upload
+        if (!empty($data['featured_image_file']) && $data['featured_image_file'] instanceof UploadedFile) {
+            if ($record->featured_image) {
+                $this->deleteFile($record->featured_image);
+            }
+            $data['featured_image'] = $this->storeFile($data['featured_image_file']);
+            unset($data['featured_image_file']);
+        }
+
+
         $record->update($data);
         return $record;
     }
@@ -81,6 +99,32 @@ class PostCategoryService
     public function delete(PostCategory $record): void
     {
         $record->delete();
+    }
+
+
+
+    /**
+     * Get categories for dropdown or search.
+     *
+     * @param string|null $search
+     * @param bool $all
+     * @return \Illuminate\Support\Collection
+     */
+    public function getOptions(?string $search = null, bool $all = false)
+    {
+        $query = PostCategory::query();
+
+        if ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        $categories = $all ? $query->get() : $query->limit(20)->get();
+
+        return $categories->map(fn($c) => [
+            'id' => $c->id,
+            'title' => $c->title,
+            'parent_id' => $c->parent_id
+        ]);
     }
 
     /**
@@ -110,5 +154,37 @@ class PostCategoryService
             default:
                 return ['message' => 'Invalid action'];
         }
+    }
+
+
+
+    /**
+     * Store an uploaded file and return its path.
+     *
+     * @param UploadedFile $file
+     * @param string|null $path
+     * @return string
+     */
+    protected function storeFile(UploadedFile $file, ?string $path = null): string
+    {
+        $path = $path ?? $this->getStoragePath();
+        $paths = $this->fileUpload->uploadImage($file, $path, true);
+        return $paths['original'];
+    }
+
+    /**
+     * Delete a file and its variants.
+     *
+     * @param string $path
+     * @return void
+     */
+    protected function deleteFile(string $path): void
+    {
+        $this->fileUpload->deleteFiles($path);
+    }
+
+    protected function getStoragePath(): string
+    {
+        return $this->defaultStoragePath;
     }
 }

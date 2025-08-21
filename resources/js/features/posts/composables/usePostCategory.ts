@@ -1,5 +1,5 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import type { PostCategory, PostCategoryPayload } from '@/features/posts/posts.types';
+import type { PostCategory, PostCategoryOption } from '@/features/posts/posts.types';
 import PostCategoryService from '@/features/posts/services/postCategory.service';
 import { ref } from 'vue';
 
@@ -7,6 +7,8 @@ export function usePostCategory() {
     const { handleError } = useApiErrorHandler();
 
     const postCategories = ref<PostCategory[]>([]);
+    const options = ref<PostCategoryOption[]>([]);
+
     const loading = ref(false);
     const error = ref<string | null>(null);
 
@@ -37,8 +39,22 @@ export function usePostCategory() {
         }
     };
 
+    //Fetch for dropdowns
+    const fetchOptions = async (all = true, search?: string) => {
+        error.value = null;
+        try {
+            const res = await PostCategoryService.getOptions(all, search);
+            options.value = res.data; // assumes service wraps data in `data`
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to fetch post category options';
+        } finally {
+            loading.value = false;
+        }
+    };
+
     // Create new post category
-    const createPostCategory = async (payload: PostCategoryPayload) => {
+    const createPostCategory = async (payload: FormData) => {
         try {
             const res = await PostCategoryService.create(payload);
             return res.data;
@@ -50,7 +66,7 @@ export function usePostCategory() {
     };
 
     // Update existing post category
-    const updatePostCategory = async (id: number, payload: PostCategoryPayload) => {
+    const updatePostCategory = async (id: number, payload: FormData) => {
         try {
             const res = await PostCategoryService.update(id, payload);
             return res.data;
@@ -85,9 +101,11 @@ export function usePostCategory() {
 
     return {
         postCategories,
+        options,
         loading,
         error,
         fetchPostCategories,
+        fetchOptions,
         getPostCategoryById,
         createPostCategory,
         updatePostCategory,
