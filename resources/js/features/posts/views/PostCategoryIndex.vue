@@ -31,10 +31,13 @@
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
 
                         <div class="ml-auto flex items-center gap-2">
-                            <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" />
+                            <TableToolBar v-model="globalFilterValue" showFilter @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
                         </div>
                     </div>
                 </TableToolBarWrapper>
+
+                <!-- Collapsible filter panel -->
+                <PostCategoryFilter v-if="openFilter" :filters="filters" @update:filters="onFiltersChanged" />
             </template>
 
             <!-- Dynamic columns -->
@@ -111,7 +114,7 @@
 </template>
 <script setup lang="ts">
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { PostCategoryForm, PostCategoryOptionForm } from '@/features/posts/components';
+import { PostCategoryFilter, PostCategoryForm, PostCategoryOptionForm } from '@/features/posts/components';
 
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
 import AppContent from '@/layouts/app/components/AppContent.vue';
@@ -157,16 +160,19 @@ const {
     loadPage: loadPageData,
     reload: tableReload,
     perPageOptions,
+    openFilter,
+    onFiltersChanged,
     numOfRows,
 } = usePaginatedTable(PostCategoryService.getPaginated, {
     initialFilters: {
+        status: [],
         created_at: [],
         global: '',
     } as PostCategoryFilters,
     initialSortField: 'created_at',
     initialSortOrder: -1,
     initialPerPage: 25,
-    perPageOptions: [10, 25, 50, 50],
+    perPageOptions: [10, 25, 50, 100],
 });
 
 // Bulk actions
@@ -245,7 +251,7 @@ async function openEdit(category: PostCategory) {
         const [_, latest] = await Promise.all([fetchOptions(true), getPostCategoryById(category.id)]);
 
         parentCategories.value = postCategoryOptions.value
-            .filter((c) => Number(c.id) !== Number(category.id))
+            .filter((c) => Number(c.id) !== Number(category.id) && c.parent_id !== category.id)
             .map((c) => ({ id: c.id, title: c.title }));
 
         formModel.value = { ...pickMatchData(latest, initialFormPayload) };

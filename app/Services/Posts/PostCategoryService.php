@@ -2,6 +2,7 @@
 
 namespace App\Services\Posts;
 
+use App\Filters\CategoryFilter;
 use App\Models\PostCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -32,28 +33,8 @@ class PostCategoryService
     {
         $query = PostCategory::with('parent');
 
-        if (!empty($params['search'])) {
-            $search = $params['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%$search%")
-                    ->orWhere('created_at', 'like', "%{$search}%");
-
-            });
-        }
-
-        if (!empty($params['created_at'])) {
-            $query->whereDate('created_at', $params['created_at']);
-        }
-
-
-        if (!empty($params['sort_by'])) {
-            $sortDir = strtolower($params['sort_dir'] ?? 'asc');
-            if (!in_array($sortDir, ['asc', 'desc'])) {
-                $sortDir = 'asc';
-            }
-
-            $query->orderBy($params['sort_by'], $sortDir);
-        }
+        $filter = new CategoryFilter($params);
+        $query = $filter->apply($query);
 
         if ($all) {
             return $query->get();

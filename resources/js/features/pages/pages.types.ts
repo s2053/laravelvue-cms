@@ -58,7 +58,7 @@ export type PageFilters = {
 };
 
 export type PageCategoryFilters = {
-    status: PageStatus[];
+    status: boolean[];
     created_at: string[];
     global: string;
 };

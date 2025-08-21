@@ -34,6 +34,7 @@ export type PostCategoryPayload = Omit<PostCategory, 'id' | 'created_at' | 'upda
 };
 
 export type PostCategoryFilters = {
+    status: boolean[];
     created_at: string[];
     global: string;
 };
