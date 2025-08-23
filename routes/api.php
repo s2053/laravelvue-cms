@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Auth\CustomEmailVerificationController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\PostCategoryController;
+use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\PageCategoryController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PermissionController;
@@ -62,6 +63,7 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
     Route::apiResource('page-categories', PageCategoryController::class);
     Route::post('/page-categories/bulk-update', [PageCategoryController::class, 'bulkUpdate']);
+
     Route::apiResource('pages', PageController::class);
     Route::post('/pages/bulk-update', [PageController::class, 'bulkUpdate'])->name('pages.bulk-update');
 
@@ -75,6 +77,10 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
     Route::get('/post-categoriess/get-list', action: [PostCategoryController::class, 'options']);
     Route::apiResource('post-categories', PostCategoryController::class);
     Route::post('/post-categories/bulk-update', [PostCategoryController::class, 'bulkUpdate']);
+
+
+    Route::apiResource('posts', PostController::class);
+    Route::post('/posts/bulk-update', [PostController::class, 'bulkUpdate'])->name('posts.bulk-update');
 
 
 
