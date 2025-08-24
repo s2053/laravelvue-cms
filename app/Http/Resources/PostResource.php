@@ -39,13 +39,23 @@ class PostResource extends JsonResource
             'visibility' => $this->visibility,
             'scheduled_at' => $this->scheduled_at,
             'published_at' => $this->published_at,
-            'post_category_id' => $this->post_category_id !== null ? (int) $this->post_category_id : null,
-            'category' => $this->whenLoaded('category', function () {
-                return [
-                    'id' => $this->category->id,
-                    'title' => $this->category->title,
-                    'slug' => $this->category->slug,
-                ];
+            'categories' => $this->whenLoaded('categories', function () {
+                return $this->categories->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'title' => $category->title,
+                        'slug' => $category->slug,
+                    ];
+                });
+            }),
+            'tags' => $this->whenLoaded('tags', function () {
+                return $this->tags->map(function ($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                        'slug' => $tag->slug,
+                    ];
+                });
             }),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,

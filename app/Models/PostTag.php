@@ -15,4 +15,9 @@ class PostTag extends Model
         'slug',
         'description',
     ];
+
+    public function posts()
+    {
+        return $this->belongsToMany(Post::class, 'post_tag_pivot', 'tag_id', 'post_id');
+    }
 }

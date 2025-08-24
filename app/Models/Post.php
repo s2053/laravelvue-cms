@@ -53,8 +53,18 @@ class Post extends Model
 
 
 
-    public function category()
+
+    public function categories()
     {
-        return $this->belongsTo(PageCategory::class, 'page_category_id');
+        return $this->belongsToMany(
+            PostCategory::class,
+            'post_category_pivot',
+            'post_id',
+            'category_id'
+        );
+    }
+    public function tags()
+    {
+        return $this->belongsToMany(PostTag::class, 'post_tag_pivot', 'post_id', 'tag_id');
     }
 }

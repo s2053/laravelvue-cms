@@ -49,7 +49,10 @@ class PostRequest extends FormRequest
             'visibility' => ['required', new Enum(type: PostVisibility::class)],
             'scheduled_at' => 'nullable|date',
             'published_at' => 'nullable|date',
-            'post_category_id' => 'nullable|exists:post_categories,id',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'exists:post_categories,id',
+            'tag_ids' => 'nullable|array',
+            'tag_ids.*' => 'exists:post_tags,id',
         ];
     }
 }
