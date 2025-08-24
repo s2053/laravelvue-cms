@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\PageStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PageRequest;
-use App\Http\Resources\PageResource;
-use App\Models\Page;
+use App\Http\Requests\PostRequest;
+use App\Http\Resources\PostResource;
+use App\Models\Post;
 use App\Services\Posts\PostService;
 use Illuminate\Http\Request;
 
@@ -26,59 +25,59 @@ class PostController extends Controller
         $perPage = (int) $request->input('rows', 25);
         $all = $request->boolean('all', false);
 
-        $pages = $this->service->list($params, $perPage, $all);
+        $posts = $this->service->list($params, $perPage, $all);
 
-        return PageResource::collection($pages);
+        return PostResource::collection($posts);
     }
 
-    // Store a new page
-    public function store(PageRequest $request)
+    // Store a new post
+    public function store(PostRequest $request)
     {
         $data = $request->validated();
 
-        $page = $this->service->create($data);
+        $post = $this->service->create($data);
 
-        return (new PageResource($page))
+        return (new PostResource($post))
             ->response()
             ->setStatusCode(201);
 
     }
 
-    // Show a specific page
-    public function show(Page $page)
+    // Show a specific post
+    public function show(Post $post)
     {
-        $page = $this->service->show($page);
-        return new PageResource($page);
+        $post = $this->service->show($post);
+        return new PostResource($post);
     }
 
-    // Update a page
-    public function update(PageRequest $request, Page $page)
+    // Update a post
+    public function update(PostRequest $request, Post $post)
     {
         $data = $request->validated();
 
 
 
 
-        $updatedPage = $this->service->update($page, $data);
+        $updatedPost = $this->service->update($post, $data);
 
-        return new PageResource($updatedPage);
+        return new PostResource($updatedPost);
     }
 
-    // Delete a page
-    public function destroy(Page $page)
+    // Delete a post
+    public function destroy(Post $post)
     {
-        $this->service->delete($page);
+        $this->service->delete($post);
 
         return response()->json(null, 204);
     }
 
-    // Bulk update pages
+    // Bulk update posts
     public function bulkUpdate(Request $request)
     {
         $validated = $request->validate([
             'action' => 'required|string|in:delete,status,page_category_id,visibility,page_type',
             'ids' => 'required|array',
-            'ids.*' => 'integer|exists:pages,id',
+            'ids.*' => 'integer|exists:posts,id',
             'data' => 'nullable|array',
         ]);
 

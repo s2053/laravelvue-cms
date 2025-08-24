@@ -3,7 +3,7 @@
 namespace App\Services\Posts;
 
 use App\Enums\Posts\PostStatus;
-use App\Filters\PageFilter;
+use App\Filters\PostFilter;
 use App\Models\Post;
 use Illuminate\Http\UploadedFile;
 use App\Services\FileUploadService;
@@ -19,7 +19,7 @@ class PostService
     }
 
     /**
-     * List pages with optional filters and pagination.
+     * List posts with optional filters and pagination.
      *
      * @param array $params
      * @param int $perPage
@@ -29,14 +29,14 @@ class PostService
     public function list(array $params, int $perPage = 25, bool $all = false)
     {
         $query = Post::with('category');
-        $filter = new PageFilter($params);
+        $filter = new PostFilter($params);
         $query = $filter->apply($query);
 
         return $all ? $query->get() : $query->paginate($perPage);
     }
 
     /**
-     * Create a new page.
+     * Create a new post.
      *
      * @param array $data
      * @return Post
@@ -54,21 +54,21 @@ class PostService
     }
 
     /**
-     * Get a specific page with its category.
+     * Get a specific post with its category.
      *
-     * @param Page $page
-     * @return Page
+     * @param Post $post
+     * @return Post
      */
-    public function show(Page $page): Post
+    public function show(Post $post): Post
     {
-        return $page->load('category');
+        return $post->load('category');
     }
 
     /**
-     * Get a page by its ID with its category.
+     * Get a post by its ID with its category.
      *
      * @param int $id
-     * @return Page
+     * @return Post
      */
     public function showById(int $id): Post
     {
@@ -76,19 +76,19 @@ class PostService
     }
 
     /**
-     * Update an existing page.
+     * Update an existing post.
      *
-     * @param Page $page
+     * @param Post $post
      * @param array $data
-     * @return Page
+     * @return Post
      */
-    public function update(Page $page, array $data): Post
+    public function update(Post $post, array $data): Post
     {
 
         // Handle thumbnail clearing
         if (array_key_exists('thumbnail', $data) && ($data['thumbnail'] === null || $data['thumbnail'] === '')) {
-            if ($page->thumbnail) {
-                $this->deleteFile($page->thumbnail);
+            if ($post->thumbnail) {
+                $this->deleteFile($post->thumbnail);
             }
             $data['thumbnail'] = null;
         } else {
@@ -97,34 +97,34 @@ class PostService
 
         // Handle new thumbnail upload
         if (!empty($data['thumbnailFile']) && $data['thumbnailFile'] instanceof UploadedFile) {
-            if ($page->thumbnail) {
-                $this->deleteFile($page->thumbnail);
+            if ($post->thumbnail) {
+                $this->deleteFile($post->thumbnail);
             }
             $data['thumbnail'] = $this->storeFile($data['thumbnailFile']);
             unset($data['thumbnailFile']);
         }
 
         $data['updated_by'] = auth()->id();
-        $page->update($data);
+        $post->update($data);
 
-        return $page;
+        return $post;
     }
 
     /**
-     * Delete a page and its thumbnail.
+     * Delete a post and its thumbnail.
      *
-     * @param Page $page
+     * @param Post $post
      * @return void
      */
-    public function delete(Page $page): void
+    public function delete(Post $post): void
     {
-        if ($page->thumbnail) {
-            $this->deleteFile($page->thumbnail);
+        if ($post->thumbnail) {
+            $this->deleteFile($post->thumbnail);
         }
 
-        $page->deleted_by = auth()->id();
-        $page->save();
-        $page->delete();
+        $post->deleted_by = auth()->id();
+        $post->save();
+        $post->delete();
     }
 
     /**
@@ -153,22 +153,22 @@ class PostService
     }
 
     /**
-     * Bulk update pages.
+     * Bulk update posts.
      *
      * @param array $validated
      * @return array
      */
     public function bulkUpdate(array $validated): array
     {
-        $pages = Post::whereIn('id', $validated['ids']);
+        $posts = Post::whereIn('id', $validated['ids']);
 
         switch ($validated['action']) {
             case 'delete':
-                $pages = $pages->get();
-                foreach ($pages as $page) {
-                    $this->delete($page);
+                $posts = $posts->get();
+                foreach ($posts as $post) {
+                    $this->delete($post);
                 }
-                return ['message' => 'Pages deleted.'];
+                return ['message' => 'Posts deleted.'];
 
             case 'status':
                 $data = $validated['data'];
@@ -177,21 +177,21 @@ class PostService
 
                 if ($status == PostStatus::SCHEDULED) {
                     $scheduled_at = $data['scheduled_at'] ?? now()->addHours(4);
-                    $pages->update([
+                    $posts->update([
                         'status' => PostStatus::SCHEDULED,
                         'scheduled_at' => $scheduled_at,
                     ]);
                 } elseif ($status == PostStatus::PUBLISHED) {
                     $published_at = $data['published_at'] ?? now();
-                    $pages->update([
+                    $posts->update([
                         'status' => PostStatus::PUBLISHED,
                         'published_at' => $published_at,
                     ]);
                 } elseif ($status == PostStatus::ARCHIVED) {
-                    $pages->where('status', PostStatus::PUBLISHED)
+                    $posts->where('status', PostStatus::PUBLISHED)
                         ->update(['status' => PostStatus::ARCHIVED]);
                 } else {
-                    $pages->update([
+                    $posts->update([
                         'status' => PostStatus::DRAFT,
                         'scheduled_at' => $scheduled_at,
                     ]);
@@ -199,16 +199,16 @@ class PostService
                 return ['message' => 'Status updated.'];
 
             case 'page_category_id':
-                $pages->update(['page_category_id' => $validated['data']['page_category_id']]);
+                $posts->update(['page_category_id' => $validated['data']['page_category_id']]);
                 return ['message' => 'Category updated.'];
 
             case 'visibility':
-                $pages->update(['visibility' => $validated['data']['visibility']]);
+                $posts->update(['visibility' => $validated['data']['visibility']]);
                 return ['message' => 'Visibility updated.'];
 
-            case 'page_type':
-                $pages->update(['page_type' => $validated['data']['page_type']]);
-                return ['message' => 'Page Type updated.'];
+            case 'post_type':
+                $posts->update(['post_type' => $validated['data']['post_type']]);
+                return ['message' => 'Post Type updated.'];
 
             default:
                 return ['message' => 'Invalid action'];
