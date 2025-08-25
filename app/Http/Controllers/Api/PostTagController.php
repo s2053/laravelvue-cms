@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\PostTagRequest;
 use App\Http\Resources\PostTagResource;
 use App\Models\PostTag;
@@ -88,5 +89,21 @@ class PostTagController extends Controller
         $result = $this->service->bulkUpdate($validated);
 
         return response()->json($result);
+    }
+
+    /**
+     * Get minimal list
+     */
+
+    public function options(Request $request)
+    {
+        $search = $request->input('search', null);
+        $all = $request->boolean('all', false);
+
+        $records = $this->service->getOptions($search, $all);
+
+        return response()->json([
+            'data' => $records
+        ]);
     }
 }

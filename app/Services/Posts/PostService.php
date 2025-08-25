@@ -52,23 +52,17 @@ class PostService
 
         $post = Post::create($data);
 
-        if (!empty($data['category_ids'])) {
-            $post->categories()->sync($data['category_ids']);
+        // Update categories only if key exists in request
+        if (array_key_exists('category_ids', $data)) {
+            // If it's empty array, sync empty; otherwise sync IDs
+            $post->categories()->sync($data['category_ids'] ?? []);
         }
 
-        if (!empty($data['tag_ids'])) {
-            $post->tags()->sync($data['tag_ids']);
+        // Update tags only if key exists in request
+        if (array_key_exists('tag_ids', $data)) {
+            $post->tags()->sync($data['tag_ids'] ?? []);
         }
 
-        $post = Post::create($data);
-
-        if (!empty($data['category_ids'])) {
-            $post->categories()->sync($data['category_ids']);
-        }
-
-        if (!empty($data['tag_ids'])) {
-            $post->tags()->sync($data['tag_ids']);
-        }
 
         return $post->load(['categories', 'tags']);
 
@@ -127,12 +121,15 @@ class PostService
         $data['updated_by'] = auth()->id();
         $post->update($data);
 
-        if (isset($data['category_ids'])) {
-            $post->categories()->sync($data['category_ids']);
+        // Update categories only if key exists in request
+        if (array_key_exists('category_ids', $data)) {
+            // If it's empty array, sync empty; otherwise sync IDs
+            $post->categories()->sync($data['category_ids'] ?? []);
         }
 
-        if (isset($data['tag_ids'])) {
-            $post->tags()->sync($data['tag_ids']);
+        // Update tags only if key exists in request
+        if (array_key_exists('tag_ids', $data)) {
+            $post->tags()->sync($data['tag_ids'] ?? []);
         }
 
         return $post->load(['categories', 'tags']);

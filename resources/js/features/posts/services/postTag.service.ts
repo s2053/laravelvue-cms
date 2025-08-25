@@ -1,4 +1,4 @@
-import type { PostTag, PostTagPayload } from '@/features/posts/posts.types';
+import type { PostTag, PostTagOption, PostTagPayload } from '@/features/posts/posts.types';
 import { api } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
@@ -12,6 +12,11 @@ const PostTagService = {
     // Fetch all post tags
     async getAll(params = {}): Promise<ApiResponse<PostTag[]>> {
         const res = await api.get<ApiResponse<PostTag[]>>('/post-tags', { params: { ...params, all: true } });
+        return res.data;
+    },
+    // Fetch options for dropdown with optional search
+    async getOptions(all = false, search?: string): Promise<ApiResponse<PostTagOption[]>> {
+        const res = await api.get<ApiResponse<PostTagOption[]>>('/post-tags/get-list', { params: { search, all } });
         return res.data;
     },
 

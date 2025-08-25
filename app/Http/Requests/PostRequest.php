@@ -18,6 +18,18 @@ class PostRequest extends FormRequest
         return true;
     }
 
+        public function prepareForValidation()
+    {
+        $this->merge([
+            'category_ids' => $this->input('category_ids') 
+                ? json_decode($this->input('category_ids'), true) 
+                : null,
+            'tag_ids' => $this->input('tag_ids') 
+                ? json_decode($this->input('tag_ids'), true) 
+                : null,
+        ]);
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

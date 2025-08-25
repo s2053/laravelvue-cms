@@ -10,7 +10,7 @@ use App\Http\Controllers\PageCategoryController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PermissionGroupController;
-use App\Http\Controllers\PostTagController;
+use App\Http\Controllers\Api\PostTagController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -67,17 +67,13 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
     Route::apiResource('pages', PageController::class);
     Route::post('/pages/bulk-update', [PageController::class, 'bulkUpdate'])->name('pages.bulk-update');
 
+    Route::get('/post-tags/get-list', action: [PostTagController::class, 'options']);
     Route::apiResource('post-tags', PostTagController::class);
     Route::post('/post-tags/bulk-update', [PostTagController::class, 'bulkUpdate']);
 
-
+    Route::get('/post-categories/get-list', action: [PostCategoryController::class, 'options']);
     Route::apiResource('post-categories', PostCategoryController::class);
     Route::post('/post-categories/bulk-update', [PostCategoryController::class, 'bulkUpdate']);
-
-    Route::get('/post-categoriess/get-list', action: [PostCategoryController::class, 'options']);
-    Route::apiResource('post-categories', PostCategoryController::class);
-    Route::post('/post-categories/bulk-update', [PostCategoryController::class, 'bulkUpdate']);
-
 
     Route::apiResource('posts', PostController::class);
     Route::post('/posts/bulk-update', [PostController::class, 'bulkUpdate'])->name('posts.bulk-update');

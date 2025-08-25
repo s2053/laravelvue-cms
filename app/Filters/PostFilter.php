@@ -9,13 +9,11 @@ class PostFilter extends QueryFilter
     protected array $filters = [
         'status',
         'post_type',
-        'post_category_id',
+        'category_ids',
+        'tag_ids',
         'visibility',
         'search',
     ];
-
-
-
 
     /** Filtering Methods **/
 
@@ -37,12 +35,29 @@ class PostFilter extends QueryFilter
         }
     }
 
-    protected function post_category_id(string|int|array|null $value): void
+    protected function category_ids(array|int|string|null $value): void
     {
         if (is_array($value)) {
-            $this->builder->whereIn('post_category_id', $value);
+            $this->builder->whereHas('categories', function (Builder $q) use ($value) {
+                $q->whereIn('post_categories.id', $value);
+            });
         } elseif ($value !== '' && $value !== null) {
-            $this->builder->where('post_category_id', $value);
+            $this->builder->whereHas('categories', function (Builder $q) use ($value) {
+                $q->where('post_categories.id', $value);
+            });
+        }
+    }
+
+    protected function tag_ids(array|int|string|null $value): void
+    {
+        if (is_array($value)) {
+            $this->builder->whereHas('tags', function (Builder $q) use ($value) {
+                $q->whereIn('post_tags.id', $value);
+            });
+        } elseif ($value !== '' && $value !== null) {
+            $this->builder->whereHas('tags', function (Builder $q) use ($value) {
+                $q->where('post_tags.id', $value);
+            });
         }
     }
 
@@ -57,9 +72,10 @@ class PostFilter extends QueryFilter
 
     protected function search(string $value): void
     {
-
         $this->builder->where(function (Builder $q) use ($value) {
             $q->where('posts.title', 'like', "%{$value}%")
+                ->orWhere('posts.excerpt', 'like', "%{$value}%")
+                ->orWhere('posts.content', 'like', "%{$value}%")
                 ->orWhere('posts.status', 'like', "%{$value}%")
                 ->orWhere('posts.created_at', 'like', "%{$value}%");
         });
@@ -69,7 +85,7 @@ class PostFilter extends QueryFilter
 
     public function sort(): Builder|\Illuminate\Database\Query\Builder
     {
-        $sortable = ['created_at', 'title', 'status', 'page_type', 'visibility', 'category'];
+        $sortable = ['created_at', 'title', 'status', 'post_type', 'visibility', 'categories'];
 
         $sortBy = $this->input('sort_by', 'created_at');
         $sortDir = $this->input('sort_dir', 'desc');
@@ -81,12 +97,12 @@ class PostFilter extends QueryFilter
         if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
             $sortDir = 'desc';
         }
-
-        if ($sortBy === 'category') {
+        if ($sortBy === 'categories') {
             return $this->builder
-                ->leftJoin('page_categories', 'pages.page_category_id', '=', 'page_categories.id')
-                ->orderBy('page_categories.title', $sortDir)
-                ->select('pages.*');
+                ->leftJoin('post_category_pivot', 'posts.id', '=', 'post_category_pivot.post_id')
+                ->leftJoin('post_categories', 'post_category_pivot.category_id', '=', 'post_categories.id')
+                ->orderBy('post_categories.title', $sortDir)
+                ->select('posts.*');
         }
 
         return $this->builder->orderBy($sortBy, $sortDir);
