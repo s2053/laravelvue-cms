@@ -29,6 +29,7 @@ const { options: tagOptions, fetchOptions: fetchTagOptions } = usePostTags();
 
 const editingId = ref<number | null>(route.params.id ? Number(route.params.id) : null);
 const loading = ref(false);
+const submitting = ref(false);
 
 const initialFormPayload: PostPayload = {
     title: '',
@@ -124,6 +125,8 @@ function payloadToFormData(payload: Partial<PostPayload>): FormData {
 }
 
 async function handleSubmit(form: PostPayload) {
+    if (submitting.value) return;
+    submitting.value = true;
     serverErrors.value = {};
     const payload = pickCleanData({ ...form }, initialFormPayload);
     const formData = payloadToFormData(payload);
@@ -152,6 +155,8 @@ async function handleSubmit(form: PostPayload) {
         } else {
             toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
         }
+    } finally {
+        submitting.value = false;
     }
 }
 
@@ -178,6 +183,7 @@ function handleCancel() {
                 :categoryOptions="categoryOptions"
                 :tagOptions="tagOptions"
                 @submit="handleSubmit"
+                :submitting="submitting"
                 @cancel="handleCancel"
             />
         </div>

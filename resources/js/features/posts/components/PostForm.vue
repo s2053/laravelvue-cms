@@ -183,6 +183,7 @@
                                 placeholder="Select Tags"
                                 :maxSelectedLabels="5"
                             />
+
                             <FieldError :formError="$form.tag_ids?.error?.message" :serverError="serverErrors?.tag_ids?.[0]" />
                         </div>
                     </div>
@@ -250,7 +251,7 @@
 
         <div class="mt-6 flex justify-end gap-2">
             <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" :label="submitLabel" severity="primary" />
+            <Button type="submit" :label="submitLabel" :disabled="submitting" severity="primary" />
         </div>
     </Form>
 </template>
@@ -275,6 +276,7 @@ const props = defineProps<{
     editingId: number | null;
     categoryOptions: { id: number; title: string }[];
     tagOptions: { id: number; title: string }[];
+    submitting: boolean;
 }>();
 const emit = defineEmits(['submit', 'cancel']);
 
