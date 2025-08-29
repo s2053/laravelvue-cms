@@ -50,9 +50,15 @@
                         {{ formatDateTimeString(data.created_at) }}
                     </template>
 
-                    <template v-else-if="col.field === 'category'" #body="{ data }">
-                        <div class="text-center">
-                            {{ data.category ? data.category.title : '-' }}
+                    <template v-else-if="col.field === 'categories'" #body="{ data }">
+                        <div class="flex flex-wrap gap-1">
+                            <Tag
+                                v-for="(category, index) in data.categories.slice(0, 3)"
+                                :key="category.id"
+                                :value="category.title"
+                                class="mr-1 mb-1"
+                            />
+                            <span v-if="data.categories.length > 3" class="text-sm text-gray-500"> +{{ data.categories.length - 3 }} more </span>
                         </div>
                     </template>
 
@@ -203,13 +209,13 @@ onMounted(() => {
 const allColumns = [
     { field: 'id', label: 'Id' },
     { field: 'title', label: 'Title' },
-    { field: 'category', label: 'Category' },
+    { field: 'categories', label: 'Categories' },
     { field: 'status', label: 'Status' },
     { field: 'post_type', label: 'Post Type' },
     { field: 'visibility', label: 'Visibility' },
     { field: 'created_at', label: 'Created At' },
 ];
-const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'post_type', 'category', 'created_at']);
+const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'post_type', 'categories', 'created_at']);
 const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 const menuRefs = ref<Record<number, any | null>>({});
