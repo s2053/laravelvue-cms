@@ -75,7 +75,7 @@ class PostController extends Controller
     public function bulkUpdate(Request $request)
     {
         $validated = $request->validate([
-            'action' => 'required|string|in:delete,status,page_category_id,visibility,page_type',
+            'action' => 'required|string|in:delete,status,category_ids,visibility,post_type',
             'ids' => 'required|array',
             'ids.*' => 'integer|exists:posts,id',
             'data' => 'nullable|array',

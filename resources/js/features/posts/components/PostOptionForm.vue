@@ -17,19 +17,20 @@
             </div>
 
             <!-- Show category field only for category action -->
-            <div v-if="action === 'post_category_id'">
+            <div v-if="action === 'category_ids'">
                 <label for="category" class="mb-2 block font-bold">Category:</label>
-                <Select
-                    v-model="form.post_category_id"
+                <MultiSelect
+                    display="chip"
+                    v-model="form.category_ids"
                     :options="categoryOptions"
-                    name="post_category_id"
+                    name="category_ids"
                     optionLabel="title"
                     optionValue="id"
                     class="w-full"
-                    placeholder="Select Category"
+                    placeholder="Select Categories"
                     showClear
                 />
-                <FieldError :formError="$form.post_category_id?.error?.message" :serverError="serverErrors?.post_category_id?.[0]" />
+                <FieldError :formError="$form.category_ids?.error?.message" :serverError="serverErrors?.category_ids?.[0]" />
             </div>
 
             <!-- Show visibility field only for visibility action -->
@@ -50,6 +51,7 @@
             <!-- Show post_type field only for post_type action -->
             <div v-if="action == 'post_type'">
                 <label for="post_type" class="mb-2 block font-bold">Post Type:</label>
+
                 <Select
                     v-model="form.post_type"
                     :options="PostTypeOptions"

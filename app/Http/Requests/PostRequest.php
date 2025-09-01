@@ -18,14 +18,15 @@ class PostRequest extends FormRequest
         return true;
     }
 
-        public function prepareForValidation()
+    public function prepareForValidation()
     {
         $this->merge([
-            'category_ids' => $this->input('category_ids') 
-                ? json_decode($this->input('category_ids'), true) 
+            'author_id' => $this->input('author_id') ?? auth()->id(),
+            'category_ids' => $this->input('category_ids')
+                ? json_decode($this->input('category_ids'), true)
                 : null,
-            'tag_ids' => $this->input('tag_ids') 
-                ? json_decode($this->input('tag_ids'), true) 
+            'tag_ids' => $this->input('tag_ids')
+                ? json_decode($this->input('tag_ids'), true)
                 : null,
         ]);
     }
@@ -38,6 +39,7 @@ class PostRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'author_id' => 'nullable|exists:users,id',
             'title' => 'required|string|max:255',
             'slug' => [
                 'nullable',

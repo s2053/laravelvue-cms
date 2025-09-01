@@ -41,6 +41,7 @@ return new class extends Migration {
             $table->timestamp('published_at')->nullable();
 
             // Author tracking
+            $table->foreignId('author_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('deleted_by')->nullable()->constrained('users')->nullOnDelete();

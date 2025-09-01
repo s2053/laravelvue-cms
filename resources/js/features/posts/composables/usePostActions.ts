@@ -13,7 +13,7 @@ export function usePostActions(table: { selectedRecords: Ref<Post[]>; tableReloa
     const bulkOptions = [
         { label: 'Delete Posts', value: 'delete' },
         { label: 'Update Status', value: 'status' },
-        { label: 'Update Category', value: 'post_category_id' },
+        { label: 'Update Category', value: 'category_ids' },
         { label: 'Update Visibility', value: 'visibility' },
         { label: 'Update Post Type', value: 'post_type' },
     ];
@@ -68,7 +68,7 @@ export function usePostActions(table: { selectedRecords: Ref<Post[]>; tableReloa
         const selectedCount = selectedIds.value.length;
 
         let actionTitle = 'Dialog Title';
-        if (action == 'post_category_id') {
+        if (action == 'category_ids') {
             actionTitle = 'Post Category';
         } else {
             actionTitle = action;
@@ -156,8 +156,8 @@ function buildInitialForm(action: string, row?: any) {
     if (!row) {
         // Provide default values per action when no row provided
         switch (action) {
-            case 'post_category_id':
-                return { post_category_id: null };
+            case 'category_ids':
+                return { category_ids: [] };
 
             default:
                 return {};
@@ -172,8 +172,8 @@ function buildInitialForm(action: string, row?: any) {
                 scheduled_at: row.scheduled_at ? utcToLocalDateTime(row.scheduled_at) : null,
                 published_at: row.published_at ? utcToLocalDateTime(row.published_at) : null,
             };
-        case 'post_category_id':
-            return { post_category_id: row.post_category_id ?? null };
+        case 'category_ids':
+            return { category_ids: row.categories?.map((c: any) => c.id) ?? [] };
         case 'visibility':
             return { visibility: row.visibility ?? 'public' };
         case 'post_type':

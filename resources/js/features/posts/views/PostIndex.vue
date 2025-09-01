@@ -50,6 +50,12 @@
                         {{ formatDateTimeString(data.created_at) }}
                     </template>
 
+                    <template v-else-if="col.field === 'author'" #body="{ data }">
+                        <div class="">
+                            {{ data.author ? data.author.name : '-' }}
+                        </div>
+                    </template>
+
                     <template v-else-if="col.field === 'categories'" #body="{ data }">
                         <div class="flex flex-wrap gap-1">
                             <Tag
@@ -100,7 +106,7 @@
                                 {
                                     label: 'Update Category',
                                     icon: 'pi pi-tags',
-                                    command: () => showUpdateDialogForSingle('post_category_id', data.id),
+                                    command: () => showUpdateDialogForSingle('category_ids', data.id),
                                 },
                                 { label: 'Remove', icon: 'pi pi-trash', command: () => removePost(data.id, data.title) },
                             ]"
@@ -211,11 +217,11 @@ const allColumns = [
     { field: 'title', label: 'Title' },
     { field: 'categories', label: 'Categories' },
     { field: 'status', label: 'Status' },
-    { field: 'post_type', label: 'Post Type' },
+    { field: 'author', label: 'Author' },
     { field: 'visibility', label: 'Visibility' },
     { field: 'created_at', label: 'Created At' },
 ];
-const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'post_type', 'categories', 'created_at']);
+const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'author', 'categories', 'created_at']);
 const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 const menuRefs = ref<Record<number, any | null>>({});

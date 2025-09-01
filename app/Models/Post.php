@@ -16,9 +16,10 @@ class Post extends Model
 
 
     protected $fillable = [
+        'author_id',
         'title',
         'slug',
-        'page_type',
+        'post_type',
         'is_commentable',
         'excerpt',
         'content',
@@ -44,14 +45,16 @@ class Post extends Model
         'post_type' => PostType::class,
         'status' => PostStatus::class,
         'visibility' => PostVisibility::class,
-
-
         'scheduled_at' => 'datetime',
         'published_at' => 'datetime',
 
     ];
 
 
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
 
 
     public function categories()

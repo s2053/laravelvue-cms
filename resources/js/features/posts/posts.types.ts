@@ -73,12 +73,9 @@ export interface Post {
     tags?: PostTag[];
     scheduled_at?: string | null;
     published_at?: string | null;
-    created_by?: number | null;
-    updated_by?: number | null;
-    deleted_by?: number | null;
     created_at?: string;
-    updated_at?: string;
-    deleted_at?: string | null;
+    author_id?: number | null;
+    author?: { id: number; name: string; email: string } | null;
 }
 
 export type PostPayload = Omit<Post, 'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'categories' | 'tags'> & {

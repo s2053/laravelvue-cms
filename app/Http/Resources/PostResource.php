@@ -22,7 +22,14 @@ class PostResource extends JsonResource
             'is_commentable' => $this->is_commentable,
             'excerpt' => $this->excerpt,
             'content' => $this->content,
-
+            'author_id' => $this->author_id,
+            'author' => $this->whenLoaded('author', function () {
+                return [
+                    'id' => $this->author->id,
+                    'name' => $this->author->name,
+                    'email' => $this->author->email,
+                ];
+            }),
 
 
             'thumbnail' => $this->thumbnail ? $this->makeImageUrl($this->thumbnail, 'thumb') : null,

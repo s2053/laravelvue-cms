@@ -28,7 +28,7 @@ class PostService
      */
     public function list(array $params, int $perPage = 25, bool $all = false)
     {
-        $query = Post::with(['categories', 'tags']);
+        $query = Post::with(['categories', 'tags', 'author']);
         $filter = new PostFilter($params);
         $query = $filter->apply($query);
 
@@ -64,7 +64,7 @@ class PostService
         }
 
 
-        return $post->load(['categories', 'tags']);
+        return $post->load(['categories', 'tags', 'author']);
 
     }
     /**
@@ -75,7 +75,7 @@ class PostService
      */
     public function show(Post $post): Post
     {
-        return $post->load(['categories', 'tags']);
+        return $post->load(['categories', 'tags', 'author']);
     }
 
     /**
@@ -86,7 +86,7 @@ class PostService
      */
     public function showById(int $id): Post
     {
-        return Post::with(['categories', 'tags'])->findOrFail($id);
+        return Post::with(['categories', 'tags', 'author'])->findOrFail($id);
     }
 
     /**
@@ -121,9 +121,7 @@ class PostService
         $data['updated_by'] = auth()->id();
         $post->update($data);
 
-        // Update categories only if key exists in request
         if (array_key_exists('category_ids', $data)) {
-            // If it's empty array, sync empty; otherwise sync IDs
             $post->categories()->sync($data['category_ids'] ?? []);
         }
 
@@ -132,7 +130,7 @@ class PostService
             $post->tags()->sync($data['tag_ids'] ?? []);
         }
 
-        return $post->load(['categories', 'tags']);
+        return $post->load(['categories', 'tags', 'author']);
     }
 
     /**
@@ -223,8 +221,12 @@ class PostService
                 }
                 return ['message' => 'Status updated.'];
 
-            case 'page_category_id':
-                $posts->update(['page_category_id' => $validated['data']['page_category_id']]);
+            case 'category_ids':
+                $posts = $posts->get();
+                foreach ($posts as $post) {
+
+                    $post->categories()->sync($validated['data']['category_ids'] ?? []);
+                }
                 return ['message' => 'Category updated.'];
 
             case 'visibility':
