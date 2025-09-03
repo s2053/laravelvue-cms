@@ -42,5 +42,16 @@ class PostCategory extends Model
     {
         return $this->hasMany(PostCategory::class, 'parent_id');
     }
+
+    public function posts()
+    {
+        return $this->belongsToMany(
+            Post::class,
+            'post_category_pivot',
+            'category_id',
+            'post_id'
+        );
+    }
+
 }
 

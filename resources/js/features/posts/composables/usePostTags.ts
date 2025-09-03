@@ -1,5 +1,5 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import type { PostTag, PostTagPayload } from '@/features/posts/posts.types';
+import type { PostTag, PostTagOption, PostTagPayload } from '@/features/posts/posts.types';
 import PostTagService from '@/features/posts/services/postTag.service';
 import { ref } from 'vue';
 
@@ -7,6 +7,8 @@ export function usePostTags() {
     const { handleError } = useApiErrorHandler();
 
     const postTags = ref<PostTag[]>([]);
+    const options = ref<PostTagOption[]>([]);
+
     const loading = ref(false);
     const error = ref<string | null>(null);
 
@@ -34,6 +36,20 @@ export function usePostTags() {
             handleError(err);
             error.value = err.message || 'Failed to fetch post tag';
             throw err;
+        }
+    };
+
+    //Fetch for dropdowns
+    const fetchOptions = async (all = true, search?: string) => {
+        error.value = null;
+        try {
+            const res = await PostTagService.getOptions(all, search);
+            options.value = res.data; // assumes service wraps data in `data`
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to fetch post tag options';
+        } finally {
+            loading.value = false;
         }
     };
 
@@ -85,8 +101,10 @@ export function usePostTags() {
 
     return {
         postTags,
+        options,
         loading,
         error,
+        fetchOptions,
         fetchPostTags,
         getPostTagById,
         createPostTag,

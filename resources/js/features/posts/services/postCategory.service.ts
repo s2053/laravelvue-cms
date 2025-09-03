@@ -23,7 +23,7 @@ const PostCategoryService = {
 
     // Fetch options for dropdown with optional search
     async getOptions(all = false, search?: string): Promise<ApiResponse<PostCategoryOption[]>> {
-        const res = await api.get<ApiResponse<PostCategoryOption[]>>('/post-categoriess/get-list', { params: { search, all } });
+        const res = await api.get<ApiResponse<PostCategoryOption[]>>('/post-categories/get-list', { params: { search, all } });
         return res.data;
     },
 
