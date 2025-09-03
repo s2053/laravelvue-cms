@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\PostTag;
+use App\Models\PermissionGroup;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
-class PostTagService
+class PermissionGroupService
 {
     /**
-     * List post tags with optional pagination.
+     * List permission groups with optional pagination.
      *
      * @param array $params
      * @param int $perPage
@@ -18,12 +18,12 @@ class PostTagService
      */
     public function list(array $params, int $perPage = 25, bool $all = false)
     {
-        $query = PostTag::query();
+        $query = PermissionGroup::query()->withCount('permissions');
 
         if (!empty($params['search'])) {
             $search = $params['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%$search%")
+                $q->where('name', 'like', "%$search%")
                     ->orWhere('created_at', 'like', "%{$search}%");
 
             });
@@ -33,14 +33,18 @@ class PostTagService
             $query->whereDate('created_at', $params['created_at']);
         }
 
-
+        // Sorting
         if (!empty($params['sort_by'])) {
             $sortDir = strtolower($params['sort_dir'] ?? 'asc');
             if (!in_array($sortDir, ['asc', 'desc'])) {
                 $sortDir = 'asc';
             }
 
-            $query->orderBy($params['sort_by'], $sortDir);
+            if ($params['sort_by'] === 'permissions') {
+                $query->orderBy('permissions_count', $sortDir);
+            } else {
+                $query->orderBy($params['sort_by'], $sortDir);
+            }
         }
 
         if ($all) {
@@ -51,34 +55,34 @@ class PostTagService
     }
 
     /**
-     * Create a new post tag.
+     * Create a new permission group.
      */
-    public function create(array $data): PostTag
+    public function create(array $data): PermissionGroup
     {
-        return PostTag::create($data);
+        return PermissionGroup::create($data);
     }
 
     /**
-     * Get a specific post tag.
+     * Get a specific permission group.
      */
-    public function show(PostTag $record): PostTag
+    public function show(PermissionGroup $record): PermissionGroup
     {
         return $record;
     }
 
     /**
-     * Update an existing post tag.
+     * Update an existing permission group.
      */
-    public function update(PostTag $record, array $data): PostTag
+    public function update(PermissionGroup $record, array $data): PermissionGroup
     {
         $record->update($data);
         return $record;
     }
 
     /**
-     * Delete a post tag.
+     * Delete a permission group.
      */
-    public function delete(PostTag $record): void
+    public function delete(PermissionGroup $record): void
     {
         $record->delete();
     }
@@ -86,7 +90,7 @@ class PostTagService
 
 
     /**
-     * Get categories for dropdown or search.
+     * Get permission group for dropdown or search.
      *
      * @param string|null $search
      * @param bool $all
@@ -94,10 +98,10 @@ class PostTagService
      */
     public function getOptions(?string $search = null, bool $all = false)
     {
-        $query = PostTag::query();
+        $query = PermissionGroup::query();
 
         if ($search) {
-            $query->where('title', 'like', "%{$search}%");
+            $query->where('name', 'like', "%{$search}%");
         }
 
         $categories = $all ? $query->get() : $query->limit(20)->get();
@@ -115,8 +119,8 @@ class PostTagService
     {
         switch ($validated['action']) {
             case 'delete':
-                PostTag::whereIn('id', $validated['ids'])->delete();
-                return ['message' => 'Post tags deleted.'];
+                PermissionGroup::whereIn('id', $validated['ids'])->delete();
+                return ['message' => 'Permission groups deleted.'];
 
             default:
                 return ['message' => 'Invalid action'];
