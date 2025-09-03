@@ -10,6 +10,8 @@ import { usePostCategory, usePosts, usePostTags } from '@/features/posts/composa
 import { PostStatus, PostType, PostVisibility } from '@/features/posts/posts.enum';
 import type { PostPayload } from '@/features/posts/posts.types';
 
+import { useUsers } from '@/composables/useUsers';
+
 import {
     getCurrentDateTimeLocal,
     getDefaultScheduledDateTimeLocal,
@@ -23,6 +25,8 @@ const toast = useToast();
 const route = useRoute();
 const router = useRouter();
 
+const { users: authors, fetchUsers } = useUsers();
+
 const { getPostById, createPost, updatePost } = usePosts();
 const { options: categories, fetchOptions: fetchCategoryOptions } = usePostCategory();
 const { options: tagOptions, fetchOptions: fetchTagOptions } = usePostTags();
@@ -32,6 +36,7 @@ const loading = ref(false);
 const submitting = ref(false);
 
 const initialFormPayload: PostPayload = {
+    author_id: null,
     title: '',
     slug: '',
     post_type: PostType.DEFAULT,
@@ -66,6 +71,7 @@ const categoryOptions = computed(() =>
 onMounted(async () => {
     await fetchCategoryOptions();
     await fetchTagOptions();
+    await fetchUsers();
 
     if (editingId.value) {
         loading.value = true;
@@ -180,6 +186,7 @@ function handleCancel() {
                 :submitLabel="editingId ? 'Update' : 'Create'"
                 :serverErrors="serverErrors"
                 :editingId="editingId"
+                :authors="authors"
                 :categoryOptions="categoryOptions"
                 :tagOptions="tagOptions"
                 @submit="handleSubmit"

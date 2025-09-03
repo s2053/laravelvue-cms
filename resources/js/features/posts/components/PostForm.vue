@@ -125,6 +125,24 @@
                                 <FieldError :formError="$form.visibility?.error?.message" :serverError="serverErrors?.visibility?.[0]" />
                             </div>
                         </div>
+
+                        <!-- Post Author -->
+                        <div class="flex items-start gap-4">
+                            <label for="author_id" class="w-40 pt-2 text-sm font-bold">Author:</label>
+                            <div class="flex-1">
+                                <Select
+                                    v-model="form.author_id"
+                                    :options="authors"
+                                    name="author_id"
+                                    optionLabel="name"
+                                    optionValue="id"
+                                    class="app-input-sm w-full"
+                                    placeholder="Select Post Author"
+                                    showClear
+                                />
+                                <FieldError :formError="$form.author_id?.error?.message" :serverError="serverErrors?.author_id?.[0]" />
+                            </div>
+                        </div>
                     </div>
 
                     <template #footer>
@@ -277,6 +295,7 @@ const props = defineProps<{
     categoryOptions: { id: number; title: string }[];
     tagOptions: { id: number; title: string }[];
     submitting: boolean;
+    authors: { id: number; name: string }[];
 }>();
 const emit = defineEmits(['submit', 'cancel']);
 

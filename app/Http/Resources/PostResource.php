@@ -22,7 +22,7 @@ class PostResource extends JsonResource
             'is_commentable' => $this->is_commentable,
             'excerpt' => $this->excerpt,
             'content' => $this->content,
-            'author_id' => $this->author_id,
+            'author_id' =>  $this->author_id !== null ? (int) $this->author_id : null,
             'author' => $this->whenLoaded('author', function () {
                 return [
                     'id' => $this->author->id,

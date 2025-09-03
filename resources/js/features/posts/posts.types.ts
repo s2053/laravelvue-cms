@@ -88,6 +88,7 @@ export type PostFilters = {
     status: PostStatus[];
     post_type: PostType[];
     category_ids: number[];
+    author_ids: number[];
     tag_ids: number[];
     visibility: PostVisibility[];
     created_at?: string[];

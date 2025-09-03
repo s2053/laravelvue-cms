@@ -10,6 +10,7 @@ class PostFilter extends QueryFilter
         'status',
         'post_type',
         'category_ids',
+        'author_ids',
         'tag_ids',
         'visibility',
         'search',
@@ -34,6 +35,16 @@ class PostFilter extends QueryFilter
             $this->builder->where('post_type', $value);
         }
     }
+
+    protected function author_ids(array|int|string|null $value): void
+    {
+        if (is_array($value)) {
+            $this->builder->whereIn('author_id', $value);
+        } elseif ($value !== '' && $value !== null) {
+            $this->builder->where('author_id', $value);
+        }
+    }
+
 
     protected function category_ids(array|int|string|null $value): void
     {
@@ -85,7 +96,7 @@ class PostFilter extends QueryFilter
 
     public function sort(): Builder|\Illuminate\Database\Query\Builder
     {
-        $sortable = ['created_at', 'title', 'status', 'post_type', 'visibility', 'categories'];
+        $sortable = ['created_at', 'title', 'status', 'post_type', 'visibility', 'categories', 'author'];
 
         $sortBy = $this->input('sort_by', 'created_at');
         $sortDir = $this->input('sort_dir', 'desc');
@@ -97,11 +108,23 @@ class PostFilter extends QueryFilter
         if (!in_array(strtolower($sortDir), ['asc', 'desc'])) {
             $sortDir = 'desc';
         }
+
+
         if ($sortBy === 'categories') {
             return $this->builder
+                ->select('posts.*', \DB::raw('MIN(post_categories.title) as category_title'))
                 ->leftJoin('post_category_pivot', 'posts.id', '=', 'post_category_pivot.post_id')
                 ->leftJoin('post_categories', 'post_category_pivot.category_id', '=', 'post_categories.id')
-                ->orderBy('post_categories.title', $sortDir)
+                ->groupBy('posts.id')
+                ->orderBy('category_title', $sortDir);
+        }
+
+
+
+        if ($sortBy === 'author') {
+            return $this->builder
+                ->leftJoin('users', 'posts.author_id', '=', 'users.id')
+                ->orderBy('users.name', $sortDir)
                 ->select('posts.*');
         }
 

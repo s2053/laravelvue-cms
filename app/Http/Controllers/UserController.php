@@ -7,8 +7,18 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = User::with('roles');
+
+        // if ($request->has('role')) {
+        //     $role = $request->input('role');
+
+        //     $query->whereHas('roles', function ($q) use ($role) {
+        //         $q->where('name', $role);
+        //     });
+        // }
+
         return User::with('roles')->get();
     }
 

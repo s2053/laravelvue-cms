@@ -37,7 +37,13 @@
                 </TableToolBarWrapper>
 
                 <!-- Collapsible filter panel -->
-                <PostFilter v-if="openFilter" :filters="filters" :categoryOptions="categoryOptions" @update:filters="onFiltersChanged" />
+                <PostFilter
+                    v-if="openFilter"
+                    :filters="filters"
+                    :categoryOptions="categoryOptions"
+                    :authorOptions="authorOptions"
+                    @update:filters="onFiltersChanged"
+                />
             </template>
 
             <!-- Dynamic columns -->
@@ -52,7 +58,8 @@
 
                     <template v-else-if="col.field === 'author'" #body="{ data }">
                         <div class="">
-                            {{ data.author ? data.author.name : '-' }}
+                            {{ data.author ? data.author.name : '-' }} <br />
+                            <span class="text-sm text-gray-500">{{ data.author ? data.author.email : '-' }}</span>
                         </div>
                     </template>
 
@@ -148,9 +155,12 @@ import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/
 import AppContent from '@/layouts/app/components/AppContent.vue';
 
 import { usePaginatedTable } from '@/composables/usePaginatedList';
+import { useUsers } from '@/composables/useUsers';
 import { PostFilter, PostOptionForm } from '@/features/posts/components';
 import { PostFilters } from '@/features/posts/posts.types';
 import PostService from '@/features/posts/services/post.service';
+
+const { users: authorOptions, fetchUsers: fetchAuthors } = useUsers();
 
 const {
     items: posts,
@@ -177,6 +187,7 @@ const {
         status: [],
         post_type: [],
         category_ids: [],
+        author_ids: [],
         tag_ids: [],
         visibility: [],
         global: '',
@@ -210,6 +221,7 @@ const { deletePost } = usePosts();
 onMounted(() => {
     fetchCategoryOptions();
     loadPostData({ page: 0, rows: numOfRows.value, filters });
+    fetchAuthors();
 });
 
 const allColumns = [

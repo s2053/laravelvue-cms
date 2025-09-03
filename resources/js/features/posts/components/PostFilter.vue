@@ -61,6 +61,21 @@
                     showClear
                 />
             </div>
+
+            <!-- Author Filter -->
+            <div>
+                <label for="author" class="mb-1 block font-semibold">Author</label>
+                <MultiSelect
+                    v-model="localFilters.author_ids"
+                    :options="authorOptions"
+                    name="author"
+                    optionLabel="name"
+                    optionValue="id"
+                    class="app-input-sm w-full"
+                    placeholder="Select Author"
+                    showClear
+                />
+            </div>
         </div>
 
         <!-- Filter Action Buttons -->
@@ -79,6 +94,7 @@ import { reactive, watch } from 'vue';
 const props = defineProps<{
     filters: PostFilters;
     categoryOptions: { id: number; title: string }[];
+    authorOptions: { id: number; name: string }[];
 }>();
 
 const emit = defineEmits<{
