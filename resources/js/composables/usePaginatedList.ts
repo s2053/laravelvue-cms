@@ -34,7 +34,7 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
         initialSortField = 'created_at',
         initialSortOrder = -1,
         initialPage = 1,
-        initialPerPage = 4,
+        initialPerPage = 25,
         perPageOptions = [2, 4, 5, 10, 25, 50],
     } = options;
 

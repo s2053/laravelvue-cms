@@ -91,7 +91,9 @@ class PostCategoryController extends Controller
         return response()->json($result);
     }
 
-
+    /**
+     * Get minimal list
+     */
     public function options(Request $request)
     {
         $search = $request->input('search', null);

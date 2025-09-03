@@ -83,6 +83,31 @@ class PostTagService
         $record->delete();
     }
 
+
+
+    /**
+     * Get categories for dropdown or search.
+     *
+     * @param string|null $search
+     * @param bool $all
+     * @return \Illuminate\Support\Collection
+     */
+    public function getOptions(?string $search = null, bool $all = false)
+    {
+        $query = PostTag::query();
+
+        if ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        }
+
+        $categories = $all ? $query->get() : $query->limit(20)->get();
+
+        return $categories->map(fn($c) => [
+            'id' => $c->id,
+            'title' => $c->title
+        ]);
+    }
+
     /**
      * Bulk update or delete.
      */
