@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\PageCategoryController;
 use App\Http\Controllers\PageController;
-use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\PermissionGroupController;
 use App\Http\Controllers\Api\PostTagController;
 use App\Http\Controllers\RoleController;
@@ -47,6 +47,8 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
 
     Route::apiResource('permissions', PermissionController::class);
+    Route::post('/permissions/bulk-update', [PermissionController::class, 'bulkUpdate']);
+
 
     Route::apiResource('permission-groups', PermissionGroupController::class);
     Route::post('/permission-groups/bulk-update', [PermissionGroupController::class, 'bulkUpdate']);

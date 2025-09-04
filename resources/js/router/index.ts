@@ -39,18 +39,13 @@ const routes = [
                 meta: { title: 'Roles' },
                 component: () => import('@/pages/roles/Roles.vue'),
             },
+
             // {
-            //     path: 'permission-groups',
-            //     name: 'permission-groups.index',
-            //     meta: { title: 'Permission Groups' },
-            //     component: () => import('@/pages/permissions/PermissionGroup.vue'),
+            //     path: 'permissions',
+            //     name: 'permissions.index',
+            //     meta: { title: 'Permissions' },
+            //     component: () => import('@/pages/permissions/Permissions.vue'),
             // },
-            {
-                path: 'permissions',
-                name: 'permissions.index',
-                meta: { title: 'Permissions' },
-                component: () => import('@/pages/permissions/Permissions.vue'),
-            },
             {
                 path: 'settings/password',
                 name: 'settings.password',
