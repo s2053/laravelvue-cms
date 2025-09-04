@@ -22,11 +22,16 @@ class PermissionService
 
         if (!empty($params['search'])) {
             $search = $params['search'];
+
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                    ->orWhere('created_at', 'like', "%{$search}%");
+                $q->where('permissions.name', 'like', "%$search%")
+                    ->orWhere('permissions.created_at', 'like', "%$search%")
+                    ->orWhereHas('group', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%$search%");
+                    });
             });
         }
+
 
         if (!empty($params['created_at'])) {
             $query->whereDate('created_at', $params['created_at']);
@@ -42,7 +47,7 @@ class PermissionService
             if ($params['sort_by'] === 'permission_group') {
                 $query->join('permission_groups', 'permissions.permission_group_id', '=', 'permission_groups.id')
                     ->orderBy('permission_groups.name', $sortDir)
-                    ->select('permissions.*'); 
+                    ->select('permissions.*');
             } else {
                 $query->orderBy($params['sort_by'], $sortDir);
             }
