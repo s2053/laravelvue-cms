@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PostTagRequest;
 use App\Http\Resources\PostTagResource;
 use App\Models\PostTag;
-use App\Services\PostTagService;
+use App\Services\Posts\PostTagService;
 use Illuminate\Http\Request;
 
 class PostTagController extends Controller

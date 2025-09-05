@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import PermissionService from '@/services/PermissionService';
-import type { Permission } from '@/types/rbac';
+import type { Permission, PermissionPayload } from '@/features/rbac/rbac.types';
+import PermissionService from '@/features/rbac/services/permission.service';
 import { ref } from 'vue';
 
 export function usePermissions() {
@@ -10,11 +10,13 @@ export function usePermissions() {
     const loading = ref(false);
     const error = ref<string | null>(null);
 
+    // Fetch all permissions
     const fetchPermissions = async () => {
         loading.value = true;
         error.value = null;
         try {
-            permissions.value = await PermissionService.getAll();
+            const res = await PermissionService.getAll();
+            permissions.value = res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch permissions';
@@ -23,9 +25,11 @@ export function usePermissions() {
         }
     };
 
+    // Get permission by ID
     const getPermissionById = async (id: number) => {
         try {
-            return await PermissionService.getById(id);
+            const res = await PermissionService.getById(id);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch permission';
@@ -33,10 +37,11 @@ export function usePermissions() {
         }
     };
 
-    const createPermission = async (permission: Partial<Permission>) => {
+    // Create new permission
+    const createPermission = async (payload: PermissionPayload) => {
         try {
-            await PermissionService.create(permission);
-            await fetchPermissions();
+            const res = await PermissionService.create(payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to create permission';
@@ -44,10 +49,11 @@ export function usePermissions() {
         }
     };
 
-    const updatePermission = async (id: number, permission: Partial<Permission>) => {
+    // Update existing permission
+    const updatePermission = async (id: number, payload: PermissionPayload) => {
         try {
-            await PermissionService.update(id, permission);
-            await fetchPermissions();
+            const res = await PermissionService.update(id, payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update permission';
@@ -55,13 +61,24 @@ export function usePermissions() {
         }
     };
 
+    // Delete permission by ID
     const deletePermission = async (id: number) => {
         try {
             await PermissionService.delete(id);
-            await fetchPermissions();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to delete permission';
+            throw err;
+        }
+    };
+
+    // Bulk update or delete permissions
+    const bulkUpdatePermissions = async (action: string, ids: number[], data?: Record<string, any>) => {
+        try {
+            await PermissionService.bulkUpdate({ action, ids, data });
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }
     };
@@ -75,5 +92,6 @@ export function usePermissions() {
         createPermission,
         updatePermission,
         deletePermission,
+        bulkUpdatePermissions,
     };
 }

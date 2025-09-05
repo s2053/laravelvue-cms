@@ -6,12 +6,12 @@ use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\PostController;
-use App\Http\Controllers\PageCategoryController;
-use App\Http\Controllers\PageController;
-use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\PermissionGroupController;
+use App\Http\Controllers\Api\PageCategoryController;
+use App\Http\Controllers\Api\PageController;
+use App\Http\Controllers\Api\PermissionController;
+use App\Http\Controllers\Api\PermissionGroupController;
 use App\Http\Controllers\Api\PostTagController;
-use App\Http\Controllers\RoleController;
+use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -39,20 +39,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
-    Route::get('/roles', [RoleController::class, 'index']);
-    Route::post('/roles', [RoleController::class, 'store']);
-    Route::get('/roles/{id}', [RoleController::class, 'show']);
-    Route::put('/roles/{id}', [RoleController::class, 'update']);
-    Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
+    // Route::get('/roles', [RoleController::class, 'index']);
+    // Route::post('/roles', [RoleController::class, 'store']);
+    // Route::get('/roles/{id}', [RoleController::class, 'show']);
+    // Route::put('/roles/{id}', [RoleController::class, 'update']);
+    // Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
 
+    Route::apiResource('roles', RoleController::class);
+    Route::post('/roles/bulk-update', [RoleController::class, 'bulkUpdate']);
 
     Route::apiResource('permissions', PermissionController::class);
+    Route::post('/permissions/bulk-update', [PermissionController::class, 'bulkUpdate']);
+
 
     Route::apiResource('permission-groups', PermissionGroupController::class);
-
-
-
-
+    Route::post('/permission-groups/bulk-update', [PermissionGroupController::class, 'bulkUpdate']);
 
     // User management routes
     Route::apiResource('users', UserController::class);

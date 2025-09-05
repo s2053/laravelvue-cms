@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import RoleService from '@/services/RoleService';
-import type { Role } from '@/types/rbac';
+import type { Role, RolePayload } from '@/features/rbac/rbac.types';
+import RoleService from '@/features/rbac/services/role.service';
 import { ref } from 'vue';
 
 export function useRoles() {
@@ -10,11 +10,13 @@ export function useRoles() {
     const loading = ref(false);
     const error = ref<string | null>(null);
 
+    // Fetch all roles
     const fetchRoles = async () => {
         loading.value = true;
         error.value = null;
         try {
-            roles.value = await RoleService.getAll();
+            const res = await RoleService.getAll();
+            roles.value = res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch roles';
@@ -23,9 +25,11 @@ export function useRoles() {
         }
     };
 
+    // Get role by ID
     const getRoleById = async (id: number) => {
         try {
-            return await RoleService.getById(id);
+            const res = await RoleService.getById(id);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch role';
@@ -33,10 +37,11 @@ export function useRoles() {
         }
     };
 
-    const createRole = async (role: Partial<Role>) => {
+    // Create new role
+    const createRole = async (payload: RolePayload) => {
         try {
-            await RoleService.create(role);
-            await fetchRoles();
+            const res = await RoleService.create(payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to create role';
@@ -44,10 +49,11 @@ export function useRoles() {
         }
     };
 
-    const updateRole = async (id: number, role: Partial<Role>) => {
+    // Update existing role
+    const updateRole = async (id: number, payload: RolePayload) => {
         try {
-            await RoleService.update(id, role);
-            await fetchRoles();
+            const res = await RoleService.update(id, payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update role';
@@ -55,13 +61,24 @@ export function useRoles() {
         }
     };
 
+    // Delete role by ID
     const deleteRole = async (id: number) => {
         try {
             await RoleService.delete(id);
-            await fetchRoles();
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to delete role';
+            throw err;
+        }
+    };
+
+    // Bulk update or delete roles
+    const bulkUpdateRoles = async (action: string, ids: number[], data?: Record<string, any>) => {
+        try {
+            await RoleService.bulkUpdate({ action, ids, data });
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }
     };
@@ -75,5 +92,6 @@ export function useRoles() {
         createRole,
         updateRole,
         deleteRole,
+        bulkUpdateRoles,
     };
 }
