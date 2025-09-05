@@ -2,7 +2,13 @@ export interface Role {
     id: number;
     name: string;
     permissions?: Permission[];
+    permissions_count?: number;
 }
+export type RolePayload = Omit<Role, 'id' | 'permissions' | 'permissions_count'> & { permissions: number[] };
+export type RoleFilters = {
+    created_at: string[];
+    global: string;
+};
 
 export interface Permission {
     id: number;
@@ -19,9 +25,10 @@ export type PermissionFilters = {
 export interface PermissionGroup {
     id: number;
     name: string;
+    permissions_count?: number;
     permissions?: Permission[];
 }
-export type PermissionGroupPayload = Omit<PermissionGroup, 'id' | 'permissions'>;
+export type PermissionGroupPayload = Omit<PermissionGroup, 'id' | 'permissions' | 'permissions_count'>;
 export type PermissionGroupFilters = {
     created_at: string[];
     global: string;

@@ -48,7 +48,7 @@
                         {{ data.permission_group?.name }}
                     </template>
                     <template v-else-if="col.field === 'created_at'" #body="{ data }">
-                        {{ data.created_at }}
+                        {{ formatDateTimeString(data.created_at) }}
                     </template>
                 </Column>
             </template>
@@ -95,6 +95,7 @@ import { usePermissionGroups } from '@/features/rbac/composables/usePermissionGr
 import { Permission, PermissionPayload } from '@/features/rbac/rbac.types';
 import PermissionService from '@/features/rbac/services/permission.service';
 import AppContent from '@/layouts/app/components/AppContent.vue';
+import { formatDateTimeString } from '@/utils/dateHelper';
 import { pickCleanData } from '@/utils/objectHelpers';
 import { strTruncate } from '@/utils/stringHelper';
 import { useToast } from 'primevue/usetoast';

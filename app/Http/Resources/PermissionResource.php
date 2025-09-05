@@ -24,7 +24,7 @@ class PermissionResource extends JsonResource
                     'name' => $this->group?->name,
                 ];
             }),
-'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at
         ];
     }
 }

@@ -33,19 +33,7 @@ const routes = [
                 meta: { title: 'Users' },
                 component: () => import('@/pages/users/Users.vue'),
             },
-            {
-                path: 'roles',
-                name: 'roles.index',
-                meta: { title: 'Roles' },
-                component: () => import('@/pages/roles/Roles.vue'),
-            },
 
-            // {
-            //     path: 'permissions',
-            //     name: 'permissions.index',
-            //     meta: { title: 'Permissions' },
-            //     component: () => import('@/pages/permissions/Permissions.vue'),
-            // },
             {
                 path: 'settings/password',
                 name: 'settings.password',
