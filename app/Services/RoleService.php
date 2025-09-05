@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\PermissionGroup;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Spatie\Permission\Models\Role;
 
-class PermissionGroupService
+class RoleService
 {
     /**
-     * List permission groups with optional pagination.
+     * List roles with optional pagination and search.
      *
      * @param array $params
      * @param int $perPage
@@ -18,14 +18,15 @@ class PermissionGroupService
      */
     public function list(array $params, int $perPage = 25, bool $all = false)
     {
-        $query = PermissionGroup::query()->with('permissions')->withCount('permissions');
+        $query = Role::with('permissions')->withCount('permissions');
 
         if (!empty($params['search'])) {
             $search = $params['search'];
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%$search%")
-                    ->orWhere('created_at', 'like', "%{$search}%");
-
+                $q->where('roles.name', 'like', "%$search%")
+                    ->orWhereHas('permissions', function ($q2) use ($search) {
+                        $q2->where('name', 'like', "%$search%");
+                    });
             });
         }
 
@@ -40,57 +41,67 @@ class PermissionGroupService
                 $sortDir = 'asc';
             }
 
-            if ($params['sort_by'] === 'permissions') {
+            if ($params['sort_by'] === 'permissions_count') {
                 $query->orderBy('permissions_count', $sortDir);
             } else {
                 $query->orderBy($params['sort_by'], $sortDir);
             }
         }
 
-        if ($all) {
-            return $query->get();
+        return $all ? $query->get() : $query->paginate($perPage);
+    }
+
+    /**
+     * Create a new role with optional permissions.
+     */
+    public function create(array $data): Role
+    {
+        $role = Role::create([
+            'name' => $data['name'],
+            'guard_name' => 'web'
+        ]);
+
+        if (!empty($data['permissions'])) {
+            $role->syncPermissions($data['permissions']);
         }
 
-        return $query->paginate($perPage);
+        return $role->load('permissions');
     }
 
     /**
-     * Create a new permission group.
+     * Get a specific role.
      */
-    public function create(array $data): PermissionGroup
+    public function show(Role $record): Role
     {
-        return PermissionGroup::create($data);
+        return $record->load('permissions');
     }
 
     /**
-     * Get a specific permission group.
+     * Update an existing role.
      */
-    public function show(PermissionGroup $record): PermissionGroup
+    public function update(Role $record, array $data): Role
     {
-        return $record;
+        $record->update([
+            'name' => $data['name']
+        ]);
+
+        if (isset($data['permissions'])) {
+            $record->syncPermissions($data['permissions']);
+        }
+
+        return $record->load('permissions');
     }
 
     /**
-     * Update an existing permission group.
+     * Delete a role.
      */
-    public function update(PermissionGroup $record, array $data): PermissionGroup
-    {
-        $record->update($data);
-        return $record;
-    }
-
-    /**
-     * Delete a permission group.
-     */
-    public function delete(PermissionGroup $record): void
+    public function delete(Role $record): void
     {
         $record->delete();
     }
 
-
-
     /**
-     * Get permission group for dropdown or search.
+     * Get roles for dropdown or search.
      *
      * @param string|null $search
      * @param bool $all
@@ -98,17 +109,17 @@ class PermissionGroupService
      */
     public function getOptions(?string $search = null, bool $all = false)
     {
-        $query = PermissionGroup::query();
+        $query = Role::query();
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $categories = $all ? $query->get() : $query->limit(20)->get();
+        $records = $all ? $query->get() : $query->limit(20)->get();
 
-        return $categories->map(fn($c) => [
-            'id' => $c->id,
-            'title' => $c->title
+        return $records->map(fn($r) => [
+            'id' => $r->id,
+            'name' => $r->name,
         ]);
     }
 
@@ -119,8 +130,8 @@ class PermissionGroupService
     {
         switch ($validated['action']) {
             case 'delete':
-                PermissionGroup::whereIn('id', $validated['ids'])->delete();
-                return ['message' => 'Permission groups deleted.'];
+                Role::whereIn('id', $validated['ids'])->delete();
+                return ['message' => 'Roles deleted.'];
 
             default:
                 return ['message' => 'Invalid action'];

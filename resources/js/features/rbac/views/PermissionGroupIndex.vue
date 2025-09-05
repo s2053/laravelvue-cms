@@ -43,7 +43,7 @@
 
                 <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" sortable>
                     <template v-if="col.field === 'permissions'" #body="{ data }">
-                        {{ data.permissions }}
+                        {{ data.permissions_count ?? 0 }}
                     </template>
 
                     <template v-else-if="col.field === 'name'" #body="{ data }">

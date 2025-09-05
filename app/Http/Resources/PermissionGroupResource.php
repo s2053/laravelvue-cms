@@ -17,7 +17,16 @@ class PermissionGroupResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'permissions' => $this->permissions_count,
+            // Only include permissions if they are loaded
+            'permissions' => $this->whenLoaded('permissions', function () {
+                return $this->permissions->map(function ($permission) {
+                    return [
+                        'id' => $permission->id,
+                        'name' => $permission->name,
+                    ];
+                });
+            }),
+            'permissions_count' => $this->permissions()->count(),
             'created_at' => $this->created_at,
         ];
     }

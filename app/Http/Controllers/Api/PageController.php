@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
-use App\Enums\PageStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PageRequest;
 use App\Http\Resources\PageResource;
