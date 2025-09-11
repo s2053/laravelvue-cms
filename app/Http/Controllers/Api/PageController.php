@@ -72,14 +72,14 @@ class PageController extends Controller
     }
 
     // Bulk update pages
-    public function bulkUpdate(Request $request)
-    {
-        $validated = $request->validate([
-            'action' => 'required|string|in:delete,status,page_category_id,visibility,page_type',
-            'ids' => 'required|array',
-            'ids.*' => 'integer|exists:pages,id',
-            'data' => 'nullable|array',
-        ]);
+        public function bulkUpdate(Request $request)
+        {
+            $validated = $request->validate([
+                'action' => 'required|string|in:delete,status,page_category_id,visibility,page_type',
+                'ids' => 'required|array',
+                'ids.*' => 'integer|exists:pages,id',
+                'data' => 'nullable|array',
+            ]);
 
         $result = $this->service->bulkUpdate($validated);
 

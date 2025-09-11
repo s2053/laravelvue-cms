@@ -22,8 +22,12 @@ class RoleRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                // Unique name, ignore current role ID on update
                 Rule::unique('roles', 'name')->ignore($roleId),
+            ],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
             ],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],

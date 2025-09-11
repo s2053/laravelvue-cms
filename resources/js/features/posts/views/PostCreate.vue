@@ -10,7 +10,7 @@ import { usePostCategory, usePosts, usePostTags } from '@/features/posts/composa
 import { PostStatus, PostType, PostVisibility } from '@/features/posts/posts.enum';
 import type { PostPayload } from '@/features/posts/posts.types';
 
-import { useUsers } from '@/composables/useUsers';
+import { useUsers } from '@/features/users/composables/useUsers';
 
 import {
     getCurrentDateTimeLocal,
