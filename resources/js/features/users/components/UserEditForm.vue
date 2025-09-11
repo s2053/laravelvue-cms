@@ -14,30 +14,35 @@
                 <span class="font-bold whitespace-nowrap">Roles</span>
             </Tab>
         </TabList>
+
         <TabPanels>
             <TabPanel value="details" as="div">
                 <UserDetailsForm
-                    :modelValue="{ id: detailsForm.id, name: detailsForm.name, email: detailsForm.email }"
+                    :initialForm="detailsForm"
+                    :editingId="editingId"
                     :serverErrors="serverErrors"
+                    :submitting="submitting"
                     @submit="onDetailsSubmit"
                 />
             </TabPanel>
+
             <TabPanel value="security" as="div">
                 <UserSecurityForm
-                    :modelValue="{
-                        id: $props.modelValue.id,
-                        password: securityForm.password,
-                        password_confirmation: securityForm.password_confirmation,
-                    }"
+                    :initialForm="securityForm"
+                    :editingId="editingId"
                     :serverErrors="serverErrors"
+                    :submitting="submitting"
                     @submit="onSecuritySubmit"
                 />
             </TabPanel>
+
             <TabPanel value="roles" as="div">
                 <UserRolesForm
-                    :modelValue="{ id: $props.modelValue.id, role_ids: rolesForm.role_ids }"
+                    :initialForm="rolesForm"
+                    :editingId="editingId"
                     :roles="roles"
                     :serverErrors="serverErrors"
+                    :submitting="submitting"
                     @submit="onRolesSubmit"
                 />
             </TabPanel>
@@ -52,67 +57,66 @@ import TabPanel from 'primevue/tabpanel';
 import TabPanels from 'primevue/tabpanels';
 import Tabs from 'primevue/tabs';
 import { ref, watch } from 'vue';
+
 import UserDetailsForm from './UserDetailsForm.vue';
 import UserRolesForm from './UserRolesForm.vue';
 import UserSecurityForm from './UserSecurityForm.vue';
 
 const props = defineProps<{
-    modelValue: {
-        id: number | null;
+    initialForm: {
         name?: string | null;
         email?: string | null;
         password?: string | null;
         password_confirmation?: string | null;
         role_ids?: number[] | null;
     };
+    editingId: number | null;
     submitLabel: string;
     serverErrors?: { [key: string]: string[] };
     roles: { id: number; name: string }[];
+    submitting?: boolean;
 }>();
+const editingId = props.editingId;
+
 const emit = defineEmits(['updateDetails', 'updateSecurity', 'updateRoles', 'cancel']);
 
 const activeTab = ref('details');
 
 const detailsForm = ref({
-    id: props.modelValue.id,
-    name: props.modelValue.name ?? '',
-    email: props.modelValue.email ?? '',
+    name: props.initialForm.name ?? '',
+    email: props.initialForm.email ?? '',
 });
+
 const securityForm = ref({
-    id: props.modelValue.id,
     password: '',
     password_confirmation: '',
 });
-const rolesForm = ref({
-    id: props.modelValue.id,
 
-    role_ids: Array.isArray(props.modelValue.role_ids)
-        ? props.modelValue.role_ids
-        : props.modelValue.role_ids != null
-          ? [props.modelValue.role_ids]
+const rolesForm = ref({
+    role_ids: Array.isArray(props.initialForm.role_ids)
+        ? props.initialForm.role_ids
+        : props.initialForm.role_ids != null
+          ? [props.initialForm.role_ids]
           : [],
 });
 
+// Sync all forms when parent updates initialForm
 watch(
-    () => props.modelValue,
+    () => props.initialForm,
     (val) => {
         detailsForm.value = {
-            id: val.id,
             name: val.name ?? '',
             email: val.email ?? '',
         };
         securityForm.value = {
-            id: val.id,
-
             password: '',
             password_confirmation: '',
         };
         rolesForm.value = {
-            id: val.id,
-
             role_ids: Array.isArray(val.role_ids) ? val.role_ids : val.role_ids != null ? [val.role_ids] : [],
         };
     },
+    { deep: true },
 );
 
 function onDetailsSubmit(payload: { name: string; email: string }) {
