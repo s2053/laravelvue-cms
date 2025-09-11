@@ -34,10 +34,19 @@ trait HasSlug
 
     protected static function bootHasSlug()
     {
+
+        static::creating(function ($model) {
+            if (empty($model->slug)) {
+                $source = $model->title ?? $model->name ?? 'item';
+                $model->slug = static::generateUniqueSlug($source);
+            }
+        });
+
         static::saving(function ($model) {
             // If slug is empty, generate from title
-            if (empty($model->slug) && !empty($model->title)) {
-                $model->slug = static::generateUniqueSlug($model->title, 'slug', $model->id);
+            if (empty($model->slug)) {
+                $source = $model->title ?? $model->name ?? 'item';
+                $model->slug = static::generateUniqueSlug($source, 'slug', $model->id);
             }
             // If slug is set, check uniqueness (ignore current model)
             elseif (!empty($model->slug)) {

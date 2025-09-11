@@ -1,53 +1,80 @@
 <template>
-    <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit" class="flex flex-col gap-4">
-        <!-- Role Name -->
-        <div class="flex flex-col gap-1">
-            <label for="name" class="mb-2 block font-bold">Role name:</label>
-            <InputText v-model="form.name" name="name" type="text" placeholder="Role name" class="w-full" />
-            <FieldError :formError="$form.name?.error?.message" :serverError="serverErrors?.name?.[0]" />
-        </div>
+    <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
+        <div class="flex flex-col gap-4">
+            <!-- Role Name -->
+            <div>
+                <label for="name" class="mb-2 block font-bold">Role name:</label>
+                <InputText v-model="form.name" name="name" type="text" placeholder="Role name" class="w-full" />
+                <FieldError :formError="$form.name?.error?.message" :serverError="serverErrors?.name?.[0]" />
 
-        <!-- Permissions -->
-        <div class="flex flex-col gap-1">
-            <div class="mb-2 flex items-center justify-between">
-                <label class="font-bold">Permissions:</label>
-                <label class="flex cursor-pointer items-center gap-1">
-                    <Checkbox
-                        :binary="true"
-                        :modelValue="areAllPermissionsSelected"
-                        :indeterminate="areSomePermissionsSelected"
-                        @change="toggleAllPermissions"
+                <!-- Slug Display & Edit -->
+                <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                    <label for="slug" class="font-semibold whitespace-nowrap">Slug:</label>
+                    <template v-if="!slugEdit">
+                        <span :title="form.slug" class="w-0 max-w-full flex-1 truncate">
+                            {{ form.slug }}
+                        </span>
+                    </template>
+                    <template v-else>
+                        <InputText v-model="form.slug" name="slug" placeholder="Slug" class="flex-grow text-sm" @input="onSlugInput" size="small" />
+                    </template>
+                    <Button
+                        icon="pi pi-pencil"
+                        size="small"
+                        type="button"
+                        @click="slugEdit = !slugEdit"
+                        :severity="slugEdit ? 'success' : 'secondary'"
+                        class="h-6 min-w-6 text-xs"
+                        variant="text"
+                        :title="'Edit Slug'"
                     />
-                    Select All
-                </label>
+                </div>
+
+                <FieldError :formError="$form.slug?.error?.message" :serverError="serverErrors?.slug?.[0]" />
             </div>
 
-            <!-- Permission groups -->
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div v-for="group in groups" :key="group.id" class="mb-2">
-                    <div class="flex items-center gap-2 font-semibold">
-                        <label class="cursor-pointer">
-                            <Checkbox
-                                :binary="true"
-                                :modelValue="isGroupFullySelected(group)"
-                                :indeterminate="isGroupPartiallySelected(group)"
-                                @change.stop="toggleGroup(group)"
-                            />
-                            {{ group.name }}
-                        </label>
-                    </div>
-                    <div class="ml-6">
-                        <div v-for="perm in group.permissions ?? []" :key="perm.id" class="mt-1">
-                            <label>
-                                <Checkbox :value="perm.id" v-model="form.permissions" />
-                                {{ perm.name }}
+            <!-- Permissions -->
+            <div class="flex flex-col gap-1">
+                <div class="mb-2 flex items-center justify-between">
+                    <label class="font-bold">Permissions:</label>
+                    <label class="flex cursor-pointer items-center gap-1">
+                        <Checkbox
+                            :binary="true"
+                            :modelValue="areAllPermissionsSelected"
+                            :indeterminate="areSomePermissionsSelected"
+                            @change="toggleAllPermissions"
+                        />
+                        Select All
+                    </label>
+                </div>
+
+                <!-- Permission groups -->
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div v-for="group in groups" :key="group.id" class="mb-2">
+                        <div class="flex items-center gap-2 font-semibold">
+                            <label class="cursor-pointer">
+                                <Checkbox
+                                    :binary="true"
+                                    :modelValue="isGroupFullySelected(group)"
+                                    :indeterminate="isGroupPartiallySelected(group)"
+                                    @change.stop="toggleGroup(group)"
+                                />
+                                {{ group.name }}
                             </label>
+                        </div>
+                        <div class="ml-6">
+                            <div v-for="perm in group.permissions ?? []" :key="perm.id" class="mt-1">
+                                <label>
+                                    <Checkbox :value="perm.id" v-model="form.permissions" />
+                                    {{ perm.name }}
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <FieldError :formError="$form.permissions?.error?.message" :serverError="serverErrors?.permissions?.[0]" />
+                <FieldError :formError="$form.permissions?.error?.message" :serverError="serverErrors?.permissions?.[0]" />
+            </div>
         </div>
 
         <!-- Footer -->
@@ -61,6 +88,7 @@
 <script setup lang="ts">
 import FieldError from '@/components/common/FieldError.vue';
 import type { Permission, PermissionGroup, RolePayload } from '@/features/rbac/rbac.types';
+import { slugify } from '@/utils/slugify';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import Checkbox from 'primevue/checkbox';
 import { computed, ref, watch } from 'vue';
@@ -72,10 +100,13 @@ const props = defineProps<{
     submitLabel: string;
     serverErrors?: Record<string, string[]>;
     groups: PermissionGroup[];
+    editingId: number | null;
 }>();
 const emit = defineEmits(['submit', 'cancel']);
+const isEditMode = computed(() => props.editingId !== null);
 
-// Reactive form
+// Reactive state
+const slugEdit = ref(false);
 const form = ref({ ...props.initialForm });
 
 // Keep in sync with props
@@ -85,6 +116,15 @@ watch(
         form.value = { ...val };
     },
     { immediate: true },
+);
+
+watch(
+    () => form.value.name,
+    (newTitle) => {
+        if (!isEditMode.value) {
+            form.value.slug = slugify(newTitle);
+        }
+    },
 );
 
 // Validation
@@ -132,6 +172,12 @@ function toggleAllPermissions() {
     } else {
         form.value.permissions = [...allPermissionIds.value];
     }
+}
+
+// Handle slug input (enforce slug format)
+function onSlugInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    form.value.slug = slugify(input.value);
 }
 
 // Submit

@@ -4,7 +4,7 @@ namespace App\Services;
 
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
-use Spatie\Permission\Models\Role;
+use App\Models\Role;
 
 class RoleService
 {
@@ -58,7 +58,9 @@ class RoleService
     {
         $role = Role::create([
             'name' => $data['name'],
-            'guard_name' => 'web'
+            'guard_name' => 'web',
+            'slug' => $data['slug'],
+
         ]);
 
         if (!empty($data['permissions'])) {
@@ -82,7 +84,8 @@ class RoleService
     public function update(Role $record, array $data): Role
     {
         $record->update([
-            'name' => $data['name']
+            'name' => $data['name'],
+            'slug' => $data['slug'],
         ]);
 
         if (isset($data['permissions'])) {

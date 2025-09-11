@@ -24,6 +24,11 @@ class RoleRequest extends FormRequest
                 'max:255',
                 Rule::unique('roles', 'name')->ignore($roleId),
             ],
+            'slug' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['integer', 'exists:permissions,id'],
         ];
