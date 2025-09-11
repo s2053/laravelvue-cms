@@ -155,10 +155,10 @@ import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/
 import AppContent from '@/layouts/app/components/AppContent.vue';
 
 import { usePaginatedTable } from '@/composables/usePaginatedList';
-import { useUsers } from '@/composables/useUsers';
 import { PostFilter, PostOptionForm } from '@/features/posts/components';
 import { PostFilters } from '@/features/posts/posts.types';
 import PostService from '@/features/posts/services/post.service';
+import { useUsers } from '@/features/users/composables/useUsers';
 
 const { users: authorOptions, fetchUsers: fetchAuthors } = useUsers();
 

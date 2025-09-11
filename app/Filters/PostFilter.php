@@ -96,7 +96,7 @@ class PostFilter extends QueryFilter
 
     public function sort(): Builder|\Illuminate\Database\Query\Builder
     {
-        $sortable = ['created_at', 'title', 'status', 'post_type', 'visibility', 'categories', 'author'];
+        $sortable = ['id', 'created_at', 'title', 'status', 'post_type', 'visibility', 'categories', 'author'];
 
         $sortBy = $this->input('sort_by', 'created_at');
         $sortDir = $this->input('sort_dir', 'desc');

@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\PermissionGroupController;
 use App\Http\Controllers\Api\PostTagController;
 use App\Http\Controllers\Api\RoleController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -57,9 +57,10 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
     // User management routes
     Route::apiResource('users', UserController::class);
-    Route::put('/users/{id}/details', [UserController::class, 'updateDetails']);
-    Route::put('/users/{id}/password', [UserController::class, 'updatePassword']);
-    Route::put('/users/{id}/roles', [UserController::class, 'updateRoles']);
+    Route::post('/users/bulk-update', [UserController::class, 'bulkUpdate'])->name('users.bulk-update');
+    Route::put('/users/{user}/details', [UserController::class, 'updateDetails']);
+    Route::put('/users/{user}/password', [UserController::class, 'updatePassword']);
+    Route::put('/users/{user}/roles', [UserController::class, 'updateRoles']);
 
 
     Route::apiResource('page-categories', PageCategoryController::class);

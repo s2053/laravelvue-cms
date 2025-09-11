@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import UserService from '@/services/UserService';
-import type { User, UserPayload } from '@/types/user';
+import UserService from '@/features/users/services/user.service';
+import type { User, UserPayload } from '@/features/users/users.types';
 import { ref } from 'vue';
 
 export function useUsers() {
@@ -10,11 +10,13 @@ export function useUsers() {
     const loading = ref(false);
     const error = ref<string | null>(null);
 
-    const fetchUsers = async () => {
+    // Fetch all users (or with optional filters)
+    const fetchUsers = async (params: Record<string, any> = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            users.value = await UserService.getAll();
+            const res = await UserService.getAll(params);
+            users.value = res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch users';
@@ -23,9 +25,11 @@ export function useUsers() {
         }
     };
 
+    // Get a single user by ID
     const getUserById = async (id: number) => {
         try {
-            return await UserService.getById(id);
+            const res = await UserService.getById(id);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to fetch user';
@@ -33,10 +37,11 @@ export function useUsers() {
         }
     };
 
-    const createUser = async (user: Partial<UserPayload>) => {
+    // Create a new user
+    const createUser = async (payload: UserPayload) => {
         try {
-            await UserService.create(user);
-            await fetchUsers();
+            const res = await UserService.create(payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to create user';
@@ -44,10 +49,11 @@ export function useUsers() {
         }
     };
 
-    const updateUser = async (id: number, user: Partial<UserPayload>) => {
+    // Update existing user
+    const updateUser = async (id: number, payload: UserPayload) => {
         try {
-            await UserService.update(id, user);
-            await fetchUsers();
+            const res = await UserService.update(id, payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update user';
@@ -55,10 +61,22 @@ export function useUsers() {
         }
     };
 
-    const updateUserDetails = async (id: number, details: { name: string; email: string }) => {
+    // Delete a user
+    const deleteUser = async (id: number) => {
         try {
-            await UserService.updateDetails(id, details);
-            await fetchUsers();
+            await UserService.delete(id);
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to delete user';
+            throw err;
+        }
+    };
+
+    // Update only user details (name/email)
+    const updateUserDetails = async (id: number, payload: Partial<UserPayload>) => {
+        try {
+            const res = await UserService.updateDetails(id, payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update user details';
@@ -66,10 +84,11 @@ export function useUsers() {
         }
     };
 
+    // Update only password
     const updateUserPassword = async (id: number, payload: { password: string; password_confirmation: string }) => {
         try {
-            await UserService.updatePassword(id, payload);
-            await fetchUsers();
+            const res = await UserService.updatePassword(id, payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update user password';
@@ -77,11 +96,11 @@ export function useUsers() {
         }
     };
 
-    // New: update user roles only
+    // Update roles
     const updateUserRoles = async (id: number, payload: { role_ids: number[] }) => {
         try {
-            await UserService.updateRoles(id, payload);
-            await fetchUsers();
+            const res = await UserService.updateRoles(id, payload);
+            return res.data;
         } catch (err: any) {
             handleError(err);
             error.value = err.message || 'Failed to update user roles';
@@ -89,13 +108,13 @@ export function useUsers() {
         }
     };
 
-    const deleteUser = async (id: number) => {
+    // Bulk update/delete users
+    const bulkUpdateUsers = async (action: string, ids: number[], data?: Record<string, any>) => {
         try {
-            await UserService.delete(id);
-            await fetchUsers();
+            await UserService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
             handleError(err);
-            error.value = err.message || 'Failed to delete user';
+            error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }
     };
@@ -108,9 +127,10 @@ export function useUsers() {
         getUserById,
         createUser,
         updateUser,
+        deleteUser,
         updateUserDetails,
         updateUserPassword,
         updateUserRoles,
-        deleteUser,
+        bulkUpdateUsers,
     };
 }

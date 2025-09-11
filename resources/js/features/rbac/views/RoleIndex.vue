@@ -67,6 +67,7 @@
         <!-- Create/Edit Dialog -->
         <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '50rem' }">
             <RoleForm
+                :editing-id="editingId"
                 :initialForm="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
@@ -144,7 +145,7 @@ const dialogTitle = ref('Create Role');
 const dialogSubmitLabel = ref('Create');
 const editingId = ref<number | null>(null);
 const serverErrors = ref<Record<string, string[]>>({});
-const initialFormPayload: RolePayload = { name: '', permissions: [] };
+const initialFormPayload: RolePayload = { name: '', slug: '', permissions: [] };
 const formModel = ref<RolePayload>({ ...initialFormPayload });
 
 // Dialog actions
