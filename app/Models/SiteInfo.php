@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class SiteInfo extends Model
 {
+    protected $table = 'site_info';
     protected $fillable = [
         'site_title',
         'tagline',
