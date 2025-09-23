@@ -1,7 +1,7 @@
-import { ref } from 'vue';
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import SiteService from '@/features/sites/services/site.service';
 import { SiteInfo } from '@/features/sites/sites.types';
+import { ref } from 'vue';
 
 export function useSiteInfo() {
     const { handleError } = useApiErrorHandler();

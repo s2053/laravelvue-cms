@@ -1,7 +1,17 @@
-export interface SocialLinks {
-    [key: string]: string; // e.g., { facebook: "https://...", twitter: "https://..." }
+export interface SocialLink {
+    title: string;
+    url: string;
 }
 
+export interface SocialLinks {
+    facebook?: SocialLink | null;
+    twitter?: SocialLink | null;
+    instagram?: SocialLink | null;
+    linkedin?: SocialLink | null;
+    youtube?: SocialLink | null;
+
+    [key: string]: SocialLink | null | undefined; // allow extra platforms
+}
 export interface SiteInfo {
     site_title?: string | null;
     tagline?: string | null;

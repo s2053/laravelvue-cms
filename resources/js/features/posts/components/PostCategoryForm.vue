@@ -188,7 +188,6 @@ import { slugify } from '@/utils/slugify';
 
 import { PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
 
-
 // Props & Emits
 
 const props = defineProps<{

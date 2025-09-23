@@ -66,6 +66,9 @@ class SiteInfoService
                         $this->deleteFile($this->siteInfo->$field, $deleteVariants);
                     }
                     $data[$field] = null;
+                } else {
+                    unset($data[$field]);
+
                 }
 
                 // Upload new image
@@ -89,6 +92,9 @@ class SiteInfoService
                         $this->deleteFile($this->siteInfo->$field, false);
                     }
                     $data[$field] = null;
+                } else {
+                    unset($data[$field]);
+
                 }
 
                 if (!empty($data[$fileKey]) && $data[$fileKey] instanceof UploadedFile) {
@@ -149,4 +155,3 @@ class SiteInfoService
         }
     }
 }
-        

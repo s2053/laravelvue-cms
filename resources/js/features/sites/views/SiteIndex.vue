@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useToast } from 'primevue/usetoast';
 import { useSiteInfo } from '@/features/sites/composables';
+import { useToast } from 'primevue/usetoast';
+import { onMounted, ref } from 'vue';
 
+import { SiteContactForm, SiteGeneralForm } from '@/features/sites/components';
 import AppContent from '@/layouts/app/components/AppContent.vue';
-import { SiteGeneralForm, SiteContactForm } from '@/features/sites/components';
 
-import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 import { SiteInfoPayload } from '@/features/sites/sites.types';
-
-
+import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
 const toast = useToast();
 const { siteInfo, fetchSiteInfo, updateSiteInfo } = useSiteInfo();
@@ -39,6 +37,7 @@ const initialFormPayload: SiteInfoPayload = {
     cookies_enabled: false,
     cookies_text: '',
     copyright_text: '',
+    social_links: {},
 };
 
 const formModel = ref({ ...initialFormPayload });
@@ -63,21 +62,27 @@ onMounted(async () => {
 });
 
 function payloadToFormData(payload: Record<string, any>): FormData {
+    console.log('Preparing payload for submission:', payload);
+    const nullables = ['logo', 'favicon', 'footer_logo', 'placeholder_image'];
+
     const formData = new FormData();
-   // formData.append('_method', 'PUT');
+    // formData.append('_method', 'PUT');
 
     Object.entries(payload).forEach(([key, value]) => {
-        if (value instanceof File) {
+        if (key === 'social_links' && value && typeof value === 'object') {
+            formData.append(key, JSON.stringify(value));
+        } else if (value instanceof File) {
             formData.append(key, value);
         } else if (Array.isArray(value)) {
             formData.append(key, JSON.stringify(value));
         } else if (typeof value === 'boolean') {
             formData.append(key, value ? '1' : '0');
+        } else if (nullables.includes(key)) {
+            formData.append(key, value == null ? '' : String(value));
         } else if (value !== undefined && value !== null) {
-            formData.append(key, value);
+            formData.append(key, value as any);
         }
     });
-
     return formData;
 }
 
@@ -93,7 +98,6 @@ async function handleSubmit(form: typeof initialFormPayload) {
         const updated = await updateSiteInfo(formData);
         formModel.value = { ...pickMatchData(updated, initialFormPayload) };
         toast.add({ severity: 'success', summary: 'Site Info updated', life: 2000 });
-        
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
@@ -130,21 +134,11 @@ async function handleSubmit(form: typeof initialFormPayload) {
 
                 <TabPanels>
                     <TabPanel value="general" as="div">
-                        <SiteGeneralForm
-                            :initialForm="formModel"
-                            :serverErrors="serverErrors"
-                            :submitting="submitting"
-                            @submit="handleSubmit"
-                        />
+                        <SiteGeneralForm :initialForm="formModel" :serverErrors="serverErrors" :submitting="submitting" @submit="handleSubmit" />
                     </TabPanel>
 
                     <TabPanel value="contact" as="div">
-                        <SiteContactForm
-                            :initialForm="formModel"
-                            :serverErrors="serverErrors"
-                            :submitting="submitting"
-                            @submit="handleSubmit"
-                        />
+                        <SiteContactForm :initialForm="formModel" :serverErrors="serverErrors" :submitting="submitting" @submit="handleSubmit" />
                     </TabPanel>
                 </TabPanels>
             </Tabs>

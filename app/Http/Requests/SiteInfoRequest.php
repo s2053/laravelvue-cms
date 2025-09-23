@@ -24,6 +24,11 @@ class SiteInfoRequest extends FormRequest
         return [
             'site_title' => 'nullable|string|max:255',
             'tagline' => 'nullable|string|max:255',
+            'logo' => 'nullable|string',
+            'footer_logo' => 'nullable|string',
+            'placeholder_image' => 'nullable|string',
+            'favicon' => 'nullable|string',
+
             'logo_file' => 'nullable|image|mimes:jpeg,png,jpg,svg,gif|max:2048',
             'footer_logo_file' => 'nullable|image|mimes:jpeg,png,jpg,svg,gif|max:1536',
             'placeholder_image_file' => 'nullable|image|mimes:jpeg,png,jpg,svg,gif|max:1024',
@@ -64,4 +69,31 @@ class SiteInfoRequest extends FormRequest
             ]);
         }
     }
+
+    public function messages(): array
+    {
+        return [
+            'social_links.*.title.required_with' => 'The platform title is required.',
+            'social_links.*.title.max' => 'The platform title cannot exceed 50 characters.',
+            'social_links.*.url.required_with' => 'The URL for :attribute is required.',
+            'social_links.*.url.url' => 'The URL for :attribute must be valid.',
+            'social_links.*.url.max' => 'The URL for :attribute cannot exceed 255 characters.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        $attributes = [];
+
+        if ($this->has('social_links') && is_array(value: $this->social_links)) {
+            foreach ($this->social_links as $platform => $data) {
+                // Only show the platform name, not the full array path
+                $attributes["social_links.$platform.url"] = ucfirst($platform);
+                $attributes["social_links.$platform.title"] = ucfirst($platform) . ' Title';
+            }
+        }
+
+        return $attributes;
+    }
+
 }

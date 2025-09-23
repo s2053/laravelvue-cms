@@ -1,7 +1,6 @@
+import { SiteInfo } from '@/features/sites/sites.types';
 import { api } from '@/lib/axios';
 import { ApiResponse } from '@/types/apiResponse';
-import { SiteInfo } from '@/features/sites/sites.types';
-
 
 const SiteService = {
     // Fetch site info

@@ -1,10 +1,19 @@
 <template>
     <div :style="{ fontSize: '12px' }">
-        <FileUpload ref="uploadRef" mode="basic" name="file" accept="image/*" :auto="false" customUpload
-            chooseLabel="Select" class="p-button-secondary w-full" @select="onSelect" :style="''" />
+        <FileUpload
+            ref="uploadRef"
+            mode="basic"
+            name="file"
+            accept="image/*"
+            :auto="false"
+            customUpload
+            chooseLabel="Select"
+            class="p-button-secondary w-full"
+            @select="onSelect"
+            :style="''"
+        />
 
-        <div v-if="props.preview && previewUrl"
-            class="relative mt-2 flex h-[80px] items-center justify-center p-2 shadow-md">
+        <div v-if="props.preview && previewUrl" class="relative mt-2 flex h-[80px] items-center justify-center p-2 shadow-md">
             <img :src="previewUrl" alt="Preview" class="max-h-full max-w-full rounded-xl object-contain" />
             <div class="absolute top-0 right-0">
                 <Button @click="clearFile" icon="pi pi-times" severity="danger" rounded size="small" title="Remove" />

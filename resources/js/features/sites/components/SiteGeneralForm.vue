@@ -1,13 +1,6 @@
 <template>
-    <div class="max-w-2xl w-full">
-        <Form
-            v-slot="$form"
-            :initialValues="form"
-            :resolver="resolver"
-            :key="'general'"
-            @submit="onSubmit"
-            class="flex flex-col gap-6"
-        >
+    <div class="w-full max-w-2xl">
+        <Form v-slot="$form" :initialValues="form" :resolver="resolver" :key="'general'" @submit="onSubmit" class="flex flex-col gap-6">
             <!-- Site Title -->
             <div class="flex flex-col gap-1">
                 <label for="site_title" class="mb-2 block font-bold">
@@ -15,10 +8,7 @@
                     Site Title:
                 </label>
                 <InputText v-model="form.site_title" name="site_title" placeholder="Site Title" />
-                <FieldError
-                    :formError="$form.site_title?.error?.message"
-                    :serverError="serverErrors?.site_title?.[0]"
-                />
+                <FieldError :formError="$form.site_title?.error?.message" :serverError="serverErrors?.site_title?.[0]" />
             </div>
 
             <!-- Tagline -->
@@ -28,10 +18,7 @@
                     Tagline:
                 </label>
                 <InputText v-model="form.tagline" name="tagline" placeholder="Tagline" />
-                <FieldError
-                    :formError="$form.tagline?.error?.message"
-                    :serverError="serverErrors?.tagline?.[0]"
-                />
+                <FieldError :formError="$form.tagline?.error?.message" :serverError="serverErrors?.tagline?.[0]" />
             </div>
 
             <!-- Logo -->
@@ -41,24 +28,10 @@
                     Logo:
                 </label>
 
-                <div
-                    v-if="form.logo"
-                    class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2"
-                >
-                    <img
-                        :src="form.logo"
-                        alt="Logo preview"
-                        class="block max-h-32 w-full max-w-xs rounded object-contain"
-                    />
+                <div v-if="form.logo" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                    <img :src="form.logo" alt="Logo preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
                     <div class="absolute top-0 right-0">
-                        <Button
-                            @click="form.logo = null"
-                            icon="pi pi-trash"
-                            severity="danger"
-                            aria-label="Remove"
-                            size="small"
-                            title="Remove"
-                        />
+                        <Button @click="form.logo = null" icon="pi pi-trash" severity="danger" aria-label="Remove" size="small" title="Remove" />
                     </div>
                 </div>
 
@@ -73,24 +46,10 @@
                     Favicon:
                 </label>
 
-                <div
-                    v-if="form.favicon"
-                    class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2"
-                >
-                    <img
-                        :src="form.favicon"
-                        alt="Favicon preview"
-                        class="block max-h-32 w-full max-w-xs rounded object-contain"
-                    />
+                <div v-if="form.favicon" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                    <img :src="form.favicon" alt="Favicon preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
                     <div class="absolute top-0 right-0">
-                        <Button
-                            @click="form.favicon = null"
-                            icon="pi pi-trash"
-                            severity="danger"
-                            aria-label="Remove"
-                            size="small"
-                            title="Remove"  
-                        />
+                        <Button @click="form.favicon = null" icon="pi pi-trash" severity="danger" aria-label="Remove" size="small" title="Remove" />
                     </div>
                 </div>
 
@@ -105,15 +64,8 @@
                     Footer Logo:
                 </label>
 
-                <div
-                    v-if="form.footer_logo"
-                    class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2"
-                >
-                    <img
-                        :src="form.footer_logo"
-                        alt="Footer logo preview"
-                        class="block max-h-32 w-full max-w-xs rounded object-contain"
-                    />
+                <div v-if="form.footer_logo" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                    <img :src="form.footer_logo" alt="Footer logo preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
                     <div class="absolute top-0 right-0">
                         <Button
                             @click="form.footer_logo = null"
@@ -130,7 +82,7 @@
                 <FieldError :formError="$form.footer_logo_file?.error?.message" :serverError="serverErrors?.footer_logo_file?.[0]" />
             </div>
 
-                  <hr>  
+            <hr />
 
             <!-- Meta Title -->
             <div class="flex flex-col gap-1">
@@ -139,13 +91,8 @@
                     Meta Title:
                 </label>
                 <InputText v-model="form.meta_title" name="meta_title" placeholder="Meta Title" />
-                <FieldError
-                    :formError="$form.meta_title?.error?.message"
-                    :serverError="serverErrors?.meta_title?.[0]"
-                />
+                <FieldError :formError="$form.meta_title?.error?.message" :serverError="serverErrors?.meta_title?.[0]" />
             </div>
-
-      
 
             <!-- Meta Description -->
             <div class="flex flex-col gap-1">
@@ -153,16 +100,8 @@
                     <i class="pi pi-align-left mr-2"></i>
                     Meta Description:
                 </label>
-                <Textarea
-                    v-model="form.meta_description"
-                    name="meta_description"
-                    placeholder="Meta Description"
-                    rows="3"
-                />
-                <FieldError
-                    :formError="$form.meta_description?.error?.message"
-                    :serverError="serverErrors?.meta_description?.[0]"
-                />
+                <Textarea v-model="form.meta_description" name="meta_description" placeholder="Meta Description" rows="3" />
+                <FieldError :formError="$form.meta_description?.error?.message" :serverError="serverErrors?.meta_description?.[0]" />
             </div>
 
             <!-- Cookies Enabled -->
@@ -177,12 +116,7 @@
                     <i class="pi pi-lock mr-2"></i>
                     Cookies Text:
                 </label>
-                <Textarea
-                    v-model="form.cookies_text"
-                    name="cookies_text"
-                    placeholder="Cookies Policy Text"
-                    rows="3"
-                />
+                <Textarea v-model="form.cookies_text" name="cookies_text" placeholder="Cookies Policy Text" rows="3" />
                 <FieldError :serverError="serverErrors?.cookies_text?.[0]" />
             </div>
 
@@ -192,22 +126,13 @@
                     <i class="pi pi-copyright mr-2"></i>
                     Copyright Text:
                 </label>
-                <InputText
-                    v-model="form.copyright_text"
-                    name="copyright_text"
-                    placeholder="© 2025 My Website"
-                />
+                <InputText v-model="form.copyright_text" name="copyright_text" placeholder="© 2025 My Website" />
                 <FieldError :serverError="serverErrors?.copyright_text?.[0]" />
             </div>
 
             <!-- Submit -->
-            <div class="flex justify-end gap-2 mt-4">
-                <Button
-                    type="submit"
-                    label="Save General Settings"
-                    severity="success"
-                    :disabled="submitting"
-                />
+            <div class="mt-4 flex justify-end gap-2">
+                <Button type="submit" label="Save General Settings" severity="success" :disabled="submitting" />
             </div>
         </Form>
     </div>
@@ -218,11 +143,12 @@ import FieldError from '@/components/common/FieldError.vue';
 import MediaUploader from '@/components/common/MediaUploader.vue';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 
+import { SiteInfoPayload } from '@/features/sites/sites.types';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
 
 interface SiteGeneralFormProps {
-    initialForm: Record<string, any>;
+    initialForm: SiteInfoPayload;
     serverErrors?: Record<string, string[]>;
     submitting?: boolean;
 }
