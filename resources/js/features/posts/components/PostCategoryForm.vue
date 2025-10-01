@@ -187,11 +187,6 @@ import FieldError from '@/components/common/FieldError.vue';
 import { slugify } from '@/utils/slugify';
 
 import { PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
-import Tab from 'primevue/tab';
-import TabList from 'primevue/tablist';
-import TabPanel from 'primevue/tabpanel';
-import TabPanels from 'primevue/tabpanels';
-import Tabs from 'primevue/tabs';
 
 // Props & Emits
 
