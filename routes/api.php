@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\PermissionGroupController;
 use App\Http\Controllers\Api\PostTagController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\SiteInfoController;
 use App\Http\Controllers\Api\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -80,6 +81,10 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
     Route::apiResource('posts', PostController::class);
     Route::post('/posts/bulk-update', [PostController::class, 'bulkUpdate'])->name('posts.bulk-update');
 
+    Route::prefix('site-info')->group(function () {
+        Route::get('/', [SiteInfoController::class, 'show']);
+        Route::post('/', [SiteInfoController::class, 'update']);
+    });
 
 
 

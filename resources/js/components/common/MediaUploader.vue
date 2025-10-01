@@ -7,9 +7,10 @@
             accept="image/*"
             :auto="false"
             customUpload
-            chooseLabel="Select Image"
-            class="w-full"
+            chooseLabel="Select"
+            class="p-button-secondary w-full"
             @select="onSelect"
+            :style="''"
         />
 
         <div v-if="props.preview && previewUrl" class="relative mt-2 flex h-[80px] items-center justify-center p-2 shadow-md">

@@ -3,6 +3,7 @@ import { useAuthStore } from '@/features/auth/auth.store';
 import { routes as pagesRoutes } from '@/features/pages/pages.routes';
 import { routes as postsRoutes } from '@/features/posts/posts.routes';
 import { routes as rbacRoutes } from '@/features/rbac/rbac.routes';
+import { routes as siteRoutes } from '@/features/sites/sites.routes';
 import { routes as userRoutes } from '@/features/users/users.routes';
 import AppLayout from '@/layouts/app/AppLayout.vue';
 import AuthLayout from '@/layouts/auth/AuthLayout.vue';
@@ -28,6 +29,7 @@ const routes = [
             ...postsRoutes,
             ...rbacRoutes,
             ...userRoutes,
+            ...siteRoutes,
 
             {
                 path: 'settings/password',
