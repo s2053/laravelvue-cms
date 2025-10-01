@@ -62,7 +62,6 @@ onMounted(async () => {
 });
 
 function payloadToFormData(payload: Record<string, any>): FormData {
-    console.log('Preparing payload for submission:', payload);
     const nullables = ['logo', 'favicon', 'footer_logo', 'placeholder_image'];
 
     const formData = new FormData();
