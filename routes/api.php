@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\PostTagController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SiteInfoController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\WidgetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -63,6 +64,8 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
     Route::put('/users/{user}/password', [UserController::class, 'updatePassword']);
     Route::put('/users/{user}/roles', [UserController::class, 'updateRoles']);
 
+    Route::apiResource('widgets', WidgetController::class);
+    Route::post('/widgets/bulk-update', [WidgetController::class, 'bulkUpdate']);
 
     Route::apiResource('page-categories', PageCategoryController::class);
     Route::post('/page-categories/bulk-update', [PageCategoryController::class, 'bulkUpdate']);
