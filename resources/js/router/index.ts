@@ -5,6 +5,7 @@ import { routes as postsRoutes } from '@/features/posts/posts.routes';
 import { routes as rbacRoutes } from '@/features/rbac/rbac.routes';
 import { routes as siteRoutes } from '@/features/sites/sites.routes';
 import { routes as userRoutes } from '@/features/users/users.routes';
+import { routes as widgetRoutes } from '@/features/widgets/widgets.routes';
 import AppLayout from '@/layouts/app/AppLayout.vue';
 import AuthLayout from '@/layouts/auth/AuthLayout.vue';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -30,6 +31,7 @@ const routes = [
             ...rbacRoutes,
             ...userRoutes,
             ...siteRoutes,
+            ...widgetRoutes,
 
             {
                 path: 'settings/password',
