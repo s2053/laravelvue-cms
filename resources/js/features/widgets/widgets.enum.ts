@@ -1,26 +1,26 @@
 // Enum defining post types
 export enum ContentType {
-    DEFAULT = 'default',
-    BLOG = 'blog',
-    LIST = 'list',
+    POST = 'post',
+    PAGE = 'page',
+    CUSTOM = 'custom',
 }
 
 // Options for UI selects matching post types
 export const ContentTypeOptions = [
-    { label: 'Default', value: ContentType.DEFAULT },
-    { label: 'Blog', value: ContentType.BLOG },
-    { label: 'List', value: ContentType.LIST },
+    { label: 'POST', value: ContentType.POST },
+    { label: 'PAGE', value: ContentType.PAGE },
+    { label: 'CUSTOM', value: ContentType.CUSTOM },
 ];
 
 export enum WidgetType {
-    DEFAULT = 'default',
-    BLOG = 'blog',
-    LIST = 'list',
+    MENU = 'menu',
+    COLLECTION = 'collection',
+    CUSTOM_BLOCK = 'custom_block',
 }
 
 // Options for UI selects matching widget types
 export const WidgetTypeOptions = [
-    { label: 'Default', value: WidgetType.DEFAULT },
-    { label: 'Blog', value: WidgetType.BLOG },
-    { label: 'List', value: WidgetType.LIST },
+    { label: 'Menu', value: WidgetType.MENU },
+    { label: 'Collection', value: WidgetType.COLLECTION },
+    { label: 'Custom Block', value: WidgetType.CUSTOM_BLOCK },
 ];

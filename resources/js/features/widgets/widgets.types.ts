@@ -6,8 +6,8 @@ export interface Widget {
     id: number;
     title: string;
     description?: string | null;
-    widget_type: WidgetType; // menu, collection, custom
-    content_type: ContentType; // posts, pages
+    widget_type: WidgetType | null; // menu, collection, custom
+    content_type: ContentType | null; // posts, pages
     nestable: boolean;
     settings: Record<string, any> | null;
     slug: string;
@@ -36,6 +36,9 @@ export type WidgetPayload = Omit<Widget, 'id' | 'created_at' | 'items'>;
 export type WidgetItemPayload = Omit<WidgetItem, 'id' | 'created_at' | 'children'>;
 
 export type WidgetFilters = {
+    status: boolean[];
+    widget_type?: WidgetType[];
+    content_type?: ContentType[];
     created_at?: string[];
     global: string;
 };
