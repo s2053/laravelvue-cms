@@ -1,15 +1,21 @@
-// Enum defining post types
+// Enum defining all content types available in menu builder or widgets
 export enum ContentType {
     POST = 'post',
+    POST_CATEGORY = 'post_category',
+    POST_TAG = 'post_tag',
     PAGE = 'page',
+    PAGE_CATEGORY = 'page_category',
     CUSTOM = 'custom',
 }
 
-// Options for UI selects matching post types
+// Options for UI selects (for dropdowns or selectors)
 export const ContentTypeOptions = [
-    { label: 'POST', value: ContentType.POST },
-    { label: 'PAGE', value: ContentType.PAGE },
-    { label: 'CUSTOM', value: ContentType.CUSTOM },
+    { label: 'Post', value: ContentType.POST },
+    { label: 'Post Category', value: ContentType.POST_CATEGORY },
+    { label: 'Post Tag', value: ContentType.POST_TAG },
+    { label: 'Page', value: ContentType.PAGE },
+    { label: 'Page Category', value: ContentType.PAGE_CATEGORY },
+    { label: 'Custom Link', value: ContentType.CUSTOM },
 ];
 
 export enum WidgetType {

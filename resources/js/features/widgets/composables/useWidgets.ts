@@ -2,7 +2,7 @@
 
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import WidgetService from '@/features/widgets/services/widget.service';
-import type { Widget, WidgetPayload } from '@/features/widgets/widgets.types';
+import type { Widget, WidgetItemPayload, WidgetPayload } from '@/features/widgets/widgets.types';
 import { ref } from 'vue';
 
 export function useWidgets() {
@@ -85,6 +85,17 @@ export function useWidgets() {
         }
     };
 
+    const updateWidgetItems = async (widgetId: number, items: WidgetItemPayload[]) => {
+        try {
+            const res = await WidgetService.updateWidgetItems(widgetId, items);
+            return res.data;
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to update widget items';
+            throw err;
+        }
+    };
+
     return {
         widgets,
         loading,
@@ -95,5 +106,6 @@ export function useWidgets() {
         updateWidget,
         deleteWidget,
         bulkUpdateWidgets,
+        updateWidgetItems,
     };
 }

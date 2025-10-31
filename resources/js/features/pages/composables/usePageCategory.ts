@@ -11,11 +11,11 @@ export function usePageCategories() {
     const error = ref<string | null>(null);
 
     // Fetch all categories
-    const fetchCategories = async () => {
+    const fetchCategories = async (params: Record<string, any> = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            const res = await PageCategoryService.getAll();
+            const res = await PageCategoryService.getAll(params);
             categories.value = res.data;
         } catch (err: any) {
             handleError(err);

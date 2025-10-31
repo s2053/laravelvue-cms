@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Widgets\ContentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\WidgetRequest;
+use App\Http\Resources\WidgetItemResource;
 use App\Http\Resources\WidgetResource;
+use App\Http\Resources\WidgetWithItemResource;
 use App\Models\Widget;
 use App\Services\WidgetService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Enum;
 
 class WidgetController extends Controller
 {
@@ -51,7 +55,7 @@ class WidgetController extends Controller
     {
         $widget = $this->service->show($widget);
 
-        return new WidgetResource($widget);
+        return new WidgetWithItemResource($widget);
     }
 
     /**
@@ -89,5 +93,29 @@ class WidgetController extends Controller
         $result = $this->service->bulkUpdate($validated);
 
         return response()->json($result);
+    }
+
+    public function updateWidgetItems(Request $request, Widget $widget)
+    {
+        $validated = $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'nullable|integer',
+            'items.*.title' => 'required|string|max:255',
+            'items.*.url' => 'nullable|string|max:255',
+            'items.*.icon' => 'nullable|string|max:255',
+            'items.*.parent_id' => 'integer',
+            'items.*.content_type' => ['required', new Enum(ContentType::class)],
+            'items.*.content_type_id' => 'required|integer',
+            'items.*.target' => 'required|string',
+            'items.*.status' => 'boolean',
+            'items.*.children' => 'array',
+        ]);
+
+        $widget = $this->service->updateMenuItems($widget, $validated['items']);
+
+
+        return new WidgetWithItemResource($widget);
+
+
     }
 }

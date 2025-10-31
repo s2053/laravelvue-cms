@@ -9,7 +9,7 @@ class WidgetItem extends Model
     protected $fillable = [
         'widget_id',
         'title',
-        'link',
+        'url',
         'content_type',
         'content_type_id',
         'target',
@@ -30,5 +30,10 @@ class WidgetItem extends Model
     public function widget()
     {
         return $this->belongsTo(Widget::class, 'widget_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(WidgetItem::class, 'parent_id')->orderBy('ordernum');
     }
 }
