@@ -48,6 +48,7 @@ const model = ref([
         items: [
             { label: 'Site Settings', icon: 'pi pi-fw pi-id-card', to: '/dashboard/site-settings' },
             { label: 'Widgets', icon: 'pi pi-fw pi-briefcase', to: '/dashboard/widgets' },
+            { label: 'Menu Management', icon: 'pi pi-fw pi-list', to: '/dashboard/widgets/menu' },
         ],
     },
 

@@ -12,11 +12,11 @@ export function usePosts() {
     const error = ref<string | null>(null);
 
     // Fetch all posts
-    const fetchPosts = async () => {
+    const fetchPosts = async (params: Record<string, any> = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            const res = await PostService.getAll();
+            const res = await PostService.getAll(params);
             posts.value = res.data;
         } catch (err: any) {
             handleError(err);

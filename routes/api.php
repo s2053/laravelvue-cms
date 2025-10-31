@@ -66,6 +66,8 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
     Route::apiResource('widgets', WidgetController::class);
     Route::post('/widgets/bulk-update', [WidgetController::class, 'bulkUpdate']);
+    Route::post('/widgets/{widget}/widget-items', [WidgetController::class, 'updateWidgetItems']);
+
 
     Route::apiResource('page-categories', PageCategoryController::class);
     Route::post('/page-categories/bulk-update', [PageCategoryController::class, 'bulkUpdate']);

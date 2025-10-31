@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\Widgets\ContentType;
 use App\Filters\CategoryFilter;
 use App\Filters\WidgetFilter;
 use App\Models\Widget;
+use DB;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class WidgetService
@@ -45,7 +47,11 @@ class WidgetService
      */
     public function show(Widget $widget): Widget
     {
-        return $widget;
+        return $widget->load([
+            'items' => function ($q) {
+                $q->where('parent_id', 0)->orderBy('ordernum')->with('children');
+            }
+        ]);
     }
 
     /**
@@ -99,4 +105,40 @@ class WidgetService
                 return ['message' => 'Invalid action'];
         }
     }
+
+
+    public function updateMenuItems(Widget $widget, array $items)
+    {
+        DB::transaction(function () use ($widget, $items) {
+            $widget->items()->delete();
+            $this->saveWidgetItems($widget, $items);
+        });
+        return $widget->load([
+            'items' => function ($q) {
+                $q->where('parent_id', 0)->orderBy('ordernum')->with('children');
+            }
+        ]);
+    }
+
+    private function saveWidgetItems(Widget $widget, array $items, $parentId = 0)
+    {
+        foreach ($items as $index => $itemData) {
+            $widgetItem = $widget->items()->create([
+                'title' => $itemData['title'],
+                'url' => $itemData['url'] ?? null,
+                'icon' => $itemData['icon'] ?? null,
+                'target' => $itemData['target'] ?? '_self',
+                'ordernum' => $index,
+                'parent_id' => $parentId,
+                'content_type' => $itemData['content_type'] ?? 'custom',
+                'content_type_id' => $itemData['content_type_id'] ?? 0,
+                'status' => $itemData['status'] ?? true,
+            ]);
+
+            if (!empty($itemData['children'])) {
+                $this->saveWidgetItems($widget, $itemData['children'], $widgetItem->id);
+            }
+        }
+    }
+
 }

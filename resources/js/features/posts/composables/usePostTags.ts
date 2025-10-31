@@ -13,11 +13,11 @@ export function usePostTags() {
     const error = ref<string | null>(null);
 
     // Fetch all post tags
-    const fetchPostTags = async () => {
+    const fetchPostTags = async (params: Record<string, any> = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            const res = await PostTagService.getAll();
+            const res = await PostTagService.getAll(params);
             postTags.value = res.data;
         } catch (err: any) {
             handleError(err);

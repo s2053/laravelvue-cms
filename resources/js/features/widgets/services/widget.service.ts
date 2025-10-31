@@ -1,4 +1,4 @@
-import type { Widget, WidgetPayload } from '@/features/widgets/widgets.types';
+import type { Widget, WidgetItemPayload, WidgetPayload } from '@/features/widgets/widgets.types';
 import { api } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
@@ -41,6 +41,11 @@ const WidgetService = {
     // Perform bulk update on multiple widgets based on action and data
     async bulkUpdate<T extends string = string>(payload: { action: T; ids: number[]; data?: Record<string, any> }): Promise<ApiResponse<null>> {
         const res = await api.post<ApiResponse<null>>('/widgets/bulk-update', payload);
+        return res.data;
+    },
+
+    async updateWidgetItems(widgetId: number, items: WidgetItemPayload[]): Promise<ApiResponse<any>> {
+        const res = await api.post<ApiResponse<any>>(`/widgets/${widgetId}/widget-items`, { items });
         return res.data;
     },
 };

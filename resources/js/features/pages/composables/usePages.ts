@@ -12,11 +12,11 @@ export function usePages() {
     const error = ref<string | null>(null);
 
     // Fetch all pages
-    const fetchPages = async () => {
+    const fetchPages = async (params: Record<string, any> = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            const res = await PageService.getAll();
+            const res = await PageService.getAll(params);
             pages.value = res.data;
         } catch (err: any) {
             handleError(err);
