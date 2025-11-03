@@ -13,11 +13,11 @@ export function usePostCategory() {
     const error = ref<string | null>(null);
 
     // Fetch all post categories
-    const fetchPostCategories = async () => {
+    const fetchPostCategories = async (params: Record<string, any> = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            const res = await PostCategoryService.getAll();
+            const res = await PostCategoryService.getAll(params);
             postCategories.value = res.data;
         } catch (err: any) {
             handleError(err);
