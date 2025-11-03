@@ -18,6 +18,12 @@ export const ContentTypeOptions = [
     { label: 'Custom Link', value: ContentType.CUSTOM },
 ];
 
+// Helper to get label by value
+export function getContentTypeLabel(value?: ContentType | null, options = ContentTypeOptions): string | null {
+    if (!value) return null;
+    const option = options.find((opt) => opt.value === value);
+    return option ? option.label : value;
+}
 export enum WidgetType {
     MENU = 'menu',
     COLLECTION = 'collection',

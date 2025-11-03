@@ -24,6 +24,9 @@ class PageCategoryService
         $query = $filter->apply($query);
 
         if ($all) {
+            if ($perPage > 0) {
+                return $query->take($perPage)->get();
+            }
             return $query->get();
         }
 

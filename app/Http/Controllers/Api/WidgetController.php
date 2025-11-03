@@ -98,7 +98,7 @@ class WidgetController extends Controller
     public function updateWidgetItems(Request $request, Widget $widget)
     {
         $validated = $request->validate([
-            'items' => 'required|array',
+            'items' => 'array',
             'items.*.id' => 'nullable|integer',
             'items.*.title' => 'required|string|max:255',
             'items.*.url' => 'nullable|string|max:255',

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDebounce } from '@/composables/useDebounce';
 import { ContentType } from '@/features/widgets/widgets.enum';
-import type { WidgetItem, WidgetItemPayload } from '@/features/widgets/widgets.types';
+import type { WidgetItemPayload } from '@/features/widgets/widgets.types';
 import { Button, Checkbox, InputText, Panel, Skeleton } from 'primevue';
 import { ref, watch } from 'vue';
 
@@ -14,7 +14,7 @@ const props = defineProps<{
     contentType: ContentType;
     fetchItems: (search?: string) => Promise<{ id: number; title: string; slug: string }[]>;
     toUrl: (item: any) => string;
-    emitAdd: (items: WidgetItem[]) => void;
+    emitAdd: (items: WidgetItemPayload[]) => void;
     activePanel: string | null;
 }>();
 
@@ -112,6 +112,7 @@ const addSelected = () => {
             parent_id: 0,
             settings: null,
             status: true,
+            open: false,
             children: [],
         }));
 
