@@ -1,32 +1,48 @@
 <template>
     <div class="menu-editor rounded-md border p-6">
-        <h3 class="mb-4 border-b pb-2 text-lg font-semibold">Menu Structure</h3>
+        <div class="mb-4 flex items-center justify-between border-b pb-2">
+            <h3 class="text-lg font-semibold">Menu Structure</h3>
+            <Button label="Remove All" severity="danger" text @click="removeAllItems" />
+        </div>
 
         <!-- Show server error -->
         <div class="mb-2">
             <FieldError :serverError="serverErrors ? Object.values(serverErrors).flat().join('\n') : undefined" />
         </div>
 
-        <div class="menu-structure-wrapper flex justify-center">
+        <div class="menu-structure-wrapper flex">
             <div class="menu-structure-list w-full max-w-[640px]">
                 <VueNestable :value="items" :maxDepth="5" :threshold="20" @input="updateItems">
                     <template #default="{ item }">
-                        <VueNestableHandle>
-                            <MenuItemNode :item="item" @update="updateItem" @remove="removeItem" />
-                        </VueNestableHandle>
+                        <div class="p-panel rounded border">
+                            <VueNestableHandle>
+                                <div class="p-panel-header flex cursor-pointer items-center justify-between" @click="item.open = !item.open">
+                                    <!-- Title on the left -->
+
+                                    <span>{{ strTruncate(item.title, 45) }}</span>
+
+                                    <!-- Right side: Type badge + toggle -->
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 text-sm">
+                                            {{ getContentTypeLabel(item.content_type) }}
+                                        </span>
+                                        <span>{{ item.open ? '▲' : '▼' }}</span>
+                                    </div>
+                                </div>
+                            </VueNestableHandle>
+
+                            <div v-show="item.open" class="p-panel-content">
+                                <MenuItemNode :item="item" @update="updateItem" @remove="removeItem"> </MenuItemNode>
+                            </div>
+                        </div>
                     </template>
                 </VueNestable>
             </div>
         </div>
-        <div class="mt-4 flex gap-2">
-            <Button label="Cancel" class="flex-1" outlined @click="cancel" />
-            <Button label="Save" class="flex-1" :loading="submitting" @click="save" />
+        <div class="mt-4 flex justify-end gap-2">
+            <Button label="Cancel" outlined @click="cancel" />
+            <Button label="Save" :loading="submitting" @click="save" />
         </div>
-
-        <pre class="mt-4 rounded p-2 text-sm">
-  {{ items }}
-</pre
-        >
     </div>
 </template>
 
@@ -34,7 +50,9 @@
 import FieldError from '@/components/common/FieldError.vue';
 import { MenuItemNode } from '@/features/widgets/components';
 import type { WidgetItem, WidgetPayload } from '@/features/widgets/widgets.types';
+import { strTruncate } from '@/utils/stringHelper';
 import { VueNestable, VueNestableHandle } from 'vue3-nestable';
+import { getContentTypeLabel } from '../widgets.enum';
 
 const props = defineProps<{
     initialForm: WidgetPayload;
@@ -47,7 +65,6 @@ const emit = defineEmits<{
     (e: 'cancel'): void;
 }>();
 
-// Local reactive items (initialized from props.initialForm.items)
 const items = defineModel<WidgetItem[]>('items');
 
 // Remove item recursively
@@ -102,6 +119,10 @@ function save() {
 // Cancel
 function cancel() {
     emit('cancel');
+}
+
+function removeAllItems() {
+    items.value = [];
 }
 </script>
 
@@ -218,7 +239,16 @@ function cancel() {
     /* fixed width like WP */
 
     margin-top: 8px;
-    cursor: grab;
     transition: box-shadow 0.2s ease;
+}
+
+.p-panel-header {
+    padding: 8px 12px !important;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.p-panel-content {
+    padding: 12px;
 }
 </style>

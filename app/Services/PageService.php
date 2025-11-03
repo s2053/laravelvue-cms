@@ -32,7 +32,14 @@ class PageService
         $filter = new PageFilter($params);
         $query = $filter->apply($query);
 
-        return $all ? $query->get() : $query->paginate($perPage);
+        if ($all) {
+            if ($perPage > 0) {
+                return $query->take($perPage)->get();
+            }
+            return $query->get();
+        }
+
+        return $query->paginate($perPage);
     }
 
     /**

@@ -26,7 +26,7 @@ export interface WidgetItem {
     url?: string | null;
     target?: string | null;
     icon?: string | null;
-    content_type?: ContentType | null;
+    content_type: ContentType | null;
     content_type_id?: number | null;
     order?: number;
     parent_id?: number;
@@ -36,7 +36,7 @@ export interface WidgetItem {
 }
 
 export type WidgetPayload = Omit<Widget, 'id' | 'created_at'> & { items?: WidgetItemPayload[] };
-export type WidgetItemPayload = Omit<WidgetItem, 'created_at'> & { oid?: number };
+export type WidgetItemPayload = Omit<WidgetItem, 'created_at'> & { oid?: number; open?: boolean };
 
 export type WidgetFilters = {
     status: boolean[];
