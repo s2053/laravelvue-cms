@@ -2,7 +2,7 @@
     <div class="menu-editor rounded-md border p-6">
         <div class="mb-4 flex items-center justify-between border-b pb-2">
             <h3 class="text-lg font-semibold">Menu Structure</h3>
-            <Button label="Remove All" severity="danger" text @click="removeAllItems" />
+            <Button :disabled="items?.length === 0" label="Remove All" severity="danger" text @click="removeAllItems" />
         </div>
 
         <!-- Show server error -->

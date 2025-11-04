@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\PageStatus;
+use App\Enums\Widgets\ContentType;
 use App\Filters\PageFilter;
 use App\Models\Page;
 use Illuminate\Http\UploadedFile;
@@ -128,6 +129,7 @@ class PageService
         if ($page->thumbnail) {
             $this->deleteFile($page->thumbnail);
         }
+        app(WidgetService::class)->deleteRelatedItems(ContentType::PAGE, $page->id);
 
         $page->deleted_by = auth()->id();
         $page->save();
