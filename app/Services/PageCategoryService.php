@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Widgets\ContentType;
 use App\Filters\CategoryFilter;
 use App\Models\PageCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -63,6 +64,8 @@ class PageCategoryService
      */
     public function delete(PageCategory $category): void
     {
+        app(WidgetService::class)->deleteRelatedItems(ContentType::PAGE_CATEGORY, $category->id);
+
         $category->delete();
     }
 

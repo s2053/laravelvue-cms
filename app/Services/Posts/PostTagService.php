@@ -2,7 +2,9 @@
 
 namespace App\Services\Posts;
 
+use App\Enums\Widgets\ContentType;
 use App\Models\PostTag;
+use App\Services\WidgetService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -84,6 +86,8 @@ class PostTagService
      */
     public function delete(PostTag $record): void
     {
+        app(WidgetService::class)->deleteRelatedItems(ContentType::POST_TAG, $record->id);
+
         $record->delete();
     }
 
