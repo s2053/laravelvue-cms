@@ -2,8 +2,10 @@
 
 namespace App\Services\Posts;
 
+use App\Enums\Widgets\ContentType;
 use App\Filters\CategoryFilter;
 use App\Models\PostCategory;
+use App\Services\WidgetService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -101,6 +103,8 @@ class PostCategoryService
      */
     public function delete(PostCategory $record): void
     {
+        app(WidgetService::class)->deleteRelatedItems(ContentType::POST_CATEGORY, $record->id);
+
         $record->delete();
     }
 

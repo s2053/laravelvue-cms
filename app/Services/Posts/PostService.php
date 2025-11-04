@@ -3,8 +3,10 @@
 namespace App\Services\Posts;
 
 use App\Enums\Posts\PostStatus;
+use App\Enums\Widgets\ContentType;
 use App\Filters\PostFilter;
 use App\Models\Post;
+use App\Services\WidgetService;
 use Illuminate\Http\UploadedFile;
 use App\Services\FileUploadService;
 
@@ -39,7 +41,7 @@ class PostService
             return $query->get();
         }
 
-        return $query->paginate($perPage); 
+        return $query->paginate($perPage);
 
     }
 
@@ -152,6 +154,9 @@ class PostService
         if ($post->thumbnail) {
             $this->deleteFile($post->thumbnail);
         }
+
+        app(WidgetService::class)->deleteRelatedItems(ContentType::POST, $post->id);
+
 
         $post->deleted_by = auth()->id();
         $post->save();
