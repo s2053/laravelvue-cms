@@ -10,13 +10,14 @@
             "DOM",
             "DOM.Iterable"
         ] /* Specify a set of bundled library declaration files that describe the target runtime environment. */,
-        "baseUrl": ".",
         "paths": {
-            "@/*": ["./resources/js/*"]
+            "@/*": ["./resources/js/*"],
+            "@css/*": ["./resources/css/*"]
         },
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "typeRoots": ["./src/types", "./node_modules/@types"]
+        "typeRoots": ["./src/types", "./node_modules/@types"],
+        "noEmit": true
     },
 
     "include": [

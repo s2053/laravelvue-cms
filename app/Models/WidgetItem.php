@@ -36,4 +36,11 @@ class WidgetItem extends Model
     {
         return $this->hasMany(WidgetItem::class, 'parent_id')->orderBy('ordernum');
     }
+
+    public function scopeWithAllChildren($query)
+    {
+        return $query->with(['children' => function ($q) {
+            $q->orderBy('ordernum')->withAllChildren();
+        }]);
+    }
 }

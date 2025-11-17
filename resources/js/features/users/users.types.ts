@@ -13,6 +13,13 @@ export interface User {
 
 export type UserPayload = Omit<User, 'id' | 'created_at' | 'roles'> & { password?: string; password_confirmation?: string; role_ids: number[] };
 
+export type UserProfilePayload = Pick<UserPayload, 'name' | 'email' | 'profile_img' | 'status'>;
+
+export type UserSecurityPayload = Pick<UserPayload, 'password' | 'password_confirmation'> & { current_password: string };
+
+export interface UserPreferences {
+    appearance: string;
+}
 export type UserFilters = {
     status: boolean[];
     email_verified_status: boolean[];

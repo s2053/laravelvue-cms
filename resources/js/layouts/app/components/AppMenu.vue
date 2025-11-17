@@ -53,11 +53,11 @@ const model = ref([
     },
 
     {
-        label: 'Settings',
+        label: 'Account',
         items: [
-            { label: 'Prfile', icon: 'pi pi-fw pi-id-card', to: '/dashboard/settings/profile' },
-            { label: 'password', icon: 'pi pi-fw pi-clone', to: '/dashboard/settings/password' },
-            { label: 'Appearcnce', icon: 'pi pi-fw pi-circle', to: '/dashboard/settings/appearance' },
+            { label: 'Prfile', icon: 'pi pi-fw pi-id-card', to: '/dashboard/account/profile' },
+            { label: 'Security', icon: 'pi pi-fw pi-clone', to: '/dashboard/account/security' },
+            { label: 'Preferences', icon: 'pi pi-fw pi-circle', to: '/dashboard/account/preferences' },
             {
                 label: 'Logout',
                 icon: 'pi pi-fw pi-sign-out',
@@ -74,8 +74,6 @@ const model = ref([
             },
         ],
     },
-
-
 ]);
 </script>
 

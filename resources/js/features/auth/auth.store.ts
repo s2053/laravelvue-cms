@@ -1,7 +1,7 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import type { LoginPayload, RegisterPayload, ResetPasswordPayload } from '@/features/auth/auth.types';
 import AuthService from '@/features/auth/services/auth.service';
-import type { User } from '@/types/user';
+import type { User } from '@/features/users/users.types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
