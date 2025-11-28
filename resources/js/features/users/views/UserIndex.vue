@@ -288,7 +288,7 @@ async function openEdit(user: User) {
 
     try {
         const latest = await getUserById(user.id);
-        let role_ids = latest.roles ? latest.roles.map((r: Role) => r.id) : [];
+        const role_ids = latest.roles ? latest.roles.map((r: Role) => r.id) : [];
 
         formModel.value = { ...pickMatchData(latest, initialFormPayload), role_ids };
         dialogVisible.value = true;

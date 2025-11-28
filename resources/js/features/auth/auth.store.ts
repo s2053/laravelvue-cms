@@ -1,7 +1,7 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import type { LoginPayload, RegisterPayload, ResetPasswordPayload } from '@/features/auth/auth.types';
 import AuthService from '@/features/auth/services/auth.service';
-import type { User } from '@/types/user';
+import type { User } from '@/features/users/users.types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -86,7 +86,7 @@ export const useAuthStore = defineStore(
             try {
                 const res = await AuthService.me();
                 user.value = res.data;
-                return res;
+                return user.value;
             } catch (err: any) {
                 // handleError(err);
                 user.value = null;

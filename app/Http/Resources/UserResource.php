@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'email_verified_at' => $this->email_verified_at ?? null,
             'status' => $this->status,
             'profile_img' => $this->profile_img ? $this->makeImageUrl($this->profile_img, 'thumb') : null,
+            'preferences' => $this->preferences ?? null,
 
             'roles' => $this->whenLoaded('roles', function () {
                 return $this->roles->map(function ($role) {
