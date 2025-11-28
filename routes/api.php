@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\PostTagController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\SiteInfoController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserSettingsController;
 use App\Http\Controllers\Api\WidgetController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -41,11 +42,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
-    // Route::get('/roles', [RoleController::class, 'index']);
-    // Route::post('/roles', [RoleController::class, 'store']);
-    // Route::get('/roles/{id}', [RoleController::class, 'show']);
-    // Route::put('/roles/{id}', [RoleController::class, 'update']);
-    // Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
 
     Route::apiResource('roles', RoleController::class);
     Route::post('/roles/bulk-update', [RoleController::class, 'bulkUpdate']);
@@ -63,6 +59,10 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
     Route::put('/users/{user}/details', [UserController::class, 'updateDetails']);
     Route::put('/users/{user}/password', [UserController::class, 'updatePassword']);
     Route::put('/users/{user}/roles', [UserController::class, 'updateRoles']);
+
+    Route::put('settings/profile', [UserSettingsController::class, 'updateProfile']);
+    Route::put('settings/security', [UserSettingsController::class, 'updateSecurity']);
+    Route::put('settings/preferences', [UserSettingsController::class, 'updatePreferences']);
 
     Route::apiResource('widgets', WidgetController::class);
     Route::post('/widgets/bulk-update', [WidgetController::class, 'bulkUpdate']);

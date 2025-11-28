@@ -1,3 +1,4 @@
+import { routes as accountRoutes } from '@/features/account/account.routes';
 import { routes as authRoutes } from '@/features/auth/auth.routes';
 import { useAuthStore } from '@/features/auth/auth.store';
 import { routes as pagesRoutes } from '@/features/pages/pages.routes';
@@ -32,6 +33,7 @@ const routes = [
             ...userRoutes,
             ...siteRoutes,
             ...widgetRoutes,
+            ...accountRoutes,
 
             {
                 path: 'settings/password',

@@ -1,7 +1,7 @@
 import type { LoginPayload, RegisterPayload } from '@/features/auth/auth.types';
+import { User } from '@/features/users/users.types';
 import { api, csrfClient } from '@/lib/axios';
 import type { ApiResponse } from '@/types/apiResponse';
-import { User } from '@/types/user';
 
 const AuthService = {
     // Ensure CSRF cookie is set for Sanctum

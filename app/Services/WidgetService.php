@@ -51,7 +51,7 @@ class WidgetService
     {
         return $widget->load([
             'items' => function ($q) {
-                $q->where('parent_id', 0)->orderBy('ordernum')->with('children');
+                $q->where('parent_id', 0)->orderBy('ordernum')->withAllChildren();
             }
         ]);
     }
