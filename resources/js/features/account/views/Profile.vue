@@ -2,41 +2,48 @@
     <h3 class="mb-6 border-b border-gray-200 pb-2 text-lg font-semibold text-gray-800">
         <slot name="header">Profile</slot>
     </h3>
-    <div>
-        <ProfileForm :initialForm="formModel" :serverErrors="serverErrors" :submitting="submitting" @submit="handleSubmit" />
+    <div v-if="loading" class="flex items-center justify-center p-4">
+        <p>Loading profile...</p>
+    </div>
+
+    <div v-else>
+        <ProfileForm :initialForm="formModel" :resData="user" :serverErrors="serverErrors" :submitting="submitting" @submit="handleSubmit" />
     </div>
 </template>
 <script setup lang="ts">
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
+import { useAuthStore } from '@/features/auth/auth.store';
+
 import { ProfileForm } from '@/features/account/components';
-import { useAccount } from '@/features/account/composables'; // your composable for fetching/updating user
-import { UserProfilePayload } from '@/features/users/users.types';
+import { useAccount } from '@/features/account/composables';
+import { User, UserProfilePayload } from '@/features/users/users.types';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
 const toast = useToast();
-const { updateUserProfile } = useAccount(); // composable to get/update current user
+const { updateProfile } = useAccount();
+const auth = useAuthStore();
 
 const loading = ref(false);
 const submitting = ref(false);
 const serverErrors = ref<{ [key: string]: string[] }>({});
 
-// initial form payload for Profile tab
 const initialFormPayload: UserProfilePayload = {
     name: '',
-    email: '',
     profile_img: null,
+    profile_img_file: null,
 };
 
-// reactive form model
 const formModel = ref<UserProfilePayload>({ ...initialFormPayload });
-const user = ref<any>(null); // replace 'any' with your User type if available
+const user = ref<User>();
 onMounted(async () => {
     loading.value = true;
     try {
-        if (user.value) {
-            formModel.value = { ...pickMatchData(user.value, initialFormPayload) };
+        await auth.fetchUser();
+        if (auth.user) {
+            user.value = auth.user;
+            formModel.value = { ...pickMatchData(auth.user, initialFormPayload) };
         }
     } catch (err: any) {
         toast.add({
@@ -50,24 +57,23 @@ onMounted(async () => {
     }
 });
 
-// helper to convert payload to FormData for file uploads
-function payloadToFormData(payload: Record<string, any>): FormData {
-    const formData = new FormData();
+function payloadToFormData(payload: UserProfilePayload): FormData {
+    const nullables = ['profile_img'];
 
+    const formData = new FormData();
+    formData.append('_method', 'PUT');
     Object.entries(payload).forEach(([key, value]) => {
         if (value instanceof File) {
             formData.append(key, value);
-        } else if (typeof value === 'boolean') {
-            formData.append(key, value ? '1' : '0');
+        } else if (nullables.includes(key)) {
+            formData.append(key, value == null ? '' : String(value));
         } else if (value !== undefined && value !== null) {
             formData.append(key, value as any);
         }
     });
-
     return formData;
 }
 
-// handle Profile form submission
 async function handleSubmit(form: UserProfilePayload) {
     if (submitting.value) return;
     submitting.value = true;
@@ -77,8 +83,10 @@ async function handleSubmit(form: UserProfilePayload) {
     const formData = payloadToFormData(payload);
 
     try {
-        const updated = await updateUserProfile(formData);
+        const updated = await updateProfile(formData);
         formModel.value = { ...pickMatchData(updated, initialFormPayload) };
+        auth.setUser(updated);
+
         toast.add({ severity: 'success', summary: 'Profile updated', life: 2000 });
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {

@@ -7,9 +7,22 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
+use App\Services\FileUploadService;
 
 class UserService
 {
+    protected string $defaultStoragePath = 'users';
+    protected FileUploadService $fileUpload;
+
+
+    public function __construct(FileUploadService $fileUpload)
+    {
+        $this->fileUpload = $fileUpload;
+    }
+
+
+
     /**
      * List users with optional filters, roles, and pagination.
      */
@@ -76,10 +89,31 @@ class UserService
      */
     public function updateDetails(User $user, array $data): User
     {
-        $user->update([
-            'name' => $data['name'],
-            'email' => $data['email'],
-        ]);
+
+        // Handle thumbnail clearing
+        if (array_key_exists('profile_img', $data) && ($data['profile_img'] === null || $data['profile_img'] === '')) {
+            if ($user->profile_img) {
+                $this->deleteFile($user->profile_img);
+            }
+            $data['profile_img'] = null;
+        } else {
+            unset($data['profile_img']);
+        }
+
+        // Handle new profile_img upload
+        if (!empty($data['profile_img_file']) && $data['profile_img_file'] instanceof UploadedFile) {
+            if ($user->profile_img) {
+                $this->deleteFile($user->profile_img);
+            }
+            $data['profile_img'] = $this->storeFile($data['profile_img_file']);
+            unset($data['profile_img_file']);
+        }
+
+
+
+        $user->update($data);
+
+
 
         return $user->load('roles');
     }
@@ -109,6 +143,10 @@ class UserService
      */
     public function delete(User $user): void
     {
+
+        if ($user->profile_img) {
+            $this->deleteFile($user->profile_img);
+        }
         $user->deleted_by = auth()->id();
         $user->save();
         $user->delete();
@@ -155,5 +193,41 @@ class UserService
                 return ['message' => 'Invalid action'];
         }
     }
+
+    /**
+     * Store an uploaded file and return its path.
+     *
+     * @param UploadedFile $file
+     * @param string|null $path
+     * @return string
+     */
+    protected function storeFile(UploadedFile $file, ?string $path = null): string
+    {
+        $path = $path ?? $this->getStoragePath();
+        $paths = $this->fileUpload->uploadImage($file, $path, true);
+        return $paths['original'];
+    }
+
+    /**
+     * Delete a file and its variants.
+     *
+     * @param string $path
+     * @return void
+     */
+    protected function deleteFile(string $path): void
+    {
+        $this->fileUpload->deleteFiles($path);
+    }
+
+    /**
+     * Get the storage path for files.
+     *
+     * @return string
+     */
+    protected function getStoragePath(): string
+    {
+        return $this->defaultStoragePath;
+    }
+
 
 }

@@ -10,31 +10,42 @@
 <script setup lang="ts">
 import SecurityForm from '@/features/account/components/SecurityForm.vue';
 import { useAccount } from '@/features/account/composables';
-import { UserSecurityPayload } from '@/features/users/users.types';
+import type { UserSecurityPayload } from '@/features/users/users.types';
+import { pickCleanData } from '@/utils/objectHelpers';
 import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 
 const toast = useToast();
-const { updateUserSecurity } = useAccount(); // composable to update user password
+const { updateSecurity } = useAccount();
 
-const formModel = ref<UserSecurityPayload>({
+const submitting = ref(false);
+const serverErrors = ref<{ [key: string]: string[] }>({});
+
+const initialFormPayload: UserSecurityPayload = {
     current_password: '',
     password: '',
     password_confirmation: '',
-});
-
-const serverErrors = ref<{ [key: string]: string[] }>({});
-const submitting = ref(false);
+};
+const formModel = ref<UserSecurityPayload>({ ...initialFormPayload });
 
 async function handleSubmit(form: UserSecurityPayload) {
     if (submitting.value) return;
     submitting.value = true;
     serverErrors.value = {};
 
+    const payload = pickCleanData({ ...form }, initialFormPayload);
+
     try {
-        const updated = await updateUserSecurity(form); // or a dedicated changePassword API
-        toast.add({ severity: 'success', summary: 'Password updated', life: 2000 });
-        formModel.value = { current_password: '', password: '', password_confirmation: '' };
+        await updateSecurity(payload);
+
+        toast.add({
+            severity: 'success',
+            summary: 'Password updated',
+            life: 2000,
+        });
+        formModel.value = {
+            ...initialFormPayload,
+        };
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
@@ -42,7 +53,7 @@ async function handleSubmit(form: UserSecurityPayload) {
             toast.add({
                 severity: 'error',
                 summary: 'Error',
-                detail: err.message || 'Update failed',
+                detail: err?.message || 'Update failed',
                 life: 4000,
             });
         }

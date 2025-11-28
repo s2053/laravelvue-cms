@@ -14,6 +14,7 @@
                     :fluid="true"
                     :feedback="false"
                     toggleMask
+                    :inputProps="{ autocomplete: 'off' }"
                 />
                 <FieldError :formError="$form.current_password?.error?.message" :serverError="serverErrors?.current_password?.[0]" />
             </div>
@@ -24,7 +25,15 @@
                     <i class="pi pi-key mr-2"></i>
                     New Password:
                 </label>
-                <Password v-model="form.password" name="password" placeholder="Enter new password" :fluid="true" :feedback="false" toggleMask />
+                <Password
+                    v-model="form.password"
+                    name="password"
+                    placeholder="Enter new password"
+                    :fluid="true"
+                    :feedback="false"
+                    toggleMask
+                    :inputProps="{ autocomplete: 'off' }"
+                />
                 <FieldError :formError="$form.password?.error?.message" :serverError="serverErrors?.password?.[0]" />
             </div>
 
@@ -41,6 +50,7 @@
                     :fluid="true"
                     :feedback="false"
                     toggleMask
+                    :inputProps="{ autocomplete: 'off' }"
                 />
                 <FieldError :formError="$form.password_confirmation?.error?.message" :serverError="serverErrors?.password_confirmation?.[0]" />
             </div>

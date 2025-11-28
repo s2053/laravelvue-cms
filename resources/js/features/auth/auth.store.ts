@@ -86,7 +86,7 @@ export const useAuthStore = defineStore(
             try {
                 const res = await AuthService.me();
                 user.value = res.data;
-                return res;
+                return user.value;
             } catch (err: any) {
                 // handleError(err);
                 user.value = null;

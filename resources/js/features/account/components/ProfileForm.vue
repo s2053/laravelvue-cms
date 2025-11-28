@@ -7,7 +7,7 @@
                     <i class="pi pi-envelope mr-2"></i>
                     Email:
                 </label>
-                <InputText v-model="form.email" name="email" placeholder="Email Address" readonly class="cursor-not-allowed bg-gray-100" />
+                <InputText :value="resData?.email" name="email" class="cursor-not-allowed bg-gray-100" />
             </div>
 
             <!-- Name -->
@@ -20,29 +20,21 @@
                 <FieldError :formError="$form.name?.error?.message" :serverError="serverErrors?.name?.[0]" />
             </div>
 
-            <!-- Profile Image -->
-            <div class="flex flex-col gap-1">
-                <label for="profile_img" class="mb-2 block font-bold">
-                    <i class="pi pi-image mr-2"></i>
-                    Profile Image:
-                </label>
-
+            <!-- Featured image -->
+            <div>
+                <label for="featured_image" class="mb-2 block font-bold">Featured Image:</label>
                 <div v-if="form.profile_img" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
-                    <img :src="form.profile_img" alt="Profile Image" class="block max-h-32 w-full max-w-xs rounded object-contain" />
+                    <img :src="form.profile_img" alt="Thumbnail preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
+
+                    <!-- Remove button/icon (top-right corner) -->
                     <div class="absolute top-0 right-0">
-                        <Button
-                            @click="form.profile_img = null"
-                            icon="pi pi-trash"
-                            severity="danger"
-                            aria-label="Remove"
-                            size="small"
-                            title="Remove"
-                        />
+                        <Button @click="removeMedia" icon="pi pi-trash" severity="danger" aria-label="Cancel" size="small" title="Remove" />
                     </div>
                 </div>
-
-                <!-- <MediaUploader v-model:file="form.profile_img_file" /> -->
-                <FieldError :formError="$form.profile_img_file?.error?.message" :serverError="serverErrors?.profile_img?.[0]" />
+                <div>
+                    <MediaUploader v-model:file="form.profile_img_file" />
+                </div>
+                <FieldError :formError="$form.profile_img_file?.error?.message" :serverError="serverErrors?.profile_img_file?.[0]" />
             </div>
 
             <!-- Submit -->
@@ -55,7 +47,8 @@
 
 <script setup lang="ts">
 import FieldError from '@/components/common/FieldError.vue';
-import type { UserProfilePayload } from '@/features/users/users.types';
+import MediaUploader from '@/components/common/MediaUploader.vue';
+import type { User, UserProfilePayload } from '@/features/users/users.types';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
@@ -64,6 +57,7 @@ interface ProfileFormProps {
     initialForm: UserProfilePayload;
     serverErrors?: Record<string, string[]>;
     submitting?: boolean;
+    resData?: User;
 }
 
 const props = defineProps<ProfileFormProps>();
@@ -72,6 +66,10 @@ const emit = defineEmits<{
 }>();
 
 const form = ref<UserProfilePayload>({ ...props.initialForm });
+
+function removeMedia() {
+    form.value.profile_img = null;
+}
 
 watch(
     () => props.initialForm,

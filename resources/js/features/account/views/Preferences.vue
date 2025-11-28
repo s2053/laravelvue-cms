@@ -10,20 +10,24 @@
 <script setup lang="ts">
 import { PreferencesForm } from '@/features/account/components';
 import { useAccount } from '@/features/account/composables';
+import { useAuthStore } from '@/features/auth/auth.store';
 import type { UserPreferences } from '@/features/users/users.types';
 import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
+const auth = useAuthStore();
 
 const toast = useToast();
-const { updateUserPreferences } = useAccount(); // API for saving preferences
+const { updatePreferences } = useAccount();
 
 const initialFormPayload: UserPreferences = {
-    appearance: 'system', // default
+    appearance: 'system',
 };
 
 // reactive form model
-const formModel = ref<UserPreferences>({ ...initialFormPayload });
-
+const formModel = ref<UserPreferences>({
+    ...initialFormPayload,
+    ...(auth.user?.preferences || {}),
+});
 const serverErrors = ref<{ [key: string]: string[] }>({});
 const submitting = ref(false);
 
@@ -33,8 +37,10 @@ async function handleSubmit(form: UserPreferences) {
     serverErrors.value = {};
 
     try {
-        const updated = await updateUserPreferences(form);
-        //  formModel.value = { ...updated };
+        const updated = await updatePreferences(form);
+        auth.setUser(updated);
+        formModel.value = { ...(updated.preferences ?? initialFormPayload) };
+
         toast.add({ severity: 'success', summary: 'Preferences updated', life: 2000 });
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
