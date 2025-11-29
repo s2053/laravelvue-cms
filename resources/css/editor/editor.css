@@ -1,0 +1,144 @@
+/* ===== Editor container ===== */
+.classic-editor {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    font-family: 'Helvetica', 'Arial', sans-serif;
+}
+/* disable the focus outline of tiptap editor */
+.ProseMirror-focused {
+    outline: none;
+}
+.ProseMirror:focus {
+    outline: none;
+}
+
+/* ===== Toolbar ===== */
+.classic-editor .toolbar {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+
+/* Toolbar buttons */
+.classic-editor .toolbar button {
+    color: #333;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition:
+        background 0.2s,
+        border-color 0.2s;
+}
+
+.classic-editor .toolbar button:hover {
+    background: #f0f0f0;
+    border-color: #bbb;
+}
+
+/* ===== Editor content area ===== */
+
+/* Editor content wrapper */
+.classic-editor .editor-area {
+    padding: 12px;
+    min-height: 250px;
+    max-height: 600px;
+    overflow-y: auto;
+    outline: none;
+    border: 1px solid #ccc; /* optional: base border */
+    border-radius: 6px;
+    background: #fff;
+    color: black;
+}
+
+/* Remove extra focus border if undesired */
+.classic-editor .editor-area:focus {
+    outline: none;
+}
+
+/* ===== Text formatting ===== */
+.classic-editor strong,
+.classic-editor b {
+    font-weight: bold;
+}
+
+.classic-editor em,
+.classic-editor i {
+    font-style: italic;
+}
+
+.classic-editor u {
+    text-decoration: underline;
+}
+
+/* ===== Headings & paragraphs ===== */
+
+.classic-editor h1,
+.classic-editor h2,
+.classic-editor h3 {
+    color: black;
+}
+
+.classic-editor h1 {
+    font-size: 1.8em;
+    margin: 1em 0 0.5em;
+}
+
+.classic-editor h2 {
+    font-size: 1.5em;
+    margin: 0.8em 0 0.4em;
+}
+
+.classic-editor p {
+    margin: 0.5em 0;
+    line-height: 1.6;
+}
+
+/* ===== Images ===== */
+.classic-editor img {
+    max-width: 100%;
+    display: block;
+    margin: 8px 0;
+    border-radius: 4px;
+}
+
+/* ===== Code blocks ===== */
+.classic-editor pre {
+    background: #f4f4f4;
+    padding: 8px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+}
+
+.classic-editor code {
+    background: #f4f4f4;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+}
+
+/* ===== Selected text highlighting ===== */
+.classic-editor .ProseMirror .is-selected {
+    background: rgba(180, 213, 255, 0.3);
+}
+
+/* ===== Scrollbar styling (optional) ===== */
+.classic-editor .editor-area::-webkit-scrollbar {
+    width: 8px;
+}
+
+.classic-editor .editor-area::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.classic-editor .editor-area::-webkit-scrollbar-track {
+    background: transparent;
+}

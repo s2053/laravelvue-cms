@@ -50,9 +50,24 @@
                 </div>
 
                 <!-- Content -->
-                <div>
+                <!-- <div>
                     <label for="content" class="mb-2 block font-bold">Content:</label>
                     <Textarea v-model="form.content" name="content" placeholder="Content" class="w-full" rows="10" />
+                    <FieldError :formError="$form.content?.error?.message" :serverError="serverErrors?.content?.[0]" />
+                </div> -->
+
+                <!-- Editor Content -->
+                <div>
+                    <label for="content" class="mb-2 block font-bold">Editor:</label>
+                    <ClassicEditor
+                        v-model:content="form.content"
+                        output="html"
+                        :width="'100%'"
+                        :height="'400px'"
+                        :enableCharCount="true"
+                        :charCountMax="5000"
+                        name="content"
+                    />
                     <FieldError :formError="$form.content?.error?.message" :serverError="serverErrors?.content?.[0]" />
                 </div>
             </div>
@@ -275,6 +290,7 @@
 </template>
 
 <script setup lang="ts">
+import ClassicEditor from '@/components/common/editor/classic/ClassicEditor.vue';
 import FieldError from '@/components/common/FieldError.vue';
 import MediaUploader from '@/components/common/MediaUploader.vue';
 import AppCard from '@/components/ui/AppCard.vue';
