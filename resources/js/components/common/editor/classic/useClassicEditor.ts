@@ -30,6 +30,7 @@ export function useClassicEditor(initialContent = '', readonly = false) {
     });
 
     const commands = {
+        paragraph: () => editor?.value?.chain().focus().setParagraph().run(),
         bold: () => editor?.value?.chain().focus().toggleBold().run(),
         italic: () => editor?.value?.chain().focus().toggleItalic().run(),
         underline: () => editor?.value?.chain().focus().toggleUnderline().run(),

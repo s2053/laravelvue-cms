@@ -41,12 +41,14 @@
         "vue-tsc": "^2.2.10"
     },
     "dependencies": {
+        "@popperjs/core": "^2.11.8",
         "@primeuix/themes": "^1.2.1",
         "@primevue/forms": "^4.3.6",
         "@tailwindcss/postcss": "^4.1.5",
         "@tiptap/extension-bold": "^3.11.1",
         "@tiptap/extension-highlight": "^3.11.1",
         "@tiptap/extension-image": "^3.11.1",
+        "@tiptap/extension-paragraph": "^3.11.1",
         "@tiptap/pm": "^3.11.1",
         "@tiptap/starter-kit": "^3.11.1",
         "@tiptap/vue-3": "^3.11.1",

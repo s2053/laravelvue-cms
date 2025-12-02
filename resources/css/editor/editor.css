@@ -84,6 +84,11 @@
     color: black;
 }
 
+.editorbtn {
+    color: black;
+    cursor: pointer;
+}
+
 .classic-editor h1 {
     font-size: 1.8em;
     margin: 1em 0 0.5em;
