@@ -1,14 +1,26 @@
 <script setup lang="ts">
+import ChevronDownIcon from '@/assets/icons/chevron-down.svg';
 import { createPopper, type Instance, type Placement } from '@popperjs/core';
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
-const props = defineProps<{
-    placement?: Placement;
-    showSelected?: boolean;
-    selectedValue?: string;
-    placeholder?: string;
-    getActive?: (value: string) => boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        placement?: Placement;
+        showSelected?: boolean;
+        selectedValue?: string;
+        placeholder?: string;
+        getActive?: (value: string) => boolean;
+        showIcon?: boolean;
+    }>(),
+    {
+        placement: 'bottom-start', // default placement
+        showSelected: true, // default true
+        selectedValue: '', // default empty
+        placeholder: 'Select...', // default placeholder
+        getActive: () => false, // default function
+        showIcon: true, // default: don't show icon
+    },
+);
 
 const reference = ref<HTMLElement | null>(null);
 const dropdown = ref<HTMLElement | null>(null);
@@ -61,19 +73,24 @@ const selectOption = (value: string) => {
 </script>
 
 <template>
-    <div class="relative inline-block">
+    <div class="toolbar-btn relative inline-block">
         <!-- Trigger: show selected or placeholder -->
 
         <div
             ref="reference"
             @click="toggle"
-            class="cursor-pointer rounded border px-2 py-1"
-            :class="[
-                'cursor-pointer rounded border px-2 py-1',
-                props.getActive?.(props.selectedValue ?? '') ? 'font-semibold text-blue-700' : 'text-black',
-            ]"
+            class="flex cursor-pointer items-center justify-between rounded"
+            :class="props.getActive?.(props.selectedValue ?? '') ? 'font-semibold text-blue-700' : 'text-black'"
         >
-            {{ props.showSelected && props.selectedValue ? props.selectedValue : (props.placeholder ?? 'Select...') }}
+            <!-- Text -->
+            <span>
+                {{ props.showSelected && props.selectedValue ? props.selectedValue : (props.placeholder ?? 'Select...') }}
+            </span>
+
+            <!-- Optional Icon -->
+            <span v-if="props.showIcon" class="flex-shrink-0">
+                <component :is="ChevronDownIcon" style="height: 0.9rem; width: 0.9rem"> </component>
+            </span>
         </div>
 
         <Teleport to="body">

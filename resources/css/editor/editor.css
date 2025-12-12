@@ -23,17 +23,36 @@
 }
 
 /* Toolbar buttons */
-.classic-editor .toolbar button {
+.classic-editor .toolbar-btn {
     color: #333;
-    background: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 4px 8px;
+
     cursor: pointer;
     font-weight: bold;
     transition:
         background 0.2s,
         border-color 0.2s;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.15;
+    height: 2rem;
+    min-width: 2rem;
+    padding: 0.5rem;
+    gap: 0.125rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toolbar-icon {
+    display: block;
+    width: 1.2rem;
+    height: 1.2rem;
+    flex-shrink: 0;
+    overflow-clip-margin: content-box;
+    overflow: hidden;
 }
 
 .classic-editor .toolbar button:hover {
@@ -80,7 +99,8 @@
 
 .classic-editor h1,
 .classic-editor h2,
-.classic-editor h3 {
+.classic-editor h3,
+.classic-editor h4 {
     color: black;
 }
 
@@ -97,6 +117,16 @@
 .classic-editor h2 {
     font-size: 1.5em;
     margin: 0.8em 0 0.4em;
+}
+
+.classic-editor h3 {
+    font-size: 1.2em;
+    margin: 0.6em 0 0.3em;
+}
+
+.classic-editor h4 {
+    font-size: 1em;
+    margin: 0.5em 0 0.25em;
 }
 
 .classic-editor p {
@@ -146,4 +176,107 @@
 
 .classic-editor .editor-area::-webkit-scrollbar-track {
     background: transparent;
+}
+
+/* ============================
+   BULLET & ORDERED LISTS
+   ============================ */
+.classic-editor ul,
+.classic-editor ol {
+    margin: 0.5em 0 0.5em 1.4em;
+    padding: 0;
+    color: black;
+}
+
+.classic-editor ul {
+    list-style-type: disc;
+}
+
+.classic-editor ol {
+    list-style-type: decimal;
+}
+
+.classic-editor li {
+    margin: 0.3em 0;
+    line-height: 1.5;
+}
+
+/* ============================
+   TASK LISTS
+   ============================ */
+.classic-editor .task-list-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    list-style: none; /* Remove bullet */
+    margin-left: 0; /* Align flush */
+}
+
+.classic-editor .task-list-item input[type='checkbox'] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+}
+
+.classic-editor .task-list-item.checked label {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+/* ============================
+   BLOCKQUOTE
+   ============================ */
+.classic-editor blockquote {
+    border-left: 3px solid #ccc;
+    padding-left: 12px;
+    margin: 0.8em 0;
+    color: #555;
+    font-style: italic;
+}
+
+/* ============================
+   CODE BLOCK (IMPROVED)
+   ============================ */
+.classic-editor pre {
+    background: #f4f4f4;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    border: 1px solid #ddd;
+    color: #222;
+}
+
+.classic-editor pre code {
+    background: none !important;
+    padding: 0 !important;
+    border-radius: 0;
+    color: inherit;
+}
+
+/* Inline code */
+.classic-editor code:not(pre > code) {
+    background: #f4f4f4;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #444;
+}
+
+/* ===== Blockquote ===== */
+.classic-editor blockquote {
+    border-left: 4px solid #d0d0d0;
+    padding-left: 12px;
+    margin: 0.8em 0;
+    color: #555;
+    font-style: italic;
+    background: #f9f9f9;
+    border-radius: 4px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.classic-editor blockquote p {
+    margin: 0; /* avoid extra spacing inside */
 }
