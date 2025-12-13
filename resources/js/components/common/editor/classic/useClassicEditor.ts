@@ -11,8 +11,12 @@ import Italic from '../extensions/Italic';
 import ListItem from '../extensions/ListItem';
 import OrderedList from '../extensions/OrderedList';
 import Paragraph from '../extensions/Paragraph';
+import Strike from '../extensions/Strike';
+import Subscript from '../extensions/Subscript';
+import Superscript from '../extensions/Superscript';
 import TaskItem from '../extensions/TaskItem';
 import TaskList from '../extensions/TaskList';
+import TextAlign from '../extensions/TextAlign';
 import Underline from '../extensions/Underline';
 
 export function useClassicEditor(initialContent = '', readonly = false) {
@@ -36,14 +40,18 @@ export function useClassicEditor(initialContent = '', readonly = false) {
             Bold,
             Italic,
             Underline,
+            Strike,
+            Subscript,
+            Superscript,
             Image,
             CodeBlock,
             BulletList,
             OrderedList,
             ListItem,
             TaskList,
-            TaskItem,
+            TaskItem.configure({ nested: true }),
             Blockquote,
+            TextAlign.configure({ types: ['heading', 'paragraph'] }), // enable alignment
         ],
     });
 
@@ -52,6 +60,9 @@ export function useClassicEditor(initialContent = '', readonly = false) {
         bold: () => editor?.value?.chain().focus().toggleBold().run(),
         italic: () => editor?.value?.chain().focus().toggleItalic().run(),
         underline: () => editor?.value?.chain().focus().toggleUnderline().run(),
+        strike: () => editor?.value?.chain().focus().toggleStrike().run(),
+        subscript: () => editor?.value?.chain().focus().toggleSubscript().run(),
+        superscript: () => editor?.value?.chain().focus().toggleSuperscript().run(),
         heading: (level: Level) => editor?.value?.chain().focus().toggleHeading({ level }).run(),
         insertImage: () => {
             const url = prompt('Enter image URL');
@@ -64,11 +75,16 @@ export function useClassicEditor(initialContent = '', readonly = false) {
         bulletList: () => editor?.value?.chain().focus().toggleBulletList().run(),
         orderedList: () => editor?.value?.chain().focus().toggleOrderedList().run(),
         taskList: () => editor?.value?.chain().focus().toggleTaskList().run(),
-        //   taskItem: () => editor?.value?.chain().focus().toggleTaskItem().run(),
 
-        /* CODE BLOCK */
+        /* CODE BLOCK & BLOCKQUOTE */
         codeBlock: () => editor?.value?.chain().focus().toggleCodeBlock().run(),
         blockquote: () => editor?.value?.chain().focus().toggleBlockquote().run(),
+
+        /* TEXT ALIGNMENT */
+        alignLeft: () => editor?.value?.chain().focus().setTextAlign('left').run(),
+        alignCenter: () => editor?.value?.chain().focus().setTextAlign('center').run(),
+        alignRight: () => editor?.value?.chain().focus().setTextAlign('right').run(),
+        alignJustify: () => editor?.value?.chain().focus().setTextAlign('justify').run(),
     };
 
     return { editor, commands };

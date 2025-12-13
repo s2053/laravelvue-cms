@@ -7,6 +7,13 @@ import Heading4Icon from '@/assets/icons/heading-4.svg';
 import ImageIcon from '@/assets/icons/image.svg';
 import ItalicIcon from '@/assets/icons/italic.svg';
 import RedoIcon from '@/assets/icons/redo.svg';
+import StrikeIcon from '@/assets/icons/strikethrough.svg';
+import SubscriptIcon from '@/assets/icons/subscript.svg';
+import SuperscriptIcon from '@/assets/icons/superscript.svg';
+import TextAlignCenterIcon from '@/assets/icons/text-align-center.svg';
+import TextAlignEndIcon from '@/assets/icons/text-align-end.svg';
+import TextAlignJustifyIcon from '@/assets/icons/text-align-justify.svg';
+import TextAlignStartIcon from '@/assets/icons/text-align-start.svg';
 import UnderlineIcon from '@/assets/icons/underline.svg';
 import UndoIcon from '@/assets/icons/undo.svg';
 
@@ -201,14 +208,30 @@ const isDropdownActive = () => {
                 <UnderlineIcon :class="{ 'text-blue-700': editor?.isActive('underline') }" class="toolbar-icon" />
             </button>
 
-            <button type="button" class="toolbar-btn" @click="commands.heading(1)">
-                <Heading1Icon :class="{ 'text-blue-700': editor?.isActive('heading', { level: 1 }) }" class="toolbar-icon" />
+            <button type="button" class="toolbar-btn" @click="commands.strike">
+                <StrikeIcon :class="{ 'text-blue-700': editor?.isActive('strike') }" class="toolbar-icon" />
             </button>
 
-            <button type="button" class="toolbar-btn" @click="commands.heading(2)">
-                <Heading2Icon :class="{ 'text-blue-700': editor?.isActive('heading', { level: 2 }) }" class="toolbar-icon" />
+            <button type="button" class="toolbar-btn" @click="commands.superscript">
+                <SuperscriptIcon :class="{ 'text-blue-700': editor?.isActive('superscript') }" class="toolbar-icon" />
             </button>
 
+            <button type="button" class="toolbar-btn" @click="commands.subscript">
+                <SubscriptIcon :class="{ 'text-blue-700': editor?.isActive('subscript') }" class="toolbar-icon" />
+            </button>
+
+            <button type="button" class="toolbar-btn" @click="commands.alignLeft()">
+                <TextAlignStartIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'left' }) }" class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" @click="commands.alignCenter()">
+                <TextAlignCenterIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'center' }) }" class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" @click="commands.alignRight()">
+                <TextAlignEndIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'right' }) }" class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" @click="commands.alignJustify()">
+                <TextAlignJustifyIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'justify' }) }" class="toolbar-icon" />
+            </button>
             <button type="button" class="toolbar-btn" @click="commands.insertImage">
                 <ImageIcon :class="{ 'text-blue-700': editor?.isActive('image') }" class="toolbar-icon" />
             </button>

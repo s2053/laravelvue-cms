@@ -6,10 +6,10 @@
     font-family: 'Helvetica', 'Arial', sans-serif;
 }
 /* disable the focus outline of tiptap editor */
-.ProseMirror-focused {
+.classic-editor .ProseMirror-focused {
     outline: none;
 }
-.ProseMirror:focus {
+.classic-editor .ProseMirror:focus {
     outline: none;
 }
 
@@ -178,6 +178,24 @@
     background: transparent;
 }
 
+/* Inline strike */
+.classic-editor s,
+.classic-editor strike {
+    text-decoration: line-through;
+}
+
+.classic-editor sup {
+    padding: 2px;
+    vertical-align: 0.4em; /* adjust up */
+    font-size: 0.75rem; /* slightly smaller than normal text */
+}
+
+.classic-editor sub {
+    padding: 2px;
+    vertical-align: -0.25em; /* adjust down */
+    font-size: 0.75rem; /* slightly smaller */
+}
+
 /* ============================
    BULLET & ORDERED LISTS
    ============================ */
@@ -218,9 +236,11 @@
     cursor: pointer;
 }
 
-.classic-editor .task-list-item.checked label {
-    opacity: 0.6;
+/* Strike text when task is checked */
+.classic-editor ul[data-type='taskList'] li[data-checked='true'] > div,
+.classic-editor ul[data-type='taskList'] li[data-checked='true'] > div p {
     text-decoration: line-through;
+    opacity: 0.9;
 }
 
 /* ============================
@@ -279,4 +299,113 @@
 
 .classic-editor blockquote p {
     margin: 0; /* avoid extra spacing inside */
+}
+
+/* ============================
+   TASK LIST (perfect alignment)
+   ============================ */
+.classic-editor ul[data-type='taskList'] {
+    list-style: none;
+    margin: 0.5em 0;
+    padding: 0;
+}
+
+.classic-editor ul[data-type='taskList'] li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.35em 0;
+}
+
+/* Checkbox wrapper */
+.classic-editor ul[data-type='taskList'] li > label {
+    display: flex;
+    align-items: center;
+    height: 1.6em;
+    margin-top: 0.1em;
+}
+
+/* Checkbox */
+.classic-editor ul[data-type='taskList'] input[type='checkbox'] {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+    accent-color: #2563eb;
+    margin: 0;
+}
+
+/* Text container */
+.classic-editor ul[data-type='taskList'] li > div {
+    flex: 1 1 auto;
+}
+
+/* Remove paragraph offset */
+.classic-editor ul[data-type='taskList'] li p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+//* Task list wrapper */
+.classic-editor ul[data-type='taskList'] {
+    list-style: none;
+    padding-left: 0;
+    margin: 0.5rem 0;
+}
+
+/* Task list items */
+.classic-editor ul[data-type='taskList'] > li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.3rem 0;
+}
+
+/* Label and checkbox */
+.classic-editor ul[data-type='taskList'] > li > label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.classic-editor ul[data-type='taskList'] > li > label input[type='checkbox'] {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 1.2rem;
+    height: 1.2rem;
+    border: 2px solid #c5c5c5;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    display: inline-grid;
+    place-content: center;
+    transition: all 0.15s ease;
+}
+
+/* Checked state with SVG tick */
+.classic-editor ul[data-type='taskList'] > li > label input[type='checkbox']:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10'%3E%3Cpath d='M1 5l3 3 7-7' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 0.65rem;
+}
+
+/* Strike-through checked text */
+.classic-editor ul[data-type='taskList'] > li > label input[type='checkbox']:checked + div {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Task list content */
+.classic-editor ul[data-type='taskList'] > li > div {
+    flex: 1 1 auto;
+}
+
+/* Nested task lists */
+.classic-editor ul[data-type='taskList'] ul[data-type='taskList'] {
+    margin-left: 1.5rem;
 }
