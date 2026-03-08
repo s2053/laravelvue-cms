@@ -8,6 +8,7 @@ import CodeBlock from '../extensions/CodeBlock';
 import Heading from '../extensions/Heading';
 import Image from '../extensions/Image';
 import Italic from '../extensions/Italic';
+import Link from '../extensions/Link';
 import ListItem from '../extensions/ListItem';
 import OrderedList from '../extensions/OrderedList';
 import Paragraph from '../extensions/Paragraph';
@@ -51,7 +52,8 @@ export function useClassicEditor(initialContent = '', readonly = false) {
             TaskList,
             TaskItem.configure({ nested: true }),
             Blockquote,
-            TextAlign.configure({ types: ['heading', 'paragraph'] }), // enable alignment
+            TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            Link.configure({ openOnClick: false }), // link extension
         ],
     });
 
@@ -85,7 +87,19 @@ export function useClassicEditor(initialContent = '', readonly = false) {
         alignCenter: () => editor?.value?.chain().focus().setTextAlign('center').run(),
         alignRight: () => editor?.value?.chain().focus().setTextAlign('right').run(),
         alignJustify: () => editor?.value?.chain().focus().setTextAlign('justify').run(),
-    };
+        /* LINK */
+        setLink: (href?: string) => {
+            if (!editor?.value) return;
 
+            const previousHref = editor.value.getAttributes('link').href || '';
+            const url = href ?? prompt('Enter URL', previousHref);
+            if (url === null) return; // canceled
+            if (url === '') {
+                editor.value.chain().focus().unsetLink().run();
+            } else {
+                editor.value.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+            }
+        },
+    };
     return { editor, commands };
 }
