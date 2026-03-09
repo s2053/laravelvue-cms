@@ -13,7 +13,7 @@
 
         <div class="menu-structure-wrapper overflow-x-auto pb-2">
             <div class="menu-structure-list min-w-full">
-                <VueNestable :value="items" :maxDepth="5" :threshold="20" @input="updateItems">
+                <VueNestable :value="items" :maxDepth="maxDepth" :threshold="20" @input="updateItems">
                     <template #default="{ item }">
                         <div class="p-panel rounded border">
                             <VueNestableHandle>
@@ -52,7 +52,7 @@ import FieldError from '@/components/common/FieldError.vue';
 import { MenuItemNode } from '@/features/widgets/components';
 import type { WidgetItem, WidgetPayload } from '@/features/widgets/widgets.types';
 import { strTruncate } from '@/utils/stringHelper';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { VueNestable, VueNestableHandle } from 'vue3-nestable';
 import { getContentTypeLabel } from '../widgets.enum';
 
@@ -70,6 +70,7 @@ const emit = defineEmits<{
 const items = defineModel<WidgetItem[]>('items');
 const formError = ref('');
 const itemErrors = ref<Record<string, { title?: string }>>({});
+const maxDepth = computed(() => (props.initialForm.nestable ? 5 : 1));
 
 // Remove item recursively
 function removeItem(target: WidgetItem) {

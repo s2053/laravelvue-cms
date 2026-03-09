@@ -45,8 +45,13 @@ class UpdateWidgetItemsRequest extends FormRequest
     {
         $validator->after(function (Validator $validator) {
             $items = $validator->safe()->input('items', []);
+            $widget = $this->route('widget');
 
             $this->validateTree($validator, $items);
+
+            if ($widget && !$widget->nestable && $this->hasNestedChildren($items)) {
+                $validator->errors()->add('items', 'This widget does not allow nested menu items.');
+            }
         });
     }
 
@@ -91,5 +96,23 @@ class UpdateWidgetItemsRequest extends FormRequest
                 $this->validateTree($validator, $children, $depth + 1, "{$itemPath}.children");
             }
         }
+    }
+
+    /**
+     * Determine whether the submitted items contain nested children.
+     *
+     * @param array<int, array<string, mixed>> $items
+     */
+    private function hasNestedChildren(array $items): bool
+    {
+        foreach ($items as $item) {
+            $children = $item['children'] ?? [];
+
+            if (is_array($children) && $children !== []) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

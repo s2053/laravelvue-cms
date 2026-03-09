@@ -74,7 +74,8 @@ async function handleSubmit(form: WidgetPayload) {
 
     try {
         if (editingId.value) {
-            await updateWidgetItems(editingId.value, payload.items || []);
+            const updated = await updateWidgetItems(editingId.value, payload.items || []);
+            formModel.value.items = updated.items ?? [];
             toast.add({ severity: 'success', summary: 'Menu updated', life: 2000 });
         }
     } catch (err: any) {
