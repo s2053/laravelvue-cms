@@ -1,6 +1,6 @@
 // src/features/widgets/widgets.types.ts
 
-import { ContentType, WidgetType } from '@/features/widgets/widgets.enum';
+import { ContentType, MenuLocation, WidgetType } from '@/features/widgets/widgets.enum';
 
 export interface Widget {
     id: number;
@@ -11,6 +11,7 @@ export interface Widget {
     nestable: boolean;
     settings: Record<string, any> | null;
     slug: string;
+    location?: MenuLocation | null;
     icon?: string | null;
     is_default: boolean;
     status: boolean;

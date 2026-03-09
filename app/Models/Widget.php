@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Widgets\MenuLocation;
 use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,6 +18,7 @@ class Widget extends Model
         'nestable',
         'settings',
         'slug',
+        'location',
         'icon',
         'is_default',
         'status',
@@ -25,6 +27,7 @@ class Widget extends Model
     protected $casts = [
         'nestable' => 'boolean',
         'settings' => 'array',
+        'location' => MenuLocation::class,
         'is_default' => 'boolean',
         'status' => 'boolean',
     ];

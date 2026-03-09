@@ -11,6 +11,7 @@ class WidgetFilter extends QueryFilter
         'created_at',
         'widget_type',
         'content_type',
+        'location',
         'search',
     ];
 
@@ -57,6 +58,20 @@ class WidgetFilter extends QueryFilter
         });
     }
 
+    protected function location(array|string|null $value): void
+    {
+        if (empty($value))
+            return;
+
+        $values = is_array($value) ? $value : [$value];
+
+        $this->builder->where(function (Builder $q) use ($values) {
+            foreach ($values as $val) {
+                $q->orWhere('location', 'like', "%{$val}%");
+            }
+        });
+    }
+
 
     protected function search(string $value): void
     {
@@ -67,7 +82,8 @@ class WidgetFilter extends QueryFilter
                 ->orWhere('slug', 'like', "%{$value}%")
                 ->orWhere('created_at', 'like', "%{$value}%")
                 ->orWhere('widget_type', 'like', "%{$value}%")
-                ->orWhere('content_type', 'like', "%{$value}%");
+                ->orWhere('content_type', 'like', "%{$value}%")
+                ->orWhere('location', 'like', "%{$value}%");
         });
     }
 
@@ -75,7 +91,7 @@ class WidgetFilter extends QueryFilter
 
     public function sort(): Builder|\Illuminate\Database\Query\Builder
     {
-        $sortable = ['created_at', 'title', 'slug', 'status', 'widget_type'];
+        $sortable = ['created_at', 'title', 'slug', 'status', 'widget_type', 'location'];
 
         $sortBy = $this->input('sort_by', 'created_at');
         $sortDir = $this->input('sort_dir', 'desc');

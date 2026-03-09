@@ -146,8 +146,9 @@ const allColumns = [
     { field: 'id', label: 'ID' },
     { field: 'title', label: 'Title' },
     { field: 'slug', label: 'Slug' },
+    { field: 'location', label: 'Location' },
 ];
-const visibleColumns = ref<string[]>(['id', 'title', 'slug']);
+const visibleColumns = ref<string[]>(['id', 'title', 'slug', 'location']);
 const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 onMounted(() => {

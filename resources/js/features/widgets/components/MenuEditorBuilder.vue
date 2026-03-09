@@ -8,10 +8,11 @@
         <!-- Show server error -->
         <div class="mb-2">
             <FieldError :serverError="serverErrors ? Object.values(serverErrors).flat().join('\n') : undefined" />
+            <FieldError :formError="formError" />
         </div>
 
-        <div class="menu-structure-wrapper flex">
-            <div class="menu-structure-list w-full max-w-[640px]">
+        <div class="menu-structure-wrapper overflow-x-auto pb-2">
+            <div class="menu-structure-list min-w-full">
                 <VueNestable :value="items" :maxDepth="5" :threshold="20" @input="updateItems">
                     <template #default="{ item }">
                         <div class="p-panel rounded border">
@@ -32,7 +33,7 @@
                             </VueNestableHandle>
 
                             <div v-show="item.open" class="p-panel-content">
-                                <MenuItemNode :item="item" @update="updateItem" @remove="removeItem"> </MenuItemNode>
+                                <MenuItemNode :item="item" :formErrors="itemErrors[String(item.id)]" @update="updateItem" @remove="removeItem"> </MenuItemNode>
                             </div>
                         </div>
                     </template>
@@ -51,6 +52,7 @@ import FieldError from '@/components/common/FieldError.vue';
 import { MenuItemNode } from '@/features/widgets/components';
 import type { WidgetItem, WidgetPayload } from '@/features/widgets/widgets.types';
 import { strTruncate } from '@/utils/stringHelper';
+import { ref } from 'vue';
 import { VueNestable, VueNestableHandle } from 'vue3-nestable';
 import { getContentTypeLabel } from '../widgets.enum';
 
@@ -66,6 +68,8 @@ const emit = defineEmits<{
 }>();
 
 const items = defineModel<WidgetItem[]>('items');
+const formError = ref('');
+const itemErrors = ref<Record<string, { title?: string }>>({});
 
 // Remove item recursively
 function removeItem(target: WidgetItem) {
@@ -84,6 +88,7 @@ function removeItem(target: WidgetItem) {
         return false;
     };
     removeRecursively(items.value ?? [], target);
+    clearItemError(target.id);
 }
 
 // Update items from VueNestable
@@ -109,10 +114,22 @@ function updateItem(updated: WidgetItem) {
         return false;
     };
     updateRecursively(items.value);
+
+    if (String(updated.title ?? '').trim() !== '') {
+        clearItemError(updated.id);
+    }
 }
 
 // Save
 function save() {
+    itemErrors.value = {};
+    formError.value = '';
+
+    if (!validateItems(items.value ?? [])) {
+        formError.value = 'Please fill in the required menu item labels.';
+        return;
+    }
+
     emit('submit', { ...props.initialForm, items: items.value });
 }
 
@@ -123,6 +140,39 @@ function cancel() {
 
 function removeAllItems() {
     items.value = [];
+    itemErrors.value = {};
+    formError.value = '';
+}
+
+function clearItemError(id?: number) {
+    if (id === undefined || id === null) return;
+
+    delete itemErrors.value[String(id)];
+}
+
+function validateItems(list: WidgetItem[] = []): boolean {
+    let isValid = true;
+
+    for (const item of list) {
+        let itemValid = true;
+
+        if (String(item.title ?? '').trim() === '') {
+            itemErrors.value[String(item.id)] = {
+                ...(itemErrors.value[String(item.id)] ?? {}),
+                title: 'Label is required',
+            };
+            itemValid = false;
+        }
+
+        if (item.children?.length) {
+            itemValid = validateItems(item.children) && itemValid;
+        }
+
+        item.open = !itemValid;
+        isValid = itemValid && isValid;
+    }
+
+    return isValid;
 }
 </script>
 
@@ -138,8 +188,8 @@ function removeAllItems() {
     position: relative;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    /* keep items compact */
+    align-items: stretch;
+    min-width: 100%;
 }
 
 .nestable-rtl {
@@ -150,6 +200,8 @@ function removeAllItems() {
     margin: 0;
     padding: 0 0 0 40px;
     list-style-type: none;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .nestable-rtl .nestable-list {
@@ -236,10 +288,19 @@ function removeAllItems() {
 
 .nestable-item {
     width: 480px;
-    /* fixed width like WP */
-
+    max-width: 100%;
+    min-width: 480px;
     margin-top: 8px;
     transition: box-shadow 0.2s ease;
+}
+
+.menu-structure-wrapper {
+    scrollbar-width: thin;
+}
+
+.menu-structure-list {
+    min-width: max-content;
+    width: 100%;
 }
 
 .p-panel-header {

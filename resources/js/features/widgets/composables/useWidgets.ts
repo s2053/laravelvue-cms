@@ -63,6 +63,17 @@ export function useWidgets() {
         }
     };
 
+    const updateWidgetLocation = async (id: number, location: Widget['location']) => {
+        try {
+            const res = await WidgetService.updateLocation(id, location);
+            return res.data;
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to update widget location';
+            throw err;
+        }
+    };
+
     // Delete widget by ID
     const deleteWidget = async (id: number) => {
         try {
@@ -104,6 +115,7 @@ export function useWidgets() {
         getWidgetById,
         createWidget,
         updateWidget,
+        updateWidgetLocation,
         deleteWidget,
         bulkUpdateWidgets,
         updateWidgetItems,
