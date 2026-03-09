@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\CustomEmailVerificationController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Domains\Media\Http\Controllers\MediaController;
 use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PageCategoryController;
@@ -86,6 +87,9 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
 
     Route::apiResource('posts', PostController::class);
     Route::post('/posts/bulk-update', [PostController::class, 'bulkUpdate'])->name('posts.bulk-update');
+
+    Route::apiResource('media', MediaController::class);
+    Route::post('/media/bulk-update', [MediaController::class, 'bulkUpdate']);
 
     Route::prefix('site-info')->group(function () {
         Route::get('/', [SiteInfoController::class, 'show']);
