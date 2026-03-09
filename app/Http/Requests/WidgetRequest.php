@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\Widgets\ContentType;
+use App\Enums\Widgets\MenuLocation;
 use App\Enums\Widgets\WidgetType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,6 +26,8 @@ class WidgetRequest extends FormRequest
      */
     public function rules(): array
     {
+        $widgetId = $this->route('widget')?->id ?? $this->route('widget');
+
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -43,9 +46,26 @@ class WidgetRequest extends FormRequest
                 'string',
                 'max:255',
             ],
+            'location' => [
+                'nullable',
+                new Enum(MenuLocation::class),
+                Rule::unique('widgets', 'location')->ignore($widgetId),
+            ],
             'icon' => 'nullable|string|max:255',
             'is_default' => 'boolean',
             'status' => 'boolean',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if (
+                filled($this->input('location')) &&
+                $this->input('widget_type') !== WidgetType::MENU->value
+            ) {
+                $validator->errors()->add('location', 'The location field is only allowed for menu widgets.');
+            }
+        });
     }
 }

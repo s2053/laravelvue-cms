@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import BoldIcon from '@/assets/icons/bold.svg';
+import CodeIcon from '@/assets/icons/code.svg';
 import Heading1Icon from '@/assets/icons/heading-1.svg';
 import Heading2Icon from '@/assets/icons/heading-2.svg';
 import Heading3Icon from '@/assets/icons/heading-3.svg';
 import Heading4Icon from '@/assets/icons/heading-4.svg';
 import ImageIcon from '@/assets/icons/image.svg';
 import ItalicIcon from '@/assets/icons/italic.svg';
+import LinkIcon from '@/assets/icons/link.svg';
+import ListOrderedIcon from '@/assets/icons/list-ordered.svg';
+import ListTodoIcon from '@/assets/icons/list-todo.svg';
+import ListIcon from '@/assets/icons/list.svg';
 import RedoIcon from '@/assets/icons/redo.svg';
 import StrikeIcon from '@/assets/icons/strikethrough.svg';
 import SubscriptIcon from '@/assets/icons/subscript.svg';
@@ -14,17 +19,12 @@ import TextAlignCenterIcon from '@/assets/icons/text-align-center.svg';
 import TextAlignEndIcon from '@/assets/icons/text-align-end.svg';
 import TextAlignJustifyIcon from '@/assets/icons/text-align-justify.svg';
 import TextAlignStartIcon from '@/assets/icons/text-align-start.svg';
+import TextQuoteIcon from '@/assets/icons/text-quote.svg';
 import UnderlineIcon from '@/assets/icons/underline.svg';
 import UndoIcon from '@/assets/icons/undo.svg';
-
-import CodeIcon from '@/assets/icons/code.svg';
-import ListOrderedIcon from '@/assets/icons/list-ordered.svg';
-import ListTodoIcon from '@/assets/icons/list-todo.svg';
-import ListIcon from '@/assets/icons/list.svg';
-import TextQuoteIcon from '@/assets/icons/text-quote.svg';
-import Dropdown from '@/components/common/editor/Dropdown/Dropdown.vue';
+import FloatingMenu from '@/components/common/editor/FloatingMenu/FloatingMenu.vue';
 import { EditorContent } from '@tiptap/vue-3';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useClassicEditor } from './useClassicEditor';
 
 interface Props {
@@ -37,7 +37,7 @@ interface Props {
     charCountMax?: number;
 }
 
-// Props with defaults
+// Props defaults
 const props = withDefaults(defineProps<Props>(), {
     content: '',
     output: 'html',
@@ -52,10 +52,8 @@ const emit = defineEmits<{
     (e: 'update:content', value: string | Record<string, any>): void;
 }>();
 
-// Initialize editor via composable
 const { editor, commands } = useClassicEditor(props.content || '', props.readonly);
 
-// Current heading for the dropdown
 const currentHeading = ref('Paragraph');
 
 const headingOptions = [
@@ -66,7 +64,6 @@ const headingOptions = [
     { label: 'Heading 4', value: 'h4', icon: Heading4Icon },
 ];
 
-// Type-safe action map for headings
 const actionMap: Record<string, () => void> = {
     paragraph: () => commands.paragraph(),
     h1: () => commands.heading(1),
@@ -75,7 +72,13 @@ const actionMap: Record<string, () => void> = {
     h4: () => commands.heading(4),
 };
 
-// Watch editor content and emit updates
+// Returns active button classes
+const isActiveClass = (command: string | { [key: string]: any }) => {
+    if (!editor.value) return '';
+    return editor.value.isActive(command) ? 'toolbar-btn--active text-blue-700' : '';
+};
+
+// Watch editor content
 watch(
     editor,
     (ed) => {
@@ -89,7 +92,6 @@ watch(
     { immediate: true },
 );
 
-// Update current heading based on cursor position
 const updateCurrentHeading = () => {
     if (!editor.value) return;
     if (editor.value.isActive('heading', { level: 1 })) currentHeading.value = 'H1';
@@ -100,25 +102,13 @@ const updateCurrentHeading = () => {
 };
 
 onMounted(() => {
-    if (!editor) return;
     editor.value?.on('selectionUpdate', updateCurrentHeading);
-    editor.value?.on('transaction', updateCurrentHeading); // update when content changes
+    editor.value?.on('transaction', updateCurrentHeading);
 });
 
 onBeforeUnmount(() => {
     editor.value?.off('selectionUpdate', updateCurrentHeading);
     editor.value?.off('transaction', updateCurrentHeading);
-});
-
-const dropdownActiveClass = computed(() => {
-    if (!editor.value) return '';
-    return editor.value.isActive('paragraph') ||
-        editor.value.isActive('heading', { level: 1 }) ||
-        editor.value.isActive('heading', { level: 2 }) ||
-        editor.value.isActive('heading', { level: 3 }) ||
-        editor.value.isActive('heading', { level: 4 })
-        ? 'text-blue-700 font-semibold'
-        : '';
 });
 
 const isDropdownActive = () => {
@@ -135,105 +125,93 @@ const isDropdownActive = () => {
 
 <template>
     <div :style="{ width: props.width }" class="classic-editor">
-        <!-- Toolbar -->
         <div v-if="!props.readonly" class="toolbar mb-2 flex gap-2">
-            <button type="button" class="toolbar-btn" @click="commands.undo">
+            <button type="button" class="toolbar-btn" :class="isActiveClass('undo')" @click="commands.undo">
                 <UndoIcon class="toolbar-icon" />
             </button>
-
-            <button type="button" class="toolbar-btn" @click="commands.redo">
+            <button type="button" class="toolbar-btn" :class="isActiveClass('redo')" @click="commands.redo">
                 <RedoIcon class="toolbar-icon" />
             </button>
 
-            <Dropdown
-                :getActive="isDropdownActive"
-                placeholder="Choose heading"
-                :showSelected="true"
-                :selectedValue="currentHeading"
-                placement="bottom-start"
-            >
-                <template #trigger>
-                    <div class="cursor-pointer px-2 py-1" :class="dropdownActiveClass">
-                        {{ currentHeading }}
-                    </div>
-                </template>
+            <FloatingMenu :active="isDropdownActive()" :selected-value="currentHeading" placeholder="Choose heading" placement="bottom-start">
                 <template #options="{ selectOption, selected }">
                     <button
                         v-for="item in headingOptions"
                         :key="item.value"
+                        data-dropdown-item
+                        tabindex="-1"
                         @click="
                             () => {
                                 actionMap[item.value]();
+                                currentHeading = item.label;
                                 selectOption(item.label);
                             }
                         "
-                        class="flex w-full items-center gap-2 px-3 py-1 text-left hover:bg-gray-100"
-                        :class="item.label === selected ? 'bg-blue-500 text-white' : 'text-black'"
+                        class="dropdown-btn"
+                        :class="item.label === selected ? 'dropdown-btn--active' : 'dropdown-btn--inactive'"
                     >
-                        <!-- Icon -->
-                        <component v-if="item.icon != 'paragraph'" :is="item.icon === 'paragraph' ? 'span' : item.icon" class="h-5 w-5"> </component>
-
-                        <!-- Text -->
+                        <component v-if="item.icon !== 'paragraph'" :is="item.icon" class="h-4 w-4" />
                         <span>{{ item.label }}</span>
                     </button>
                 </template>
-            </Dropdown>
+            </FloatingMenu>
 
-            <button type="button" class="toolbar-btn" @click="commands.bulletList">
-                <ListIcon :class="{ 'text-blue-700': editor?.isActive('bold') }" class="toolbar-icon" />
-            </button>
-            <button type="button" class="toolbar-btn" @click="commands.orderedList">
-                <ListOrderedIcon :class="{ 'text-blue-700': editor?.isActive('bold') }" class="toolbar-icon" />
-            </button>
-            <button type="button" class="toolbar-btn" @click="commands.taskList">
-                <ListTodoIcon :class="{ 'text-blue-700': editor?.isActive('bold') }" class="toolbar-icon" />
-            </button>
-            <button type="button" class="toolbar-btn" @click="commands.blockquote">
-                <TextQuoteIcon :class="{ 'text-blue-700': editor?.isActive('bold') }" class="toolbar-icon" />
+            <button type="button" class="toolbar-btn" :class="isActiveClass('link')"   @click="() => commands.setLink()">
+                <LinkIcon class="toolbar-icon" />
             </button>
 
-            <button type="button" class="toolbar-btn" @click="commands.codeBlock">
-                <CodeIcon :class="{ 'text-blue-700': editor?.isActive('bold') }" class="toolbar-icon" />
+            <!-- Text formatting buttons -->
+            <button type="button" class="toolbar-btn" :class="isActiveClass('bulletList')" @click="commands.bulletList">
+                <ListIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('orderedList')" @click="commands.orderedList">
+                <ListOrderedIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('taskList')" @click="commands.taskList">
+                <ListTodoIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('blockquote')" @click="commands.blockquote">
+                <TextQuoteIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('codeBlock')" @click="commands.codeBlock">
+                <CodeIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('bold')" @click="commands.bold">
+                <BoldIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('italic')" @click="commands.italic">
+                <ItalicIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('underline')" @click="commands.underline">
+                <UnderlineIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('strike')" @click="commands.strike">
+                <StrikeIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('superscript')" @click="commands.superscript">
+                <SuperscriptIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass('subscript')" @click="commands.subscript">
+                <SubscriptIcon class="toolbar-icon" />
             </button>
 
-            <button type="button" class="toolbar-btn" @click="commands.bold">
-                <BoldIcon :class="{ 'text-blue-700': editor?.isActive('bold') }" class="toolbar-icon" />
+            <!-- Alignment buttons -->
+            <button type="button" class="toolbar-btn" :class="isActiveClass({ textAlign: 'left' })" @click="commands.alignLeft()">
+                <TextAlignStartIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass({ textAlign: 'center' })" @click="commands.alignCenter()">
+                <TextAlignCenterIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass({ textAlign: 'right' })" @click="commands.alignRight()">
+                <TextAlignEndIcon class="toolbar-icon" />
+            </button>
+            <button type="button" class="toolbar-btn" :class="isActiveClass({ textAlign: 'justify' })" @click="commands.alignJustify()">
+                <TextAlignJustifyIcon class="toolbar-icon" />
             </button>
 
-            <button type="button" class="toolbar-btn" @click="commands.italic">
-                <ItalicIcon :class="{ 'text-blue-700': editor?.isActive('italic') }" class="toolbar-icon" />
-            </button>
-
-            <button type="button" class="toolbar-btn" @click="commands.underline">
-                <UnderlineIcon :class="{ 'text-blue-700': editor?.isActive('underline') }" class="toolbar-icon" />
-            </button>
-
-            <button type="button" class="toolbar-btn" @click="commands.strike">
-                <StrikeIcon :class="{ 'text-blue-700': editor?.isActive('strike') }" class="toolbar-icon" />
-            </button>
-
-            <button type="button" class="toolbar-btn" @click="commands.superscript">
-                <SuperscriptIcon :class="{ 'text-blue-700': editor?.isActive('superscript') }" class="toolbar-icon" />
-            </button>
-
-            <button type="button" class="toolbar-btn" @click="commands.subscript">
-                <SubscriptIcon :class="{ 'text-blue-700': editor?.isActive('subscript') }" class="toolbar-icon" />
-            </button>
-
-            <button type="button" class="toolbar-btn" @click="commands.alignLeft()">
-                <TextAlignStartIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'left' }) }" class="toolbar-icon" />
-            </button>
-            <button type="button" class="toolbar-btn" @click="commands.alignCenter()">
-                <TextAlignCenterIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'center' }) }" class="toolbar-icon" />
-            </button>
-            <button type="button" class="toolbar-btn" @click="commands.alignRight()">
-                <TextAlignEndIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'right' }) }" class="toolbar-icon" />
-            </button>
-            <button type="button" class="toolbar-btn" @click="commands.alignJustify()">
-                <TextAlignJustifyIcon :class="{ 'text-blue-700': editor?.isActive({ textAlign: 'justify' }) }" class="toolbar-icon" />
-            </button>
-            <button type="button" class="toolbar-btn" @click="commands.insertImage">
-                <ImageIcon :class="{ 'text-blue-700': editor?.isActive('image') }" class="toolbar-icon" />
+            <!-- Image -->
+            <button type="button" class="toolbar-btn" :class="isActiveClass('image')" @click="commands.insertImage">
+                <ImageIcon class="toolbar-icon" />
             </button>
         </div>
 

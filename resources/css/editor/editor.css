@@ -35,7 +35,7 @@
         border-color 0.2s;
 
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.15;
     height: 2rem;
     min-width: 2rem;
@@ -46,7 +46,7 @@
     justify-content: center;
 }
 
-.toolbar-icon {
+.classic-editor .toolbar-icon {
     display: block;
     width: 1.2rem;
     height: 1.2rem;
@@ -59,6 +59,41 @@
     background: #f0f0f0;
     border-color: #bbb;
 }
+
+.classic-editor .toolbar-btn--active {
+    color: #2563eb;
+}
+
+.classic-editor .toolbar-btn--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.dropdown-btn {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.dropdown-btn:hover {
+    background-color: #f3f4f6; /* gray-100 */
+}
+
+.dropdown-btn--active {
+    background-color: #2563eb; /* blue-600 */
+    color: #fff;
+}
+
+.dropdown-btn--inactive {
+    color: #000;
+}
+
 
 /* ===== Editor content area ===== */
 
@@ -409,3 +444,23 @@
 .classic-editor ul[data-type='taskList'] ul[data-type='taskList'] {
     margin-left: 1.5rem;
 }
+
+/* ===== Links ===== */
+.classic-editor a {
+    color: #2563eb; /* blue like toolbar active */
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+}
+
+.classic-editor a:hover {
+    color: #1d4ed8; /* darker blue on hover */
+    text-decoration: underline;
+    background-color: rgba(37, 99, 235, 0.1); /* subtle highlight */
+}
+
+.classic-editor a.is-selected {
+    background-color: rgba(37, 99, 235, 0.2); /* highlight when selected in editor */
+    border-radius: 3px;
+}
+
