@@ -33,6 +33,11 @@ const WidgetService = {
         return res.data;
     },
 
+    async updateLocation(id: number, location: Widget['location']): Promise<ApiResponse<Widget>> {
+        const res = await api.put<ApiResponse<Widget>>(`/widgets/${id}/location`, { location });
+        return res.data;
+    },
+
     // Delete a widget by ID
     async delete(id: number): Promise<void> {
         await api.delete(`/widgets/${id}`);

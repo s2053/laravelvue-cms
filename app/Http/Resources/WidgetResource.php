@@ -21,6 +21,7 @@ class WidgetResource extends JsonResource
             'description' => $this->description,
             'widget_type' => $this->widget_type,
             'content_type' => $this->content_type,
+            'location' => $this->location,
             'nestable' => (bool) $this->nestable,
             'settings' => $this->settings,
             'icon' => $this->icon,

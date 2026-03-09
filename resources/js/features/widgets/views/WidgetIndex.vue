@@ -173,11 +173,12 @@ const allColumns = [
     { field: 'id', label: 'ID' },
     { field: 'title', label: 'Title' },
     { field: 'slug', label: 'Slug' },
+    { field: 'location', label: 'Location' },
     { field: 'widget_type', label: 'Widget Type' },
     { field: 'status', label: 'Status' },
     { field: 'created_at', label: 'Created At' },
 ];
-const visibleColumns = ref<string[]>(['id', 'title', 'slug', 'widget_type', 'status', 'created_at']);
+const visibleColumns = ref<string[]>(['id', 'title', 'slug', 'location', 'widget_type', 'status', 'created_at']);
 const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 // Dialog state

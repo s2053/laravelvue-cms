@@ -66,6 +66,29 @@ class WidgetService
     }
 
     /**
+     * Update only the menu location for a widget.
+     */
+    public function updateLocation(Widget $widget, array $data): Widget
+    {
+        DB::transaction(function () use ($widget, $data) {
+            $location = $data['location'] ?? null;
+
+            if ($location) {
+                Widget::where('widget_type', $widget->widget_type)
+                    ->where('location', $location)
+                    ->where('id', '!=', $widget->id)
+                    ->update(['location' => null]);
+            }
+
+            $widget->update([
+                'location' => $location,
+            ]);
+        });
+
+        return $widget->fresh();
+    }
+
+    /**
      * Delete a widget.
      */
     public function delete(Widget $widget): void
@@ -126,7 +149,7 @@ class WidgetService
         });
         return $widget->load([
             'items' => function ($q) {
-                $q->where('parent_id', 0)->orderBy('ordernum')->with('children');
+                $q->where('parent_id', 0)->orderBy('ordernum')->withAllChildren();
             }
         ]);
     }

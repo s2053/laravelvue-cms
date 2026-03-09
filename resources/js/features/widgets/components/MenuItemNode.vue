@@ -3,6 +3,7 @@
         <div>
             <label>Label</label>
             <InputText v-model="localItem.title" placeholder="Enter Label" class="w-full" />
+            <FieldError :formError="formErrors?.title" />
         </div>
 
         <div>
@@ -27,12 +28,13 @@
 </template>
 
 <script setup lang="ts">
+import FieldError from '@/components/common/FieldError.vue';
 import { reactive, ref, toRef, watch } from 'vue';
 
 import { ContentType } from '@/features/widgets/widgets.enum';
 import type { WidgetItemPayload } from '@/features/widgets/widgets.types';
 // Typed props and emits
-const props = defineProps<{ item: WidgetItemPayload }>();
+const props = defineProps<{ item: WidgetItemPayload; formErrors?: { title?: string } }>();
 const item = toRef(props, 'item');
 
 const emit = defineEmits<{

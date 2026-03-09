@@ -30,9 +30,23 @@ export enum WidgetType {
     CUSTOM_BLOCK = 'custom_block',
 }
 
+export enum MenuLocation {
+    PRIMARY = 'primary',
+    FOOTER = 'footer',
+    MOBILE = 'mobile',
+    SIDEBAR = 'sidebar',
+}
+
 // Options for UI selects matching widget types
 export const WidgetTypeOptions = [
     { label: 'Menu', value: WidgetType.MENU },
     { label: 'Collection', value: WidgetType.COLLECTION },
     { label: 'Custom Block', value: WidgetType.CUSTOM_BLOCK },
+];
+
+export const MenuLocationOptions = [
+    { label: 'Primary', value: MenuLocation.PRIMARY },
+    { label: 'Footer', value: MenuLocation.FOOTER },
+    { label: 'Mobile', value: MenuLocation.MOBILE },
+    { label: 'Sidebar', value: MenuLocation.SIDEBAR },
 ];
