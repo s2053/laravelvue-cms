@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 
-class StoreMediaRequest extends FormRequest
+class BulkStoreMediaRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -19,12 +19,9 @@ class StoreMediaRequest extends FormRequest
         $allowedExtensions = implode(',', config('media.allowed_extensions', []));
 
         return [
-            'file' => ['required', 'file', 'max:51200', 'mimes:' . $allowedExtensions],
+            'files' => ['required', 'array', 'min:1'],
+            'files.*' => ['required', 'file', 'max:51200', 'mimes:' . $allowedExtensions],
             'disk' => ['nullable', 'string', 'max:50', Rule::in(config('media.allowed_disks', []))],
-            'title' => ['nullable', 'string', 'max:255'],
-            'alt_text' => ['nullable', 'string', 'max:255'],
-            'caption' => ['nullable', 'string', 'max:500'],
-            'description' => ['nullable', 'string'],
             'visibility' => ['nullable', new Enum(MediaVisibility::class)],
             'status' => ['nullable', 'boolean'],
         ];

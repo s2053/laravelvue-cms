@@ -1,13 +1,13 @@
 <template>
     <div v-if="media" class="flex h-full flex-col gap-4">
-        <div class="overflow-hidden rounded-lg border bg-surface-50">
+        <div class="overflow-hidden rounded-border border border-surface bg-surface-0 shadow-sm dark:bg-surface-900">
             <img v-if="isImage" :src="displayImage" :alt="media.title || media.filename" class="h-52 w-full object-cover" />
-            <div v-else class="flex h-40 items-center justify-center px-4 text-center text-sm text-surface-600">
+            <div v-else class="flex h-40 items-center justify-center px-4 text-center text-sm text-surface-600 dark:text-surface-300">
                 {{ media.original_name || media.filename }}
             </div>
         </div>
 
-        <div class="grid gap-3 rounded-lg border p-4 text-sm">
+        <div class="grid gap-3 rounded-border border border-surface bg-surface-0 p-4 text-sm shadow-sm dark:bg-surface-900">
             <div><span class="font-semibold">Filename:</span> {{ media.original_name || media.filename }}</div>
             <div><span class="font-semibold">Type:</span> {{ media.type }}</div>
             <div><span class="font-semibold">Size:</span> {{ formattedSize }}</div>
@@ -16,7 +16,7 @@
             <div><span class="font-semibold">Usages:</span> {{ media.usages_count ?? 0 }}</div>
         </div>
 
-        <div class="flex flex-col gap-4 rounded-lg border p-4">
+        <div class="flex flex-col gap-4 rounded-border border border-surface bg-surface-0 p-4 shadow-sm dark:bg-surface-900">
             <div>
                 <label class="mb-2 block font-bold">Title</label>
                 <InputText v-model="form.title" class="w-full" placeholder="Media title" />

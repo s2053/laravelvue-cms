@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import MediaService from '@/features/media/services/media.service';
-import type { MediaPayload, MediaRecord } from '@/features/media/media.types';
+import type { MediaBulkUploadPayload, MediaPayload, MediaRecord } from '@/features/media/media.types';
 import { ref } from 'vue';
 
 export function useMedia() {
@@ -24,6 +24,17 @@ export function useMedia() {
     const createMedia = async (payload: MediaPayload) => {
         try {
             const res = await MediaService.create(payload);
+            return res.data;
+        } catch (err: any) {
+            handleError(err);
+            error.value = err.message || 'Failed to upload media';
+            throw err;
+        }
+    };
+
+    const bulkCreateMedia = async (payload: MediaBulkUploadPayload) => {
+        try {
+            const res = await MediaService.bulkStore(payload);
             return res.data;
         } catch (err: any) {
             handleError(err);
@@ -69,6 +80,7 @@ export function useMedia() {
         error,
         getMediaById,
         createMedia,
+        bulkCreateMedia,
         updateMedia,
         deleteMedia,
         bulkUpdateMedia,

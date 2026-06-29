@@ -57,7 +57,7 @@
             <p class="mt-2 text-sm text-surface-500">Upload your first asset or change the current search and filters.</p>
         </div>
 
-        <div v-else-if="viewMode === 'grid'" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div v-else-if="viewMode === 'grid'" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             <button
                 v-for="item in records"
                 :key="item.id"
@@ -66,7 +66,7 @@
                 @click="openDetails(item.id)"
             >
                 <div class="relative">
-                    <div class="absolute top-3 left-3 z-10">
+                    <div class="absolute top-2 left-2 z-10">
                         <Checkbox
                             :modelValue="isSelected(item.id)"
                             binary
@@ -76,7 +76,7 @@
                         />
                     </div>
 
-                    <div class="absolute top-3 right-3 z-10 flex gap-2 opacity-0 transition group-hover:opacity-100">
+                    <div class="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
                         <Button icon="pi pi-pencil" severity="secondary" rounded outlined size="small" @click.stop="openDetails(item.id)" />
                         <Button icon="pi pi-trash" severity="danger" rounded outlined size="small" @click.stop="removeMediaRecord(item)" />
                     </div>
@@ -86,24 +86,24 @@
                         <div v-else class="flex h-full items-center justify-center px-4 text-center text-sm text-surface-500">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
+
+                        <span
+                            v-if="item.extension"
+                            class="absolute bottom-2 right-2 rounded-md border border-surface-0/20 bg-surface-900/70 px-1.5 py-0.5 text-[10px] font-semibold text-surface-0 backdrop-blur-sm dark:border-surface-0/20 dark:bg-surface-0/75 dark:text-surface-900"
+                        >
+                            {{ item.extension.toUpperCase() }}
+                        </span>
                     </div>
                 </div>
 
-                <div class="space-y-3 p-4">
-                    <div>
-                        <div class="truncate font-semibold">{{ item.title || item.original_name || item.filename }}</div>
-                        <div class="mt-1 truncate text-sm text-surface-500">{{ item.original_name || item.filename }}</div>
-                    </div>
+                    <div class="space-y-1.5 p-3">
+                        <div>
+                            <div class="truncate text-sm font-semibold">{{ item.title || item.original_name || item.filename }}</div>
+                        </div>
 
-                    <div class="flex flex-wrap items-center gap-2">
-                        <Tag :value="item.type" severity="secondary" />
-                        <Tag :value="item.visibility" :severity="item.visibility === 'public' ? 'success' : 'warning'" />
-                        <Tag :value="item.status ? 'Active' : 'Inactive'" :severity="item.status ? 'success' : 'danger'" />
-                    </div>
-
-                    <div class="flex items-center justify-between text-sm text-surface-500">
+                    <div class="flex items-center justify-between text-[11px] text-surface-500">
                         <span>{{ formatFileSize(item.size) }}</span>
-                        <span>{{ formatDateTimeString(item.created_at) }}</span>
+                        <span class="truncate">{{ item.created_at ? formatDateOnly(item.created_at) : '-' }}</span>
                     </div>
                 </div>
             </button>
@@ -154,8 +154,14 @@
             />
         </div>
 
-        <Dialog v-model:visible="uploadDialogVisible" modal header="Upload Media" :style="{ width: '40rem' }">
-            <MediaUploadForm :initialForm="uploadFormModel" :submitting="uploading" :serverErrors="uploadServerErrors" @submit="handleUpload" @cancel="uploadDialogVisible = false" />
+        <Dialog v-model:visible="uploadDialogVisible" modal header="Upload Media" :style="{ width: '48rem' }">
+            <MediaUploadForm
+                :initialForm="uploadFormModel"
+                :submitting="uploading"
+                :serverErrors="uploadServerErrors"
+                @submit="handleUpload"
+                @cancel="uploadDialogVisible = false"
+            />
         </Dialog>
 
         <Dialog v-model:visible="detailsVisible" modal :header="selectedMedia ? `Media Details: ${selectedMedia.title || selectedMedia.filename}` : 'Media Details'" position="right" :style="{ width: '34rem' }">
@@ -169,18 +175,16 @@ import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePaginatedTable } from '@/composables/usePaginatedList';
 import { MediaDetailsForm, MediaFilter, MediaUploadForm } from '@/features/media/components';
 import { useMedia } from '@/features/media/composables';
-import { MediaVisibility } from '@/features/media/media.enum';
-import type { MediaFilters, MediaPayload, MediaRecord } from '@/features/media/media.types';
+import type { MediaBulkUploadPayload, MediaFilters, MediaPayload, MediaRecord } from '@/features/media/media.types';
 import MediaService from '@/features/media/services/media.service';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import { formatDateTimeString } from '@/utils/dateHelper';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
 const toast = useToast();
 const { showDeleteConfirm } = useDeleteConfirm();
-const { getMediaById, createMedia, updateMedia, deleteMedia, bulkUpdateMedia } = useMedia();
+const { getMediaById, bulkCreateMedia, updateMedia, deleteMedia, bulkUpdateMedia } = useMedia();
 
 const {
     items: records,
@@ -221,15 +225,8 @@ const uploadServerErrors = ref<Record<string, string[]>>({});
 const detailsServerErrors = ref<Record<string, string[]>>({});
 const bulkAction = ref<string | null>(null);
 
-const uploadFormModel = ref<MediaPayload>({
-    file: null,
-    disk: 'public',
-    title: '',
-    alt_text: '',
-    caption: '',
-    description: '',
-    visibility: MediaVisibility.PUBLIC,
-    status: true,
+const uploadFormModel = ref<MediaBulkUploadPayload>({
+    files: [],
 });
 
 const bulkOptions = [
@@ -252,27 +249,20 @@ onMounted(() => {
 
 function openUploadDialog() {
     uploadFormModel.value = {
-        file: null,
-        disk: 'public',
-        title: '',
-        alt_text: '',
-        caption: '',
-        description: '',
-        visibility: MediaVisibility.PUBLIC,
-        status: true,
+        files: [],
     };
     uploadServerErrors.value = {};
     uploadDialogVisible.value = true;
 }
 
-async function handleUpload(payload: MediaPayload) {
+async function handleUpload(payload: MediaBulkUploadPayload) {
     if (uploading.value) return;
 
     uploading.value = true;
     uploadServerErrors.value = {};
 
     try {
-        await createMedia(payload);
+        await bulkCreateMedia(payload);
         uploadDialogVisible.value = false;
         reload(currentPage.value + 1);
         toast.add({ severity: 'success', summary: 'Media uploaded', life: 2000 });
@@ -406,6 +396,18 @@ function formatFileSize(size?: number | null) {
     }
 
     return `${value.toFixed(unitIndex === 0 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function formatDateOnly(dateString?: string | null) {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+
+    return new Intl.DateTimeFormat(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    }).format(date);
 }
 </script>
 
