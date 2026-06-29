@@ -1,5 +1,6 @@
 import { routes as accountRoutes } from '@/features/account/account.routes';
 import { routes as authRoutes } from '@/features/auth/auth.routes';
+import { routes as mediaRoutes } from '@/features/media/media.routes';
 import { useAuthStore } from '@/features/auth/auth.store';
 import { routes as pagesRoutes } from '@/features/pages/pages.routes';
 import { routes as postsRoutes } from '@/features/posts/posts.routes';
@@ -29,6 +30,7 @@ const routes = [
             },
             ...pagesRoutes,
             ...postsRoutes,
+            ...mediaRoutes,
             ...rbacRoutes,
             ...userRoutes,
             ...siteRoutes,

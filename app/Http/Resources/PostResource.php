@@ -59,7 +59,7 @@ class PostResource extends JsonResource
                 return $this->tags->map(function ($tag) {
                     return [
                         'id' => $tag->id,
-                        'name' => $tag->name,
+                        'title' => $tag->title,
                         'slug' => $tag->slug,
                     ];
                 });
