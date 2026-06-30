@@ -58,12 +58,15 @@
         </div>
 
         <div v-else-if="viewMode === 'grid'" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-            <button
+            <div
                 v-for="item in records"
                 :key="item.id"
-                type="button"
-                class="media-item group overflow-hidden text-left transition hover:-translate-y-0.5 hover:shadow-md"
+                role="button"
+                tabindex="0"
+                class="media-item group cursor-pointer overflow-hidden text-left transition hover:-translate-y-0.5 hover:shadow-md"
                 @click="openDetails(item.id)"
+                @keydown.enter.prevent="openDetails(item.id)"
+                @keydown.space.prevent="openDetails(item.id)"
             >
                 <div class="relative">
                     <div class="absolute top-2 left-2 z-10">
@@ -82,7 +85,12 @@
                     </div>
 
                     <div class="media-thumb aspect-[4/3] overflow-hidden">
-                        <img v-if="isImage(item)" :src="getPreviewUrl(item)" :alt="item.title || item.filename" class="h-full w-full object-cover" />
+                        <img
+                            v-if="isImage(item)"
+                            :src="getPreviewUrl(item)"
+                            :alt="item.title || item.filename"
+                            class="h-full w-full object-cover"
+                        />
                         <div v-else class="flex h-full items-center justify-center px-4 text-center text-sm text-surface-500">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
@@ -98,7 +106,13 @@
 
                     <div class="space-y-1.5 p-3">
                         <div>
-                            <div class="truncate text-sm font-semibold">{{ item.title || item.original_name || item.filename }}</div>
+                            <button
+                                type="button"
+                                class="truncate text-left text-sm font-semibold transition hover:underline"
+                                @click.stop="openDetails(item.id)"
+                            >
+                                {{ item.title || item.original_name || item.filename }}
+                            </button>
                         </div>
 
                     <div class="flex items-center justify-between text-[11px] text-surface-500">
@@ -106,7 +120,7 @@
                         <span class="truncate">{{ item.created_at ? formatDateOnly(item.created_at) : '-' }}</span>
                     </div>
                 </div>
-            </button>
+            </div>
         </div>
 
         <div v-else class="media-panel overflow-hidden">
@@ -164,7 +178,7 @@
             />
         </Dialog>
 
-        <Dialog v-model:visible="detailsVisible" modal :header="selectedMedia ? `Media Details: ${selectedMedia.title || selectedMedia.filename}` : 'Media Details'" position="right" :style="{ width: '34rem' }">
+        <Dialog v-model:visible="detailsVisible" modal :header="'Attachment details'" :style="{ width: '72rem', maxWidth: '96vw' }">
             <MediaDetailsForm :media="selectedMedia" :submitting="detailsSubmitting" :serverErrors="detailsServerErrors" @submit="handleDetailsSubmit" @cancel="detailsVisible = false" />
         </Dialog>
     </AppContent>

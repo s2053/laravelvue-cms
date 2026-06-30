@@ -40,7 +40,10 @@ class MediaService
 
     public function show(Media $media): Media
     {
-        return $media->load(['variants', 'usages', 'creator', 'updater', 'deleter'])->loadCount('usages');
+        return Media::query()
+            ->with(['variants', 'creator', 'updater', 'deleter'])
+            ->withCount('usages')
+            ->findOrFail($media->id);
     }
 
     public function create(array $data): Media
