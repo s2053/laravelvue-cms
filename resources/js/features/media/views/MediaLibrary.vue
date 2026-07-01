@@ -178,8 +178,63 @@
             />
         </Dialog>
 
-        <Dialog v-model:visible="detailsVisible" modal :header="'Attachment details'" :style="{ width: '72rem', maxWidth: '96vw' }">
-            <MediaDetailsForm :media="selectedMedia" :submitting="detailsSubmitting" :serverErrors="detailsServerErrors" @submit="handleDetailsSubmit" @cancel="detailsVisible = false" />
+        <Dialog
+            v-model:visible="detailsVisible"
+            modal
+            :closable="false"
+            :style="{ width: '72rem', maxWidth: '96vw', height: '90vh' }"
+        >
+            <template #header>
+                <div class="flex w-full items-center justify-between gap-4">
+                    <div class="min-w-0">
+                        <div class="truncate text-lg font-semibold">Attachment details</div>
+                        <div v-if="selectedMedia" class="truncate text-sm text-surface-500">
+                            {{ selectedMedia.title || selectedMedia.original_name || selectedMedia.filename }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <Button
+                            icon="pi pi-chevron-left"
+                            severity="secondary"
+                            outlined
+                            rounded
+                            size="small"
+                            :disabled="!canGoToPrevious"
+                            @click="goToPreviousMedia"
+                        />
+                        <Button
+                            icon="pi pi-chevron-right"
+                            severity="secondary"
+                            outlined
+                            rounded
+                            size="small"
+                            :disabled="!canGoToNext"
+                            @click="goToNextMedia"
+                        />
+                        <Button icon="pi pi-times" severity="secondary" outlined rounded size="small" @click="closeDetails" />
+                    </div>
+                </div>
+            </template>
+
+            <MediaDetailsForm
+                ref="detailsFormRef"
+                :media="selectedMedia"
+                :editing="detailsEditing"
+                :submitting="detailsSubmitting"
+                :serverErrors="detailsServerErrors"
+                @submit="handleDetailsSubmit"
+            />
+
+            <template #footer>
+                <div class="flex w-full flex-wrap items-center justify-end gap-2">
+                    <Button label="Close" severity="secondary" outlined @click="closeDetails" />
+                    <Button v-if="selectedMedia" label="Delete" severity="danger" outlined @click="handleDetailsDelete" />
+                    <Button v-if="detailsEditing" label="Cancel" severity="secondary" outlined @click="cancelDetailsEdit" />
+                    <Button v-if="detailsEditing" :loading="detailsSubmitting" label="Save Changes" @click="submitDetailsEdit" />
+                    <Button v-else label="Edit" @click="startDetailsEdit" />
+                </div>
+            </template>
         </Dialog>
     </AppContent>
 </template>
@@ -194,7 +249,7 @@ import MediaService from '@/features/media/services/media.service';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
 import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const toast = useToast();
 const { showDeleteConfirm } = useDeleteConfirm();
@@ -232,9 +287,11 @@ const viewMode = ref<'grid' | 'list'>('grid');
 const selectedRecords = ref<MediaRecord[]>([]);
 const uploadDialogVisible = ref(false);
 const detailsVisible = ref(false);
+const detailsEditing = ref(false);
 const uploading = ref(false);
 const detailsSubmitting = ref(false);
 const selectedMedia = ref<MediaRecord | null>(null);
+const detailsFormRef = ref<InstanceType<typeof MediaDetailsForm> | null>(null);
 const uploadServerErrors = ref<Record<string, string[]>>({});
 const detailsServerErrors = ref<Record<string, string[]>>({});
 const bulkAction = ref<string | null>(null);
@@ -291,12 +348,17 @@ async function handleUpload(payload: MediaBulkUploadPayload) {
 
 async function openDetails(id: number) {
     detailsServerErrors.value = {};
+    detailsEditing.value = false;
 
     try {
-        selectedMedia.value = await getMediaById(id);
+        selectedMedia.value = await fetchDetails(id);
         detailsVisible.value = true;
     } catch (_err) {
     }
+}
+
+async function fetchDetails(id: number) {
+    return getMediaById(id);
 }
 
 async function handleDetailsSubmit(payload: Partial<MediaPayload>) {
@@ -309,6 +371,7 @@ async function handleDetailsSubmit(payload: Partial<MediaPayload>) {
         const updated = await updateMedia(selectedMedia.value.id, payload);
         selectedMedia.value = updated;
         replaceRecord(updated);
+        detailsEditing.value = false;
         toast.add({ severity: 'success', summary: 'Media updated', life: 2000 });
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
@@ -316,6 +379,63 @@ async function handleDetailsSubmit(payload: Partial<MediaPayload>) {
         }
     } finally {
         detailsSubmitting.value = false;
+    }
+}
+
+function startDetailsEdit() {
+    detailsServerErrors.value = {};
+    detailsEditing.value = true;
+}
+
+function cancelDetailsEdit() {
+    detailsEditing.value = false;
+    detailsServerErrors.value = {};
+}
+
+function submitDetailsEdit() {
+    detailsFormRef.value?.submit();
+}
+
+function handleDetailsDelete() {
+    if (!selectedMedia.value) return;
+
+    removeMediaRecord(selectedMedia.value);
+}
+
+function closeDetails() {
+    detailsVisible.value = false;
+    detailsEditing.value = false;
+    detailsServerErrors.value = {};
+}
+
+const currentMediaIndex = computed(() => {
+    if (!selectedMedia.value) return -1;
+    return records.value.findIndex((item) => item.id === selectedMedia.value?.id);
+});
+
+const canGoToPrevious = computed(() => currentMediaIndex.value > 0);
+const canGoToNext = computed(() => currentMediaIndex.value >= 0 && currentMediaIndex.value < records.value.length - 1);
+
+function goToPreviousMedia() {
+    if (!canGoToPrevious.value) return;
+    openDetailsByIndex(currentMediaIndex.value - 1);
+}
+
+function goToNextMedia() {
+    if (!canGoToNext.value) return;
+    openDetailsByIndex(currentMediaIndex.value + 1);
+}
+
+async function openDetailsByIndex(index: number) {
+    const record = records.value[index];
+    if (!record) return;
+
+    detailsEditing.value = false;
+    detailsServerErrors.value = {};
+
+    try {
+        selectedMedia.value = await fetchDetails(record.id);
+    } catch (_err) {
     }
 }
 
