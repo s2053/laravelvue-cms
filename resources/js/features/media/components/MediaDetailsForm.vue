@@ -1,6 +1,6 @@
 <template>
-    <div v-if="media" class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto pr-2">
-        <div class="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.9fr)]">
+    <div v-if="media" class="flex h-full min-h-0 flex-col gap-4 overflow-hidden pr-2">
+        <div class="grid h-full min-h-0 items-start gap-4 overflow-y-auto pr-2 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.9fr)]">
             <div
                 class="rounded-border border-surface bg-surface-0 dark:bg-surface-900 self-start overflow-hidden border shadow-sm lg:sticky lg:top-0"
             >
@@ -37,7 +37,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-4">
+            <div class="flex min-h-0 flex-col gap-4">
                 <div class="rounded-border border-surface bg-surface-0 dark:bg-surface-900 border p-4 shadow-sm">
                     <div class="mb-4">
                         <div class="text-lg font-semibold">{{ media.title || media.original_name || media.filename }}</div>

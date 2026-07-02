@@ -1,44 +1,46 @@
 <template>
-    <div class="mb-4 grid gap-4 rounded-md border p-4 md:grid-cols-3">
-        <div>
-            <label class="mb-1 block font-semibold">Type</label>
-            <MultiSelect
-                v-model="localFilters.type"
-                :options="MediaTypeOptions"
-                optionLabel="label"
-                optionValue="value"
-                class="w-full"
-                placeholder="Select Type"
-                showClear
-            />
-        </div>
+    <Panel class="mt-3">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+                <label class="mb-1 block font-semibold">Type</label>
+                <MultiSelect
+                    v-model="localFilters.type"
+                    :options="MediaTypeOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="app-input-sm w-full"
+                    placeholder="Select Type"
+                    showClear
+                />
+            </div>
 
-        <div>
-            <label class="mb-1 block font-semibold">Visibility</label>
-            <MultiSelect
-                v-model="localFilters.visibility"
-                :options="MediaVisibilityOptions"
-                optionLabel="label"
-                optionValue="value"
-                class="w-full"
-                placeholder="Select Visibility"
-                showClear
-            />
-        </div>
+            <div>
+                <label class="mb-1 block font-semibold">Visibility</label>
+                <MultiSelect
+                    v-model="localFilters.visibility"
+                    :options="MediaVisibilityOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="app-input-sm w-full"
+                    placeholder="Select Visibility"
+                    showClear
+                />
+            </div>
 
-        <div>
-            <label class="mb-1 block font-semibold">Status</label>
-            <MultiSelect
-                v-model="localFilters.status"
-                :options="MediaStatusOptions"
-                optionLabel="label"
-                optionValue="value"
-                class="w-full"
-                placeholder="Select Status"
-                showClear
-            />
+            <div>
+                <label class="mb-1 block font-semibold">Status</label>
+                <MultiSelect
+                    v-model="localFilters.status"
+                    :options="MediaStatusOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="app-input-sm w-full"
+                    placeholder="Select Status"
+                    showClear
+                />
+            </div>
         </div>
-    </div>
+    </Panel>
 </template>
 
 <script setup lang="ts">

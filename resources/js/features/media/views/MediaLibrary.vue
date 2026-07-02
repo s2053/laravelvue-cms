@@ -3,58 +3,52 @@
         <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
                 <h2 class="mb-1">Media Library</h2>
-                <p class="text-sm text-surface-500">Manage uploaded assets, edit metadata, and reuse media across the CMS.</p>
+                <p class="text-surface-500 text-sm">Manage uploaded assets, edit metadata, and reuse media across the CMS.</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
                 <Button icon="pi pi-plus" label="Add Media" @click="openUploadDialog" />
-                <Button
-                    icon="pi pi-th-large"
-                    :severity="viewMode === 'grid' ? 'primary' : 'secondary'"
-                    outlined
-                    @click="viewMode = 'grid'"
-                />
-                <Button
-                    icon="pi pi-bars"
-                    :severity="viewMode === 'list' ? 'primary' : 'secondary'"
-                    outlined
-                    @click="viewMode = 'list'"
-                />
+                <Button icon="pi pi-th-large" :severity="viewMode === 'grid' ? 'primary' : 'secondary'" outlined @click="viewMode = 'grid'" />
+                <Button icon="pi pi-bars" :severity="viewMode === 'list' ? 'primary' : 'secondary'" outlined @click="viewMode = 'list'" />
             </div>
         </div>
 
         <div class="media-panel mb-4">
-            <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <div class="min-w-0 flex-1">
-                    <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
-                        <TableToolBar v-model="globalFilterValue" showFilter @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
-                    </TableToolBarWrapper>
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div class="flex flex-wrap items-center gap-2">
+                    <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
                 </div>
 
-                <div v-if="selectedRecords.length" class="flex flex-wrap items-center gap-2">
-                    <span class="text-sm text-surface-600">{{ selectedRecords.length }} selected</span>
-                    <Select
-                        v-model="bulkAction"
-                        :options="bulkOptions"
-                        optionLabel="label"
-                        optionValue="value"
-                        class="min-w-44"
-                        placeholder="Bulk action"
-                    />
-                    <Button label="Apply" :disabled="!bulkAction" @click="applyBulk" />
+                <div class="ml-auto flex w-fit flex-col items-end gap-2">
+                    <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
+                        <TableToolBar v-model="globalFilterValue" showFilter @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter">
+                            <InputGroup class="!w-[190px]">
+                                <InputGroupAddon>
+                                    <i class="pi pi-sort-alt text-surface-500" aria-hidden="true"></i>
+                                </InputGroupAddon>
+                                <Select
+                                    v-model="sortOptionModel"
+                                    :options="sortOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    class="w-full"
+                                    placeholder="Sort"
+                                    @change="applySort"
+                                />
+                            </InputGroup>
+                        </TableToolBar>
+                    </TableToolBarWrapper>
                 </div>
             </div>
 
             <MediaFilter v-if="openFilter" :filters="filters" @update:filters="onFiltersChanged" />
         </div>
 
-        <div v-if="loading" class="media-panel border-dashed p-12 text-center text-surface-500">
-            Loading media library...
-        </div>
+        <div v-if="loading" class="media-panel text-surface-500 border-dashed p-12 text-center">Loading media library...</div>
 
         <div v-else-if="records.length === 0" class="media-panel border-dashed p-12 text-center">
             <div class="text-lg font-semibold">No media found</div>
-            <p class="mt-2 text-sm text-surface-500">Upload your first asset or change the current search and filters.</p>
+            <p class="text-surface-500 mt-2 text-sm">Upload your first asset or change the current search and filters.</p>
         </div>
 
         <div v-else-if="viewMode === 'grid'" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
@@ -80,42 +74,36 @@
                     </div>
 
                     <div class="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
-                        <Button icon="pi pi-pencil" severity="secondary" rounded outlined size="small" @click.stop="openDetails(item.id)" />
                         <Button icon="pi pi-trash" severity="danger" rounded outlined size="small" @click.stop="removeMediaRecord(item)" />
                     </div>
 
                     <div class="media-thumb aspect-[4/3] overflow-hidden">
-                        <img
-                            v-if="isImage(item)"
-                            :src="getPreviewUrl(item)"
-                            :alt="item.title || item.filename"
-                            class="h-full w-full object-cover"
-                        />
-                        <div v-else class="flex h-full items-center justify-center px-4 text-center text-sm text-surface-500">
+                        <img v-if="isImage(item)" :src="getPreviewUrl(item)" :alt="item.title || item.filename" class="h-full w-full object-cover" />
+                        <div v-else class="text-surface-500 flex h-full items-center justify-center px-4 text-center text-sm">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
 
                         <span
                             v-if="item.extension"
-                            class="absolute bottom-2 right-2 rounded-md border border-surface-0/20 bg-surface-900/70 px-1.5 py-0.5 text-[10px] font-semibold text-surface-0 backdrop-blur-sm dark:border-surface-0/20 dark:bg-surface-0/75 dark:text-surface-900"
+                            class="border-surface-0/20 bg-surface-900/70 text-surface-0 dark:border-surface-0/20 dark:bg-surface-0/75 dark:text-surface-900 absolute right-2 bottom-2 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-sm"
                         >
                             {{ item.extension.toUpperCase() }}
                         </span>
                     </div>
                 </div>
 
-                    <div class="space-y-1.5 p-3">
-                        <div>
-                            <button
-                                type="button"
-                                class="truncate text-left text-sm font-semibold transition hover:underline"
-                                @click.stop="openDetails(item.id)"
-                            >
-                                {{ item.title || item.original_name || item.filename }}
-                            </button>
-                        </div>
+                <div class="space-y-1.5 p-3">
+                    <div>
+                        <button
+                            type="button"
+                            class="truncate text-left text-sm font-semibold transition hover:underline"
+                            @click.stop="openDetails(item.id)"
+                        >
+                            {{ item.title || item.original_name || item.filename }}
+                        </button>
+                    </div>
 
-                    <div class="flex items-center justify-between text-[11px] text-surface-500">
+                    <div class="text-surface-500 flex items-center justify-between text-[11px]">
                         <span>{{ formatFileSize(item.size) }}</span>
                         <span class="truncate">{{ item.created_at ? formatDateOnly(item.created_at) : '-' }}</span>
                     </div>
@@ -130,7 +118,7 @@
 
                     <div class="media-thumb h-20 w-24 overflow-hidden rounded-lg">
                         <img v-if="isImage(item)" :src="getPreviewUrl(item)" :alt="item.title || item.filename" class="h-full w-full object-cover" />
-                        <div v-else class="flex h-full items-center justify-center text-xs text-surface-500">
+                        <div v-else class="text-surface-500 flex h-full items-center justify-center text-xs">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
                     </div>
@@ -140,7 +128,7 @@
                     <button type="button" class="truncate text-left font-semibold hover:underline" @click="openDetails(item.id)">
                         {{ item.title || item.original_name || item.filename }}
                     </button>
-                    <div class="mt-1 truncate text-sm text-surface-500">{{ item.original_name || item.filename }}</div>
+                    <div class="text-surface-500 mt-1 truncate text-sm">{{ item.original_name || item.filename }}</div>
                     <div class="mt-2 flex flex-wrap gap-2">
                         <Tag :value="item.type" severity="secondary" />
                         <Tag :value="item.visibility" :severity="item.visibility === 'public' ? 'success' : 'warning'" />
@@ -149,7 +137,7 @@
                 </div>
 
                 <div class="flex items-center gap-2 md:ml-auto">
-                    <span class="text-sm text-surface-500">{{ formatFileSize(item.size) }}</span>
+                    <span class="text-surface-500 text-sm">{{ formatFileSize(item.size) }}</span>
                     <Button icon="pi pi-pencil" rounded outlined size="small" @click="openDetails(item.id)" />
                     <Button icon="pi pi-trash" severity="danger" rounded outlined size="small" @click="removeMediaRecord(item)" />
                 </div>
@@ -182,13 +170,14 @@
             v-model:visible="detailsVisible"
             modal
             :closable="false"
+            contentClass="h-full overflow-hidden"
             :style="{ width: '72rem', maxWidth: '96vw', height: '90vh' }"
         >
             <template #header>
                 <div class="flex w-full items-center justify-between gap-4">
                     <div class="min-w-0">
                         <div class="truncate text-lg font-semibold">Attachment details</div>
-                        <div v-if="selectedMedia" class="truncate text-sm text-surface-500">
+                        <div v-if="selectedMedia" class="text-surface-500 truncate text-sm">
                             {{ selectedMedia.title || selectedMedia.original_name || selectedMedia.filename }}
                         </div>
                     </div>
@@ -240,6 +229,7 @@
 </template>
 
 <script setup lang="ts">
+import { BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { usePaginatedTable } from '@/composables/usePaginatedList';
 import { MediaDetailsForm, MediaFilter, MediaUploadForm } from '@/features/media/components';
@@ -247,7 +237,6 @@ import { useMedia } from '@/features/media/composables';
 import type { MediaBulkUploadPayload, MediaFilters, MediaPayload, MediaRecord } from '@/features/media/media.types';
 import MediaService from '@/features/media/services/media.service';
 import AppContent from '@/layouts/app/components/AppContent.vue';
-import { TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 
@@ -295,6 +284,7 @@ const detailsFormRef = ref<InstanceType<typeof MediaDetailsForm> | null>(null);
 const uploadServerErrors = ref<Record<string, string[]>>({});
 const detailsServerErrors = ref<Record<string, string[]>>({});
 const bulkAction = ref<string | null>(null);
+const sortOptionModel = ref<string>(`${sortField.value}:${sortOrder.value === 1 ? 'asc' : 'desc'}`);
 
 const uploadFormModel = ref<MediaBulkUploadPayload>({
     files: [],
@@ -308,6 +298,15 @@ const bulkOptions = [
     { label: 'Set Private', value: 'visibility-private' },
 ];
 
+const sortOptions = [
+    { label: 'Name (A → Z)', value: 'title:asc' },
+    { label: 'Name (Z → A)', value: 'title:desc' },
+    { label: 'Size (Smallest first)', value: 'size:asc' },
+    { label: 'Size (Largest first)', value: 'size:desc' },
+    { label: 'Date (Oldest first)', value: 'created_at:asc' },
+    { label: 'Date (Newest first)', value: 'created_at:desc' },
+];
+
 onMounted(() => {
     loadPage({
         page: 1,
@@ -317,6 +316,13 @@ onMounted(() => {
         filters,
     });
 });
+
+function applySort() {
+    const [field, direction] = sortOptionModel.value.split(':');
+    sortField.value = field;
+    sortOrder.value = direction === 'asc' ? 1 : -1;
+    reload(1);
+}
 
 function openUploadDialog() {
     uploadFormModel.value = {
@@ -353,8 +359,7 @@ async function openDetails(id: number) {
     try {
         selectedMedia.value = await fetchDetails(id);
         detailsVisible.value = true;
-    } catch (_err) {
-    }
+    } catch (_err) {}
 }
 
 async function fetchDetails(id: number) {
@@ -435,8 +440,7 @@ async function openDetailsByIndex(index: number) {
 
     try {
         selectedMedia.value = await fetchDetails(record.id);
-    } catch (_err) {
-    }
+    } catch (_err) {}
 }
 
 function toggleSelection(record: MediaRecord) {
