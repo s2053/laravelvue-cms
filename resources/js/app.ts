@@ -1,5 +1,6 @@
 import './bootstrap';
 
+import ui from '@nuxt/ui/vue-plugin';
 import Alpine from 'alpinejs';
 
 import { createPinia } from 'pinia';
@@ -37,6 +38,7 @@ app.use(PrimeVue, {
     },
 }).use(router);
 
+app.use(ui);
 app.use(pinia);
 app.use(ToastService);
 app.use(ConfirmationService);

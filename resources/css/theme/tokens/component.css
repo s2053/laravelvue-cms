@@ -1,0 +1,159 @@
+html {
+  --btn-primary-bg: var(--color-primary);
+  --btn-primary-text: var(--color-primary-contrast);
+  --btn-secondary-bg: var(--color-surface);
+  --btn-secondary-text: var(--color-text);
+  --btn-ghost-bg: transparent;
+  --btn-ghost-text: var(--color-text-muted);
+  --btn-danger-bg: var(--color-danger);
+  --btn-danger-text: var(--color-primary-contrast);
+  --card-bg: var(--color-surface);
+  --card-border: var(--color-border);
+  --card-shadow: var(--shadow-card);
+  --header-bg: color-mix(in oklab, var(--color-surface) 84%, transparent);
+  --header-border: var(--color-border);
+  --footer-border: var(--color-border);
+  --menu-link-text: var(--color-text-muted);
+  --menu-link-hover-text: var(--color-text);
+  --menu-link-active-text: var(--color-primary);
+  --menu-link-active-bg: color-mix(in oklab, var(--color-primary) 10%, transparent);
+  --menu-link-active-border: color-mix(in oklab, var(--color-primary) 40%, transparent);
+  --menu-panel-active-bg: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  --menu-panel-active-text: var(--color-primary);
+  --shell-sidebar-bg: var(--color-surface);
+  --shell-sidebar-border: var(--color-border);
+  --shell-header-bg: var(--header-bg);
+  --shell-header-border: var(--header-border);
+  --shell-footer-border: var(--footer-border);
+  --shell-backdrop: color-mix(in oklab, var(--neutral-950) 56%, transparent);
+  --shell-brand-bg: color-mix(in oklab, var(--color-primary) 12%, transparent);
+  --shell-brand-text: var(--color-primary);
+  --shell-action-text: var(--color-text-muted);
+  --shell-action-hover-text: var(--color-text);
+  --shell-action-hover-bg: color-mix(in oklab, var(--color-text) 8%, transparent);
+  --shell-fab-bg: var(--color-primary);
+  --shell-fab-hover-bg: color-mix(in oklab, var(--color-primary) 88%, black 12%);
+  --shell-fab-text: var(--color-primary-contrast);
+  --shell-title: var(--color-text);
+  --shell-subtitle: var(--color-text-muted);
+  --shell-nav-text: var(--menu-link-text);
+  --shell-nav-hover-text: var(--menu-link-hover-text);
+  --shell-nav-hover-bg: color-mix(in oklab, var(--color-text) 8%, transparent);
+  --shell-nav-active-text: var(--menu-link-active-text);
+  --shell-nav-active-bg: var(--menu-link-active-bg);
+  --shell-nav-branch-border: var(--color-border);
+}
+
+.app-shell {
+  min-height: 100vh;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.app-shell-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.app-shell-sidebar {
+  border-right: 1px solid var(--shell-sidebar-border);
+  background: var(--shell-sidebar-bg);
+}
+
+.app-shell-header {
+  border-bottom: 1px solid var(--shell-header-border);
+  background: var(--shell-header-bg);
+  backdrop-filter: blur(20px);
+}
+
+.app-shell-footer {
+  border-top: 1px solid var(--shell-footer-border);
+  color: var(--shell-subtitle);
+}
+
+.app-shell-content {
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .app-shell-content {
+    padding: 1.5rem;
+  }
+}
+
+.app-shell-backdrop {
+  background: var(--shell-backdrop);
+}
+
+.app-shell-brand-mark {
+  background: var(--shell-brand-bg);
+  color: var(--shell-brand-text);
+}
+
+.app-shell-brand-title {
+  color: var(--shell-title);
+}
+
+.app-shell-brand-subtitle,
+.app-shell-page-subtitle {
+  color: var(--shell-subtitle);
+}
+
+.app-shell-page-title {
+  color: var(--shell-title);
+}
+
+.app-shell-action {
+  color: var(--shell-action-text);
+}
+
+.app-shell-action:hover {
+  background: var(--shell-action-hover-bg);
+  color: var(--shell-action-hover-text);
+}
+
+.app-shell-fab {
+  background: var(--shell-fab-bg);
+  color: var(--shell-fab-text);
+}
+
+.app-shell-fab:hover {
+  background: var(--shell-fab-hover-bg);
+}
+
+.app-shell-divider {
+  border-top: 1px solid var(--shell-sidebar-border);
+}
+
+.app-shell-nav-item {
+  color: var(--shell-nav-text);
+}
+
+.app-shell-nav-item:hover {
+  background: var(--shell-nav-hover-bg);
+  color: var(--shell-nav-hover-text);
+}
+
+.app-shell-nav-item.is-active {
+  background: var(--shell-nav-active-bg);
+  color: var(--shell-nav-active-text);
+}
+
+.app-shell-nav-caret,
+.app-shell-nav-child {
+  color: var(--shell-subtitle);
+}
+
+.app-shell-nav-children {
+  border-left: 1px solid var(--shell-nav-branch-border);
+}
+
+.app-shell-nav-child:hover {
+  background: var(--shell-nav-hover-bg);
+  color: var(--shell-nav-hover-text);
+}
+
+.app-shell-nav-child.is-active {
+  background: var(--shell-nav-active-bg);
+  color: var(--shell-nav-active-text);
+}

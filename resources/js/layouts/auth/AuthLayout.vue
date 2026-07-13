@@ -12,9 +12,8 @@ import { AppHeader } from '@/layouts/app/components';
             </transition>
         </router-view>
     </div>
-    <div class="layout-mask animate-fadein"></div>
     <Toast />
-    <ConfirmDialog></ConfirmDialog>
+    <ConfirmDialog />
 </template>
 
 <style scoped>

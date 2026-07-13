@@ -1,5 +1,9 @@
 @import 'tailwindcss';
+@import '@nuxt/ui';
 @import 'tailwindcss-primeui';
+@import './theme/index.css';
+@import './theme/base.css';
+@import './theme/dashboard-lab.css';
 
 @source '../**/*.js';
 /*
