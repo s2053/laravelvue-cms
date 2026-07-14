@@ -78,7 +78,7 @@
             </template>
         </AppDataTable>
 
-        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
+        <AppOverlayShell v-model:open="dialogVisible" :title="dialogTitle" size="md" :close="true" :dismissible="true">
             <template v-if="editingId">
                 <UserEditForm
                     :initialForm="formModel"
@@ -105,9 +105,9 @@
                     @cancel="dialogVisible = false"
                 />
             </template>
-        </Dialog>
+        </AppOverlayShell>
 
-        <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
+        <AppOverlayShell v-model:open="isActionDialogVisible" :title="actionDialogTitle" size="md" :close="true" :dismissible="true">
             <UserOptionForm
                 :action="actionDialogAction"
                 :initialData="actionDialogInitial"
@@ -115,19 +115,19 @@
                 @submit="submitActionUpdate"
                 @cancel="isActionDialogVisible = false"
             />
-        </Dialog>
+        </AppOverlayShell>
     </AppContent>
 </template>
 
 <script setup lang="ts">
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppDialogConfirm } from '@/composables/useAppDialogConfirm';
 import { useAppToast } from '@/composables/useAppToast';
-import { useDialogConfirm } from '@/composables/useDialogConfirm';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { computed, onMounted, ref } from 'vue';
 
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import { AppBadge, AppButton, AppDropdownMenu } from '@/components/ui';
+import { AppBadge, AppButton, AppDropdownMenu, AppOverlayShell } from '@/components/ui';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 
 import { usePaginatedTable } from '@/composables/usePaginatedList';
@@ -141,8 +141,8 @@ import { UserEditForm, UserFilter, UserForm, UserOptionForm } from '@/features/u
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
-const { showDeleteConfirm } = useDeleteConfirm();
-const { showDialogConfirm } = useDialogConfirm();
+const { showDeleteConfirm } = useAppDeleteConfirm();
+const { showDialogConfirm } = useAppDialogConfirm();
 const toast = useAppToast();
 
 const { getUserById, createUser, updateUser, deleteUser, updateUserDetails, updateUserRoles, updateUserPassword } = useUsers();
