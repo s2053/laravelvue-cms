@@ -1,7 +1,7 @@
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
 import { useRoles } from '@/features/rbac/composables/useRoles';
-import { Role } from '@/features/rbac/rbac.types';
-import { Ref, ref } from 'vue';
+import type { Role } from '@/features/rbac/rbac.types';
+import { ref, type Ref } from 'vue';
 
 export function useRoleActions(table: { selectedRecords: Ref<Role[]>; tableReload: () => void }) {
     // Current bulk action selected
@@ -13,8 +13,8 @@ export function useRoleActions(table: { selectedRecords: Ref<Role[]>; tableReloa
     // Selected IDs
     const selectedIds = ref<number[]>([]);
 
-    const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdateRoles } = useRoles();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
+    const { bulkUpdateRoles } = useRoles({ onError: () => undefined });
 
     // Trigger bulk action
     function applyBulk() {
@@ -31,20 +31,22 @@ export function useRoleActions(table: { selectedRecords: Ref<Role[]>; tableReloa
     }
 
     // Show delete confirmation
-    function confirmDelete(ids: number[], name?: string) {
+    async function confirmDelete(ids: number[], name?: string) {
         const message = ids.length === 1 ? `Delete role "${name ?? 'this role'}"?` : `Delete ${ids.length} selected roles?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdateRoles('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Role deleted',
-            errorMessage: 'Failed to delete role',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdateRoles('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                },
+                successMessage: 'Role deleted',
+                errorMessage: 'Failed to delete role',
+            });
+        } catch {}
     }
 
     return {

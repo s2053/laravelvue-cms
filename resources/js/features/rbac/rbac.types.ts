@@ -4,8 +4,14 @@ export interface Role {
     slug: string;
     permissions?: Permission[];
     permissions_count?: number;
+    created_at?: string | null;
+    updated_at?: string | null;
 }
-export type RolePayload = Omit<Role, 'id' | 'permissions' | 'permissions_count'> & { permissions: number[] };
+export type RolePayload = {
+    name: string;
+    slug: string;
+    permissions: number[];
+};
 export type RoleFilters = {
     created_at: string[];
     global: string;
