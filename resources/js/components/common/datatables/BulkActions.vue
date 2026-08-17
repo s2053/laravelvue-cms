@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { AppButton, AppSelect } from '@/components/ui';
+
 const model = defineModel<string | null>();
 
 defineProps<{
@@ -13,9 +15,9 @@ const emit = defineEmits<{
 
 <template>
     <div v-if="selectedRecords.length" class="flex items-center space-x-2">
-        <Select v-model="model" :options="bulkOptions" optionLabel="label" optionValue="value" placeholder="Select action" class="w-48" showClear />
+        <AppSelect v-model="model" :items="bulkOptions" placeholder="Select action" class="w-48" clearable />
 
-        <Button label="Apply" icon="pi pi-check" :disabled="!model" @click="emit('apply')" />
+        <AppButton icon="i-lucide-check" :disabled="!model" @click="emit('apply')">Apply</AppButton>
         <slot />
     </div>
 </template>

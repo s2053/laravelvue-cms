@@ -1,36 +1,28 @@
 <template>
-    <Form v-slot="$form" :initialValues="form" :resolver="resolver" :key="editingId || 'create'" @submit="onSubmit" class="flex flex-col gap-4">
-        <!-- Roles Field -->
-        <div class="flex flex-col gap-1">
-            <label for="role_ids" class="mb-2 block font-bold">
-                <i class="pi pi-users mr-2"></i>
-                Roles:
-            </label>
-            <MultiSelect
+    <form class="app-form" @submit.prevent="onSubmit">
+        <div class="app-form-field">
+            <label for="user-roles" class="app-form-label">Roles:</label>
+            <AppMultiSelect
+                id="user-roles"
                 v-model="form.role_ids"
-                display="chip"
-                :options="roles"
-                optionLabel="name"
-                optionValue="id"
+                :items="roles"
+                labelKey="name"
+                valueKey="id"
                 placeholder="Select Roles"
-                :maxSelectedLabels="5"
-                showClear
+                :clearable="true"
+                class="w-full"
             />
-            <FieldError :formError="$form.role_ids?.error?.message" :serverError="serverErrors?.role_ids?.[0]" />
+            <AppFieldError :formError="clientErrors.role_ids" :serverError="serverErrors?.role_ids?.[0]" />
         </div>
 
-        <!-- Submit Button -->
-        <div class="flex justify-end gap-2">
-            <Button type="submit" label="Update Roles" severity="secondary" :disabled="submitting" />
+        <div class="app-form-actions">
+            <AppButton type="submit" color="neutral" :loading="submitting">Update Roles</AppButton>
         </div>
-    </Form>
+    </form>
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
-import Button from 'primevue/button';
-import MultiSelect from 'primevue/multiselect';
+import { AppButton, AppFieldError, AppMultiSelect } from '@/components/ui';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
 
@@ -45,9 +37,9 @@ interface UserRolesFormProps {
 }
 
 const props = defineProps<UserRolesFormProps>();
-const emit = defineEmits(['submit']);
-
-const editingId = props.editingId;
+const emit = defineEmits<{
+    submit: [payload: { role_ids: number[] }];
+}>();
 
 const form = ref({
     role_ids: Array.isArray(props.initialForm.role_ids)
@@ -56,8 +48,8 @@ const form = ref({
           ? [props.initialForm.role_ids]
           : [],
 });
+const clientErrors = ref<Record<string, string>>({});
 
-// Reset form when initialForm changes
 watch(
     () => props.initialForm,
     (newForm) => {
@@ -66,21 +58,24 @@ watch(
             : newForm.role_ids != null
               ? { role_ids: [newForm.role_ids] }
               : { role_ids: [] };
+        clientErrors.value = {};
     },
     { immediate: true, deep: true },
 );
 
-// Zod validation resolver
-const resolver = zodResolver(
-    z.object({
-        role_ids: z.array(z.number()).min(1, { message: 'Select at least one role.' }),
-    }),
-);
+const rolesSchema = z.object({
+    role_ids: z.array(z.number()).min(1, { message: 'Select at least one role.' }),
+});
 
-// Submit handler
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) {
-        emit('submit', form.value);
+function onSubmit() {
+    const parsed = rolesSchema.safeParse(form.value);
+
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
     }
+
+    clientErrors.value = {};
+    emit('submit', form.value);
 }
 </script>

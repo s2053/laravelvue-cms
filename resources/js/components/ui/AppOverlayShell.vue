@@ -56,7 +56,8 @@ const slideoverSizeClasses: Record<OverlaySize, string> = {
 };
 
 const shellUi = computed(() => ({
-    content: props.width || (props.mode === 'modal' ? modalSizeClasses[props.size] : slideoverSizeClasses[props.size]),
+    overlay: 'app-overlay-backdrop',
+    content: ['app-overlay-content', props.width || (props.mode === 'modal' ? modalSizeClasses[props.size] : slideoverSizeClasses[props.size])],
 }));
 </script>
 

@@ -1,9 +1,10 @@
 <template>
     <AppContent>
-        <div class="flex items-center justify-between gap-4">
-            <h2 class="text-2xl font-semibold">User Management</h2>
-            <AppButton icon="i-lucide-plus" @click="openCreate">Add New</AppButton>
-        </div>
+        <AppPageHeader title="User Management">
+            <template #actions>
+                <AppButton icon="i-lucide-plus" @click="openCreate">Add New</AppButton>
+            </template>
+        </AppPageHeader>
 
         <AppDataTable
             :items="records"
@@ -28,7 +29,13 @@
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
 
                         <div class="ml-auto flex items-center gap-2">
-                            <TableToolBar v-model="globalFilterValue" showFilter @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
+                            <TableToolBar
+                                v-model="globalFilterValue"
+                                showFilter
+                                :filter-active="openFilter"
+                                @search="onGlobalSearch"
+                                @toggleFilter="openFilter = !openFilter"
+                            />
                         </div>
                     </div>
                 </TableToolBarWrapper>
@@ -123,11 +130,10 @@
 import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
 import { useAppDialogConfirm } from '@/composables/useAppDialogConfirm';
 import { useAppToast } from '@/composables/useAppToast';
-import type { DropdownMenuItem } from '@nuxt/ui';
 import { computed, onMounted, ref } from 'vue';
 
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import { AppBadge, AppButton, AppDropdownMenu, AppOverlayShell } from '@/components/ui';
+import { AppBadge, AppButton, AppDropdownMenu, AppOverlayShell, AppPageHeader, type AppDropdownMenuItem } from '@/components/ui';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 
 import { usePaginatedTable } from '@/composables/usePaginatedList';
@@ -146,7 +152,11 @@ const { showDialogConfirm } = useAppDialogConfirm();
 const toast = useAppToast();
 
 const { getUserById, createUser, updateUser, deleteUser, updateUserDetails, updateUserRoles, updateUserPassword } = useUsers();
-const { roles, fetchRoles } = useRoles();
+const { roles, fetchRoles } = useRoles({
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load roles', { duration: 4000 });
+    },
+});
 
 const {
     items: records,
@@ -180,6 +190,9 @@ const {
     initialSortOrder: -1,
     initialPerPage: 25,
     perPageOptions: [10, 25, 50, 100],
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load users', { duration: 4000 });
+    },
 });
 
 const {
@@ -232,7 +245,7 @@ const initialFormPayload: UserPayload = {
 
 const formModel = ref<UserPayload>({ ...initialFormPayload });
 
-function rowMenuItems(user: User): DropdownMenuItem[][] {
+function rowMenuItems(user: User): AppDropdownMenuItem[][] {
     return [
         [
             {
@@ -326,17 +339,20 @@ async function handleSubmit(form: UserPayload) {
     }
 }
 
-function removeRecord(id: number, name?: string) {
+async function removeRecord(id: number, name?: string) {
     const message = name ? `Do you want to delete "${name}"?` : `Are you sure to delete this user?`;
-    showDeleteConfirm({
-        message,
-        onAccept: async () => {
-            await deleteUser(id);
-            tableReload();
-        },
-        successMessage: 'User deleted',
-        errorMessage: 'Failed to delete user',
-    });
+
+    try {
+        await showDeleteConfirm({
+            message,
+            onAccept: async () => {
+                await deleteUser(id);
+                tableReload();
+            },
+            successMessage: 'User deleted',
+            errorMessage: 'Failed to delete user',
+        });
+    } catch {}
 }
 
 async function handleUpdateDetails(details: { name: string; email: string }) {
@@ -385,31 +401,33 @@ async function handleUpdateSecurity(security: { password?: string; password_conf
 }
 
 async function handleUpdateRoles(rolesPayload: { role_ids: number[] }) {
-    if (submitting.value) return;
-    submitting.value = true;
+    if (submitting.value || !editingId.value) return;
+
+    const userId = editingId.value;
     serverErrors.value = {};
-    if (!editingId.value) return;
 
-    showDialogConfirm({
-        onAccept: async () => {
-            const edit_id = editingId.value || 0;
+    try {
+        await showDialogConfirm({
+            onAccept: async () => {
+                submitting.value = true;
 
-            try {
-                await updateUserRoles(edit_id, rolesPayload);
-                dialogVisible.value = false;
-                tableReload();
-            } catch (err: any) {
-                if (err.response?.status === 422 && err.response.data?.errors) {
-                    serverErrors.value = err.response.data.errors;
+                try {
+                    await updateUserRoles(userId, rolesPayload);
+                    dialogVisible.value = false;
+                    tableReload();
+                } catch (err: any) {
+                    if (err.response?.status === 422 && err.response.data?.errors) {
+                        serverErrors.value = err.response.data.errors;
+                    }
+                    throw err;
+                } finally {
+                    submitting.value = false;
                 }
-                throw err;
-            } finally {
-                submitting.value = false;
-            }
-        },
-        successMessage: 'User Updated',
-        errorMessage: 'Failed to update user',
-    });
+            },
+            successMessage: 'User Updated',
+            errorMessage: 'Failed to update user',
+        });
+    } catch {}
 }
 
 function showUpdateDialogForSingle(action: string, id: number) {
@@ -422,7 +440,7 @@ function showUpdateDialogForSingle(action: string, id: number) {
 }
 
 onMounted(() => {
-    fetchRoles();
+    void fetchRoles();
     loadPageData({ page: 0, rows: numOfRows.value, filters });
 });
 </script>

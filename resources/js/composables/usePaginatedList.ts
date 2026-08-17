@@ -1,4 +1,3 @@
-import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import type { PaginatedResponse } from '@/types/apiResponse';
 import { reactive, ref } from 'vue';
 
@@ -15,6 +14,7 @@ interface UsePaginatedTableOptions<F = Record<string, any>> {
     initialPage?: number;
     initialPerPage?: number;
     perPageOptions?: number[];
+    onError?: (error: unknown) => void | Promise<void>;
 }
 
 export function usePaginatedTable<T, F extends DefaultFilters>(
@@ -54,8 +54,6 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
     const globalFilterValue = ref('');
     const openFilter = ref(false);
 
-    const { handleError } = useApiErrorHandler();
-
     // Fetch paginated data
     async function loadPage(
         event: {
@@ -90,7 +88,12 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
             currentPage.value = resp.meta.current_page - 1;
             selectedRecords.value = [];
         } catch (err: any) {
-            handleError(err);
+            if (options.onError) {
+                await options.onError(err);
+            } else {
+                const { handleError } = await import('@/composables/useApiErrorHandler');
+                handleError(err);
+            }
             error.value = err.message || 'Error fetching data';
             console.error(err);
         } finally {
@@ -151,6 +154,12 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
     // Handle global search
     function onGlobalSearch(globalValue: string) {
         const trimmed = globalValue.trim();
+
+        if (trimmed === filters.global) {
+            globalFilterValue.value = trimmed;
+            return;
+        }
+
         filters.global = trimmed;
         globalFilterValue.value = trimmed;
 
