@@ -68,7 +68,7 @@ function updateSelectAll(value: boolean | 'indeterminate') {
         @update:model-value="updateModelValue"
     >
         <template v-if="selectAll" #content-top>
-            <div class="border-b border-[var(--color-border)] px-3 py-2">
+            <div class="app-multi-select__select-all px-3 py-2">
                 <UCheckbox
                     :model-value="allSelected"
                     :indeterminate="hasPartialSelection"

@@ -6,6 +6,8 @@ export { default as AppConfirmDialog } from '@/components/ui/AppConfirmDialog.vu
 export { default as AppDropdownMenu } from '@/components/ui/AppDropdownMenu.vue';
 export { default as AppFieldError } from '@/components/ui/AppFieldError.vue';
 export { default as AppFieldGroup } from '@/components/ui/AppFieldGroup.vue';
+export { default as AppFileUpload } from '@/components/ui/AppFileUpload.vue';
+export { default as AppFormSection } from '@/components/ui/AppFormSection.vue';
 export { default as AppInput } from '@/components/ui/AppInput.vue';
 export { default as AppMultiSelect } from '@/components/ui/AppMultiSelect.vue';
 export { default as AppOverlayShell } from '@/components/ui/AppOverlayShell.vue';
@@ -13,4 +15,6 @@ export { default as AppPageHeader } from '@/components/ui/AppPageHeader.vue';
 export { default as AppPanel } from '@/components/ui/AppPanel.vue';
 export { default as AppSelect } from '@/components/ui/AppSelect.vue';
 export { default as AppTabs } from '@/components/ui/AppTabs.vue';
+export { default as AppTextEditor } from '@/components/ui/AppTextEditor.vue';
+export { default as AppTextarea } from '@/components/ui/AppTextarea.vue';
 export type { DropdownMenuItem as AppDropdownMenuItem } from '@nuxt/ui';

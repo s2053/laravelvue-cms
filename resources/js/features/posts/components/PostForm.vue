@@ -59,14 +59,12 @@
                 <!-- Editor Content -->
                 <div>
                     <label for="content" class="mb-2 block font-bold">Editor:</label>
-                    <ClassicEditor
-                        v-model:content="form.content"
-                        output="html"
-                        :width="'100%'"
-                        :height="'400px'"
-                        :enableCharCount="true"
-                        :charCountMax="5000"
+                    <AppTextEditor
+                        v-model="form.content"
                         name="content"
+                        minHeight="400px"
+                        showCharacterCount
+                        :characterCountMax="5000"
                     />
                     <FieldError :formError="$form.content?.error?.message" :serverError="serverErrors?.content?.[0]" />
                 </div>
@@ -290,11 +288,11 @@
 </template>
 
 <script setup lang="ts">
-import ClassicEditor from '@/components/common/editor/classic/ClassicEditor.vue';
 import FieldError from '@/components/common/FieldError.vue';
 import MediaUploader from '@/components/common/MediaUploader.vue';
 import AppCard from '@/components/ui/AppCard.vue';
 import AppPanel from '@/components/ui/AppPanel.vue';
+import AppTextEditor from '@/components/ui/AppTextEditor.vue';
 import { PostStatus, PostStatusOptions, PostType, PostTypeOptions, PostVisibility, PostVisibilityOptions } from '@/features/posts/posts.enum';
 import type { PostPayload } from '@/features/posts/posts.types';
 import { getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';

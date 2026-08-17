@@ -16,7 +16,6 @@ import ToastService from 'primevue/toastservice';
 
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
 
-import '../css/editor/editor.css';
 import '../css/styles.scss';
 
 window.Alpine = Alpine;

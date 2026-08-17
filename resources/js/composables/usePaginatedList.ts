@@ -1,4 +1,5 @@
 import type { PaginatedResponse } from '@/types/apiResponse';
+import { useAppToast } from '@/composables/useAppToast';
 import { reactive, ref } from 'vue';
 
 type SortOrder = 1 | -1;
@@ -28,6 +29,8 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
     }) => Promise<PaginatedResponse<T>>,
     options: UsePaginatedTableOptions<F> = {},
 ) {
+    const toast = useAppToast();
+
     // Defaults
     const {
         initialFilters = { global: '' } as F,
@@ -91,11 +94,9 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
             if (options.onError) {
                 await options.onError(err);
             } else {
-                const { useApiErrorHandler } = await import('@/composables/useApiErrorHandler');
-                useApiErrorHandler().handleError(err);
+                toast.error('Error', err instanceof Error ? err.message : 'Failed to load data', { duration: 4000 });
             }
             error.value = err.message || 'Error fetching data';
-            console.error(err);
         } finally {
             loading.value = false;
         }

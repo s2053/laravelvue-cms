@@ -54,7 +54,7 @@
                     <AppBadge v-for="role in row.original.roles.slice(0, 3)" :key="role.id" color="info" variant="soft">
                         {{ role.name }}
                     </AppBadge>
-                    <span v-if="row.original.roles.length > 3" class="text-sm text-[var(--color-text-muted)]">
+                    <span v-if="row.original.roles.length > 3" class="app-inline-muted-text">
                         +{{ row.original.roles.length - 3 }} more
                     </span>
                 </div>

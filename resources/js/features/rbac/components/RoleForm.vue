@@ -5,8 +5,8 @@
             <AppInput id="role-name" v-model="form.name" name="name" placeholder="Role name" class="w-full" />
             <AppFieldError :formError="clientErrors.name" :serverError="serverErrors?.name?.[0]" />
 
-            <div class="mt-3 flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-                <label for="role-slug" class="font-semibold whitespace-nowrap text-[var(--color-text)]">Slug:</label>
+            <div class="app-form-slug-row">
+                <label for="role-slug" class="app-form-slug-label">Slug:</label>
                 <span v-if="!slugEdit" :title="form.slug" class="min-w-0 flex-1 truncate">
                     {{ form.slug }}
                 </span>
@@ -46,7 +46,7 @@
             </div>
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <section v-for="group in groups" :key="group.id" class="rounded-md border border-[var(--color-border)] p-3">
+                <section v-for="group in groups" :key="group.id" class="app-permission-group p-3">
                     <AppCheckbox
                         :modelValue="isGroupFullySelected(group)"
                         :indeterminate="isGroupPartiallySelected(group)"

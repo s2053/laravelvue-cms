@@ -14,7 +14,7 @@
             :get-row-id="getRowId"
             :sorting-options="{ manualSorting: true }"
             :row-selection-options="selectable ? { enableMultiRowSelection: true } : undefined"
-            class="rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)]"
+            class="app-data-table"
             @update:sorting="onNuxtSortingChange"
             @update:row-selection="onNuxtRowSelectionChange"
         >
@@ -40,7 +40,7 @@
         </UTable>
 
         <div
-            class="flex flex-col gap-3 border-t border-[var(--color-border)] pt-4 text-sm text-[var(--color-text-muted)] sm:flex-row sm:items-center sm:justify-between"
+            class="app-data-table__pagination flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between"
         >
             <p>{{ pageReport }}</p>
 
@@ -208,14 +208,14 @@ const nuxtColumns = computed(() => {
                     'button',
                     {
                         type: 'button',
-                        class: 'inline-flex items-center gap-2 font-medium text-[var(--color-text)]',
+                        class: 'app-data-table__sort-button inline-flex items-center gap-2 font-medium',
                         onClick: () => tableColumn.toggleSorting(sorted === 'asc'),
                     },
                     [
                         h('span', column.label),
                         h(resolveComponent('UIcon'), {
                             name: iconName,
-                            class: 'size-4 text-[var(--color-text-muted)]',
+                            class: 'app-data-table__sort-icon size-4',
                         }),
                     ],
                 );
@@ -245,7 +245,7 @@ const nuxtColumns = computed(() => {
                 checked: table.getIsAllPageRowsSelected(),
                 onChange: table.getToggleAllPageRowsSelectedHandler(),
                 'aria-label': 'Select all rows',
-                class: 'size-4 rounded border-[var(--color-border)]',
+                class: 'app-data-table__checkbox size-4 rounded',
             }),
         cell: ({ row }: any) =>
             h('input', {
@@ -254,7 +254,7 @@ const nuxtColumns = computed(() => {
                 disabled: !row.getCanSelect(),
                 onChange: row.getToggleSelectedHandler(),
                 'aria-label': 'Select row',
-                class: 'size-4 rounded border-[var(--color-border)]',
+                class: 'app-data-table__checkbox size-4 rounded',
             }),
         meta: {
             class: {

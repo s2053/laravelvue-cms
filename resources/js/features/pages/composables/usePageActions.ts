@@ -1,15 +1,12 @@
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { usePages } from '@/features/pages/composables/usePages';
-import { Page } from '@/features/pages/pages.types';
+import type { Page } from '@/features/pages/pages.types';
 import { isoToMySQLDatetime, localDateTimeToUTC, utcToLocalDateTime } from '@/utils/dateHelper';
-import { useToast } from 'primevue/usetoast';
-import { Ref, ref } from 'vue';
+import { ref, type Ref } from 'vue';
 
 export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReload: () => void }) {
-    // Current bulk action selected
     const bulkAction = ref<string | null>(null);
-
-    // Options for bulk actions
     const bulkOptions = [
         { label: 'Delete Pages', value: 'delete' },
         { label: 'Update Status', value: 'status' },
@@ -17,88 +14,65 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
         { label: 'Update Visibility', value: 'visibility' },
         { label: 'Update Page Type', value: 'page_type' },
     ];
-
-    // Validation errors from server
-    const serverErrors = ref<{ [key: string]: string[] }>({});
-
-    // Dialog state and data
+    const serverErrors = ref<Record<string, string[]>>({});
     const dialogVisible = ref(false);
     const dialogTitle = ref('');
     const dialogAction = ref('');
     const initialForm = ref<Record<string, any>>({});
     const selectedIds = ref<number[]>([]);
 
-    const toast = useToast();
-    const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdatePages } = usePages();
+    const toast = useAppToast();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
+    const { bulkUpdatePages } = usePages({ onError: () => undefined });
 
-    // Trigger bulk action, handle delete separately
     function applyBulk() {
         if (!bulkAction.value || !table.selectedRecords.value.length) return;
 
-        selectedIds.value = table.selectedRecords.value.map((r) => r.id).filter((id): id is number => typeof id === 'number');
+        selectedIds.value = table.selectedRecords.value.map((record) => record.id).filter((id): id is number => typeof id === 'number');
 
         if (bulkAction.value === 'delete') {
-            if (selectedIds.value.length == 1) {
-                return confirmDelete(selectedIds.value, table.selectedRecords.value[0].title);
-            }
-
-            return confirmDelete(selectedIds.value);
+            const [record] = table.selectedRecords.value;
+            void confirmDelete(selectedIds.value, selectedIds.value.length === 1 ? record?.title : undefined);
+            return;
         }
 
         openDialog(bulkAction.value);
     }
 
-    // Open dialog for single item action or confirm delete
     function openSingle(action: string, row: Page) {
         if (!row?.id) return;
 
         selectedIds.value = [row.id];
-
         if (action === 'delete') {
-            return confirmDelete([row.id], row.title);
+            void confirmDelete([row.id], row.title);
+            return;
         }
 
         openDialog(action, row);
     }
 
-    // Prepare and open the bulk/single update dialog
     function openDialog(action: string, row?: Page) {
         dialogAction.value = action;
         const selectedCount = selectedIds.value.length;
-
-        let actionTitle = 'Dialog Title';
-        if (action == 'page_category_id') {
-            actionTitle = 'Page Category';
-        } else {
-            actionTitle = action;
-        }
-
+        const actionTitle = action === 'page_category_id' ? 'Page Category' : action;
         dialogTitle.value = selectedCount > 1 ? `Bulk Update ${actionTitle} [${selectedCount} selected]` : `Update ${actionTitle}`;
-
         initialForm.value = buildInitialForm(action, row);
-        console.log('Initial form data:', initialForm.value);
         dialogVisible.value = true;
     }
 
-    // Close the dialog
     function closeDialog() {
         dialogVisible.value = false;
     }
 
-    // Submit bulk update form, handle errors and reload table
     async function submit(form: Record<string, any>) {
         if (!selectedIds.value.length) return;
 
         serverErrors.value = {};
         preprocessDates(form);
-
         try {
             await bulkUpdatePages(dialogAction.value, selectedIds.value, form);
-
-            toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
+            toast.success('Page updated', undefined, { duration: 2000 });
             closeDialog();
-
             selectedIds.value = [];
             table.selectedRecords.value = [];
             bulkAction.value = null;
@@ -106,32 +80,30 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
         } catch (err: any) {
             if (err.response?.status === 422 && err.response.data?.errors) {
                 serverErrors.value = err.response.data.errors;
-            } else {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: err?.message || 'Operation failed',
-                    life: 4000,
-                });
+                return;
             }
+
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     }
 
-    // Show delete confirmation and execute delete if confirmed
-    function confirmDelete(ids: number[], title?: string) {
-        const message = ids.length === 1 ? `Delete "${title ?? 'this page'}"?` : `Delete ${ids.length} selected pages?`;
+    async function confirmDelete(ids: number[], title?: string) {
+        const message = ids.length === 1 ? `Delete \"${title ?? 'this page'}\"?` : `Delete ${ids.length} selected pages?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdatePages('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Page deleted',
-            errorMessage: 'Failed to delete page',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdatePages('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                    bulkAction.value = null;
+                },
+                successMessage: 'Page deleted',
+                errorMessage: 'Failed to delete page',
+            });
+        } catch {}
     }
 
     return {
@@ -151,20 +123,11 @@ export function usePageActions(table: { selectedRecords: Ref<Page[]>; tableReloa
     };
 }
 
-// Prepare initial form data for dialog based on action and row data
-function buildInitialForm(action: string, row?: any) {
+function buildInitialForm(action: string, row?: Page) {
     if (!row) {
-        // Provide default values per action when no row provided
-        switch (action) {
-            case 'page_category_id':
-                return { page_category_id: null };
-
-            default:
-                return {};
-        }
+        return action === 'page_category_id' ? { page_category_id: null } : {};
     }
 
-    // When row is provided, extract values or fallback to defaults
     switch (action) {
         case 'status':
             return {
@@ -183,8 +146,7 @@ function buildInitialForm(action: string, row?: any) {
     }
 }
 
-// Convert local date strings to MySQL datetime format for scheduled and published dates
-function preprocessDates(obj: Record<string, any>) {
-    if (obj.scheduled_at) obj.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(obj.scheduled_at));
-    if (obj.published_at) obj.published_at = isoToMySQLDatetime(localDateTimeToUTC(obj.published_at));
+function preprocessDates(payload: Record<string, any>) {
+    if (payload.scheduled_at) payload.scheduled_at = isoToMySQLDatetime(localDateTimeToUTC(payload.scheduled_at));
+    if (payload.published_at) payload.published_at = isoToMySQLDatetime(localDateTimeToUTC(payload.published_at));
 }

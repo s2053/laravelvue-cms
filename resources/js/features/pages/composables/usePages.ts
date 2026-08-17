@@ -1,83 +1,90 @@
-import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import type { Page } from '@/features/pages/pages.types';
 import PageService from '@/features/pages/services/page.service';
+import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
-export function usePages() {
-    const { handleError } = useApiErrorHandler();
+type UsePagesOptions = {
+    onError?: (error: unknown) => void | Promise<void>;
+};
+
+export function usePages(options: UsePagesOptions = {}) {
+    const toast = useAppToast();
+
+    async function reportError(error: unknown) {
+        if (options.onError) {
+            await options.onError(error);
+            return;
+        }
+
+        toast.error('Error', error instanceof Error ? error.message : 'Something went wrong', { duration: 4000 });
+    }
 
     const pages = ref<Page[]>([]);
     const paginatedRes = ref<any>({});
     const loading = ref(false);
     const error = ref<string | null>(null);
 
-    // Fetch all pages
     const fetchPages = async (params: Record<string, any> = {}) => {
         loading.value = true;
         error.value = null;
         try {
-            const res = await PageService.getAll(params);
-            pages.value = res.data;
+            const response = await PageService.getAll(params);
+            pages.value = response.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch pages';
         } finally {
             loading.value = false;
         }
     };
 
-    // Get page by ID
     const getPageById = async (id: number) => {
         try {
-            const res = await PageService.getById(id);
-            return res.data;
+            const response = await PageService.getById(id);
+            return response.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch page';
             throw err;
         }
     };
 
-    // Create a new page
     const createPage = async (page: FormData) => {
         try {
             await PageService.create(page);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to create page';
             throw err;
         }
     };
 
-    // Update existing page
     const updatePage = async (id: number, page: FormData) => {
         try {
-            const res = await PageService.update(id, page);
-            return res.data;
+            const response = await PageService.update(id, page);
+            return response.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update page';
             throw err;
         }
     };
 
-    // Delete a page
     const deletePage = async (id: number) => {
         try {
             await PageService.delete(id);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to delete page';
             throw err;
         }
     };
 
-    // Bulk update pages by action and IDs
     const bulkUpdatePages = async (action: string, ids: number[], data?: Record<string, any>) => {
         try {
             await PageService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }

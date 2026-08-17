@@ -110,7 +110,7 @@ function handleAfterLeave() {
         @after:leave="handleAfterLeave"
     >
         <div class="space-y-3">
-            <p class="text-sm leading-6 text-[var(--color-text-muted)]">
+            <p class="app-confirm-dialog__message leading-6">
                 {{ message }}
             </p>
         </div>
