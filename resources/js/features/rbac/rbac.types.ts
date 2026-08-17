@@ -15,9 +15,14 @@ export interface Permission {
     id: number;
     name: string;
     permission_group_id?: number | null;
+    permission_group?: PermissionGroup | null;
+    created_at?: string | null;
     group?: PermissionGroup;
 }
-export type PermissionPayload = Omit<Permission, 'id' | 'group'>;
+export type PermissionPayload = {
+    name: string;
+    permission_group_id: number | null;
+};
 export type PermissionFilters = {
     created_at: string[];
     global: string;

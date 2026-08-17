@@ -1,10 +1,21 @@
-import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import type { PermissionGroup, PermissionGroupPayload } from '@/features/rbac/rbac.types';
 import PermissionGroupService from '@/features/rbac/services/permissionGroup.service';
 import { ref } from 'vue';
 
-export function usePermissionGroups() {
-    const { handleError } = useApiErrorHandler();
+type UsePermissionGroupsOptions = {
+    onError?: (error: unknown) => void | Promise<void>;
+};
+
+export function usePermissionGroups(options: UsePermissionGroupsOptions = {}) {
+    async function reportError(error: unknown) {
+        if (options.onError) {
+            await options.onError(error);
+            return;
+        }
+
+        const { useApiErrorHandler } = await import('@/composables/useApiErrorHandler');
+        useApiErrorHandler().handleError(error);
+    }
 
     const permissionGroups = ref<PermissionGroup[]>([]);
 
@@ -19,7 +30,7 @@ export function usePermissionGroups() {
             const res = await PermissionGroupService.getAll();
             permissionGroups.value = res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch permission groups';
         } finally {
             loading.value = false;
@@ -32,7 +43,7 @@ export function usePermissionGroups() {
             const res = await PermissionGroupService.getById(id);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch permission group';
             throw err;
         }
@@ -44,7 +55,7 @@ export function usePermissionGroups() {
             const res = await PermissionGroupService.create(payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to create permission group';
             throw err;
         }
@@ -56,7 +67,7 @@ export function usePermissionGroups() {
             const res = await PermissionGroupService.update(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update permission group';
             throw err;
         }
@@ -67,7 +78,7 @@ export function usePermissionGroups() {
         try {
             await PermissionGroupService.delete(id);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to delete permission group';
             throw err;
         }
@@ -78,7 +89,7 @@ export function usePermissionGroups() {
         try {
             await PermissionGroupService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }

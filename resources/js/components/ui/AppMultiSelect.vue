@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-type SelectItem = Record<string, unknown>;
-
 const props = withDefaults(
     defineProps<{
         modelValue?: unknown[];
-        items?: SelectItem[];
+        items?: any[];
         labelKey?: string;
         valueKey?: string;
         placeholder?: string;
@@ -53,10 +51,10 @@ function updateSelectAll(value: boolean | 'indeterminate') {
 
 <template>
     <USelectMenu
-        :model-value="modelValue"
+        :model-value="modelValue as any"
         :items="items"
-        :label-key="labelKey"
-        :value-key="valueKey"
+        :label-key="labelKey as any"
+        :value-key="valueKey as any"
         :placeholder="placeholder"
         :name="name"
         :disabled="disabled"

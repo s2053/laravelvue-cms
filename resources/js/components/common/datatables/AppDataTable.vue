@@ -39,7 +39,9 @@
             </template>
         </UTable>
 
-        <div class="flex flex-col gap-3 border-t border-[var(--color-border)] pt-4 text-sm text-[var(--color-text-muted)] sm:flex-row sm:items-center sm:justify-between">
+        <div
+            class="flex flex-col gap-3 border-t border-[var(--color-border)] pt-4 text-sm text-[var(--color-text-muted)] sm:flex-row sm:items-center sm:justify-between"
+        >
             <p>{{ pageReport }}</p>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -266,7 +268,7 @@ const nuxtColumns = computed(() => {
 });
 
 watch(
-    () => [props.sortField, props.sortOrder],
+    () => [props.sortField, props.sortOrder] as const,
     ([sortField, sortOrder]) => {
         sortingState.value = buildSortingState(sortField, sortOrder);
     },

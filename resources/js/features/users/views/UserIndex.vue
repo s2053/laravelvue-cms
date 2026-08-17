@@ -75,10 +75,16 @@
 
             <template #actions-cell="{ row }">
                 <div class="flex items-center gap-2">
-                    <AppButton color="neutral" variant="outline" icon="i-lucide-pencil" size="sm" @click="openEdit(row.original)" />
-                    <AppButton color="error" variant="outline" icon="i-lucide-trash-2" size="sm" @click="removeRecord(row.original.id, row.original.name)" />
+                    <AppButton color="neutral" variant="outline" icon="i-lucide-pencil" size="sm" @click="openEdit(row.original as User)" />
+                    <AppButton
+                        color="error"
+                        variant="outline"
+                        icon="i-lucide-trash-2"
+                        size="sm"
+                        @click="removeRecord((row.original as User).id, (row.original as User).name)"
+                    />
 
-                    <AppDropdownMenu :items="rowMenuItems(row.original)" :content="{ align: 'end' }">
+                    <AppDropdownMenu :items="rowMenuItems(row.original as User)" :content="{ align: 'end' }">
                         <AppButton color="neutral" variant="outline" icon="i-lucide-ellipsis-vertical" size="sm" />
                     </AppDropdownMenu>
                 </div>

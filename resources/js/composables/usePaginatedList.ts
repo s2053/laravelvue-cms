@@ -91,8 +91,8 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
             if (options.onError) {
                 await options.onError(err);
             } else {
-                const { handleError } = await import('@/composables/useApiErrorHandler');
-                handleError(err);
+                const { useApiErrorHandler } = await import('@/composables/useApiErrorHandler');
+                useApiErrorHandler().handleError(err);
             }
             error.value = err.message || 'Error fetching data';
             console.error(err);

@@ -1,10 +1,8 @@
 <script setup lang="ts">
-type SelectItem = Record<string, unknown>;
-
 withDefaults(
     defineProps<{
         modelValue?: unknown;
-        items?: SelectItem[];
+        items?: any[];
         labelKey?: string;
         valueKey?: string;
         placeholder?: string;
@@ -36,10 +34,10 @@ const emit = defineEmits<{
 
 <template>
     <USelectMenu
-        :model-value="modelValue"
+        :model-value="modelValue as any"
         :items="items"
-        :label-key="labelKey"
-        :value-key="valueKey"
+        :label-key="labelKey as any"
+        :value-key="valueKey as any"
         :placeholder="placeholder"
         :name="name"
         :disabled="disabled"

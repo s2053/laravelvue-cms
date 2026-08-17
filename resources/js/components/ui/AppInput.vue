@@ -34,7 +34,7 @@ const emit = defineEmits<{
 <template>
     <UInput
         v-bind="$attrs"
-        :model-value="modelValue"
+        :model-value="modelValue ?? undefined"
         :id="id"
         :name="name"
         :type="type"
