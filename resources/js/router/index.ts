@@ -14,12 +14,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 const routes = [
     {
-        path: '/dashboard/labs',
-        name: 'dashboard.labs',
-        meta: { title: 'Dashboard Lab' },
-        component: () => import('@/pages/prototypes/DashboardLab.vue'),
-    },
-    {
         path: '/',
         component: AuthLayout,
         children: [...authRoutes],

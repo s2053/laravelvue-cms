@@ -1,5 +1,5 @@
 <template>
-    <div v-if="isNuxtMode" class="space-y-4">
+    <div class="space-y-4">
         <slot name="header" />
 
         <UTable
@@ -39,9 +39,7 @@
             </template>
         </UTable>
 
-        <div
-            class="app-data-table__pagination flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between"
-        >
+        <div class="app-data-table__pagination flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between">
             <p>{{ pageReport }}</p>
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -70,42 +68,6 @@
             </div>
         </div>
     </div>
-
-    <DataTable
-        v-else
-        v-bind="$attrs"
-        :value="items"
-        :loading="loading"
-        :lazy="true"
-        :first="currentPage * rows"
-        :sortField="sortField"
-        :sortOrder="sortOrder"
-        :rows="rows"
-        :totalRecords="total"
-        :paginator="true"
-        :dataKey="dataKey"
-        :rowsPerPageOptions="rowsPerPageOptions"
-        :paginatorTemplate="paginatorTemplate"
-        :currentPageReportTemplate="currentPageReportTemplate"
-        @page="onLegacyPage"
-        @sort="onLegacySort"
-        @selection-change="onLegacySelectionChange"
-        v-model:selection="selectionModel"
-    >
-        <template #empty>
-            <slot name="empty"> No data found. </slot>
-        </template>
-        <template #loading>
-            <slot name="loading"> Loading data. Please wait. </slot>
-        </template>
-
-        <template #header>
-            <slot name="header" />
-        </template>
-        <slot name="columns" />
-        <slot name="actions" />
-        <slot />
-    </DataTable>
 </template>
 
 <script setup lang="ts">
@@ -135,8 +97,6 @@ const props = withDefaults(
         sortOrder?: SortOrder;
         dataKey?: string;
         rowsPerPageOptions?: number[];
-        paginatorTemplate?: string;
-        currentPageReportTemplate?: string;
         columns?: AppDataTableColumn[];
         selectable?: boolean;
         emptyText?: string;
@@ -152,8 +112,6 @@ const props = withDefaults(
         sortOrder: 1,
         dataKey: 'id',
         rowsPerPageOptions: () => [10, 20, 50, 100],
-        paginatorTemplate: 'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown',
-        currentPageReportTemplate: '{first} to {last} of {totalRecords}',
         columns: () => [],
         selectable: false,
         emptyText: 'No data found.',
@@ -169,11 +127,8 @@ const emit = defineEmits<{
     (e: 'selection-change', value: any[]): void;
 }>();
 
-const isNuxtMode = computed(() => props.columns.length > 0);
-
 const sortingState = ref<SortingState>(buildSortingState(props.sortField, props.sortOrder));
 const rowSelectionState = ref<RowSelectionState>({});
-const selectionModel = ref(props.selection);
 
 const slotEnabledColumns = computed(() => props.columns.filter((column) => !!column.key));
 
@@ -278,13 +233,10 @@ watch(
 watch(
     () => props.selection,
     (selection) => {
-        selectionModel.value = selection;
         rowSelectionState.value = buildRowSelectionState(selection, props.dataKey);
     },
     { immediate: true, deep: true },
 );
-
-watch(selectionModel, (value) => emit('selection-change', value));
 
 function getRowId(row: Record<string, any>, index: number) {
     const rowKey = row?.[props.dataKey];
@@ -324,20 +276,7 @@ function onNuxtRowSelectionChange(value?: RowSelectionState) {
         return !!rowSelectionState.value[key];
     });
 
-    selectionModel.value = nextSelection;
     emit('selection-change', nextSelection);
-}
-
-function onLegacyPage(event: any) {
-    emit('page', event);
-}
-
-function onLegacySort(event: any) {
-    emit('sort', event);
-}
-
-function onLegacySelectionChange(event: any) {
-    emit('selection-change', event);
 }
 
 function buildSortingState(sortField?: string, sortOrder?: number): SortingState {

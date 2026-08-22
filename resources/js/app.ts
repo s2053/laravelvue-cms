@@ -8,13 +8,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 
-import PrimeVue from 'primevue/config';
-
-import Aura from '@primeuix/themes/aura';
-
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate';
-
-import '../css/styles.scss';
 
 window.Alpine = Alpine;
 
@@ -24,16 +18,7 @@ const app = createApp(App);
 const pinia = createPinia();
 pinia.use(piniaPluginPersistedstate);
 
-app.use(PrimeVue, {
-    theme: {
-        preset: Aura,
-        options: {
-            darkModeSelector: '.app-dark',
-
-            cssLayer: false,
-        },
-    },
-}).use(router);
+app.use(router);
 
 app.use(ui);
 app.use(pinia);

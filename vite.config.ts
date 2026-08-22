@@ -5,8 +5,6 @@ import laravel from 'laravel-vite-plugin';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
-import { PrimeVueResolver } from '@primevue/auto-import-resolver';
-
 import svgLoader from 'vite-svg-loader';
 
 export default defineConfig({
@@ -17,11 +15,7 @@ export default defineConfig({
         }),
         tailwindcss(),
         vue(),
-        ui({
-            components: {
-                resolvers: [PrimeVueResolver()],
-            },
-        }),
+        ui(),
         svgLoader(),
         tsconfigPaths(),
     ],
