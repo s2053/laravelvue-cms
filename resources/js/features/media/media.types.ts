@@ -66,6 +66,10 @@ export type MediaPayload = {
     status?: boolean;
 };
 
+export type MediaBulkUploadPayload = {
+    files: File[];
+};
+
 export type MediaFilters = {
     status: boolean[];
     type: MediaType[];

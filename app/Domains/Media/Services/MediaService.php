@@ -40,7 +40,10 @@ class MediaService
 
     public function show(Media $media): Media
     {
-        return $media->load(['variants', 'usages', 'creator', 'updater', 'deleter'])->loadCount('usages');
+        return Media::query()
+            ->with(['variants', 'creator', 'updater', 'deleter'])
+            ->withCount('usages')
+            ->findOrFail($media->id);
     }
 
     public function create(array $data): Media
@@ -49,46 +52,22 @@ class MediaService
         $file = $data['file'];
 
         return DB::transaction(function () use ($data, $file) {
-            $disk = $data['disk'] ?? config('filesystems.default', 'public');
-            $directory = $this->pathGenerator->makeDirectory();
-            $extension = strtolower($file->getClientOriginalExtension());
-            $filename = $this->pathGenerator->makeFilename($file, $extension);
-            $path = $this->pathGenerator->makePath($directory, $filename);
-            $type = $this->resolveType($file);
-            $sourceType = MediaSourceType::UPLOAD;
-            $meta = $type === MediaType::IMAGE
-                ? $this->imageProcessor->inspect($file)
-                : $this->inspectGenericFile($file);
+            return $this->storeFile($file, $data);
+        });
+    }
 
-            $this->storage->storeUploadedFile($file, $disk, $path);
+    public function bulkCreate(array $data)
+    {
+        $files = $data['files'];
 
-            $media = Media::create([
-                'source_type' => $sourceType,
-                'type' => $type,
-                'disk' => $disk,
-                'directory' => $directory,
-                'path' => $path,
-                'filename' => $filename,
-                'original_name' => $file->getClientOriginalName(),
-                'extension' => $meta['extension'],
-                'mime_type' => $meta['mime_type'],
-                'size' => $meta['size'],
-                'width' => $meta['width'],
-                'height' => $meta['height'],
-                'title' => $data['title'] ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-                'alt_text' => $data['alt_text'] ?? null,
-                'caption' => $data['caption'] ?? null,
-                'description' => $data['description'] ?? null,
-                'visibility' => $data['visibility'] ?? MediaVisibility::PUBLIC,
-                'status' => $data['status'] ?? true,
-                'created_by' => auth()->id(),
-            ]);
+        return DB::transaction(function () use ($files, $data) {
+            $records = collect();
 
-            if ($type === MediaType::IMAGE) {
-                $this->createImageVariants($media, $file);
+            foreach ($files as $file) {
+                $records->push($this->storeFile($file, $data));
             }
 
-            return $media->load(['variants', 'creator']);
+            return $records;
         });
     }
 
@@ -218,6 +197,49 @@ class MediaService
                 'height' => $payload['height'],
             ]);
         }
+    }
+
+    protected function storeFile(UploadedFile $file, array $data): Media
+    {
+        $disk = $data['disk'] ?? config('media.default_disk', 'public');
+        $directory = $this->pathGenerator->makeDirectory();
+        $extension = strtolower($file->getClientOriginalExtension());
+        $filename = $this->pathGenerator->makeFilename($file, $extension);
+        $path = $this->pathGenerator->makePath($directory, $filename);
+        $type = $this->resolveType($file);
+        $meta = $type === MediaType::IMAGE
+            ? $this->imageProcessor->inspect($file)
+            : $this->inspectGenericFile($file);
+
+        $this->storage->storeUploadedFile($file, $disk, $path);
+
+        $media = Media::create([
+            'source_type' => MediaSourceType::UPLOAD,
+            'type' => $type,
+            'disk' => $disk,
+            'directory' => $directory,
+            'path' => $path,
+            'filename' => $filename,
+            'original_name' => $file->getClientOriginalName(),
+            'extension' => $meta['extension'],
+            'mime_type' => $meta['mime_type'],
+            'size' => $meta['size'],
+            'width' => $meta['width'],
+            'height' => $meta['height'],
+            'title' => $data['title'] ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+            'alt_text' => $data['alt_text'] ?? null,
+            'caption' => $data['caption'] ?? null,
+            'description' => $data['description'] ?? null,
+            'visibility' => $data['visibility'] ?? MediaVisibility::PUBLIC,
+            'status' => $data['status'] ?? true,
+            'created_by' => auth()->id(),
+        ]);
+
+        if ($type === MediaType::IMAGE) {
+            $this->createImageVariants($media, $file);
+        }
+
+        return $media->load(['variants', 'creator']);
     }
 
     /**

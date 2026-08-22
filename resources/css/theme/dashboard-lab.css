@@ -1,0 +1,40 @@
+.dashboard-lab__chart {
+    display: grid;
+    grid-template-columns: repeat(14, minmax(0, 1fr));
+    align-items: end;
+    gap: 0.75rem;
+    height: 100%;
+}
+
+.dashboard-lab__chart-bar {
+    border-radius: 9999px 9999px 0 0;
+    background: color-mix(in srgb, var(--ui-primary) 22%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ui-primary) 28%, transparent);
+    min-height: 1.5rem;
+}
+
+:root[data-dashboard-lab-primary='green'] {
+    --ui-color-primary-50: var(--color-green-50);
+    --ui-color-primary-100: var(--color-green-100);
+    --ui-color-primary-200: var(--color-green-200);
+    --ui-color-primary-300: var(--color-green-300);
+    --ui-color-primary-400: var(--color-green-400);
+    --ui-color-primary-500: var(--color-green-500);
+    --ui-color-primary-600: var(--color-green-600);
+    --ui-color-primary-700: var(--color-green-700);
+    --ui-color-primary-800: var(--color-green-800);
+    --ui-color-primary-900: var(--color-green-900);
+}
+
+:root[data-dashboard-lab-primary='rose'] {
+    --ui-color-primary-50: var(--color-rose-50);
+    --ui-color-primary-100: var(--color-rose-100);
+    --ui-color-primary-200: var(--color-rose-200);
+    --ui-color-primary-300: var(--color-rose-300);
+    --ui-color-primary-400: var(--color-rose-400);
+    --ui-color-primary-500: var(--color-rose-500);
+    --ui-color-primary-600: var(--color-rose-600);
+    --ui-color-primary-700: var(--color-rose-700);
+    --ui-color-primary-800: var(--color-rose-800);
+    --ui-color-primary-900: var(--color-rose-900);
+}

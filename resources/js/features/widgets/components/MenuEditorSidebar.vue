@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { useAppToast } from '@/composables/useAppToast';
 import { MenuSourcePanel } from '@/features/widgets/components';
 import type { WidgetItemPayload } from '@/features/widgets/widgets.types';
-import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 
 import FieldError from '@/components/common/FieldError.vue';
+import { AppButton, AppFormSection, AppInput } from '@/components/ui';
 import { usePageCategories, usePages } from '@/features/pages/composables';
 import { usePostCategory, usePosts, usePostTags } from '@/features/posts/composables';
 import { ContentType } from '@/features/widgets/widgets.enum';
@@ -25,7 +26,7 @@ function emitAdd(items: WidgetItemPayload[]) {
 // Single panel open logic
 // ---------------------------
 const activePanel = ref<string | null>(null);
-const toast = useToast();
+const toast = useAppToast();
 
 // ---------------------------
 // Composables for server-side fetching
@@ -134,7 +135,7 @@ function addCustomLink() {
 
         emitAdd([newItem]);
 
-        toast.add({ severity: 'success', summary: 'Added', detail: 'Custom link added to menu', life: 2000 });
+        toast.success('Added', 'Custom link added to menu');
         customTitle.value = '';
         customUrl.value = '';
     } catch (err: any) {
@@ -149,7 +150,6 @@ function addCustomLink() {
             target[issue.path.at(-1)!] = issue.message;
         });
         formErrors.value = errors; // replace entirely
-        console.log(formErrors.value);
     } finally {
         isAddingCustom.value = false;
     }
@@ -157,7 +157,7 @@ function addCustomLink() {
 </script>
 
 <template>
-    <div class="space-y-3 p-3">
+    <div class="app-menu-sources space-y-3">
         <!-- Post Categories -->
         <MenuSourcePanel
             name="post-categories"
@@ -214,26 +214,26 @@ function addCustomLink() {
         />
 
         <!-- Custom Links -->
-        <Panel
-            header="Custom Links"
-            toggleable
-            :collapsed="activePanel !== 'custom'"
-            @toggle="activePanel = activePanel === 'custom' ? null : 'custom'"
+        <AppFormSection
+            title="Custom Links"
+            collapsible
+            :open="activePanel === 'custom'"
+            @update:open="activePanel = activePanel === 'custom' ? null : 'custom'"
         >
             <div class="space-y-3 p-3">
                 <div>
                     <label class="mb-1 block text-sm">Title</label>
-                    <InputText v-model="customTitle" placeholder="e.g. Home" class="w-full" />
+                    <AppInput v-model="customTitle" placeholder="e.g. Home" class="w-full" />
                     <FieldError :formError="formErrors.title" />
                 </div>
                 <div>
                     <label class="mb-1 block text-sm">URL</label>
-                    <InputText v-model="customUrl" placeholder="e.g. /contact or https://example.com" class="w-full" />
+                    <AppInput v-model="customUrl" placeholder="e.g. /contact or https://example.com" class="w-full" />
                     <FieldError :formError="formErrors.url" />
                 </div>
-                <Button label="Add to Menu" class="w-full" size="small" :loading="isAddingCustom" @click="addCustomLink" />
+                <AppButton label="Add to Menu" class="w-full" size="sm" :loading="isAddingCustom" @click="addCustomLink" />
             </div>
-        </Panel>
+        </AppFormSection>
     </div>
 </template>
 

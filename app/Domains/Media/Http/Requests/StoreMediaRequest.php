@@ -16,8 +16,10 @@ class StoreMediaRequest extends FormRequest
 
     public function rules(): array
     {
+        $allowedExtensions = implode(',', config('media.allowed_extensions', []));
+
         return [
-            'file' => ['required', 'file', 'max:51200'],
+            'file' => ['required', 'file', 'max:51200', 'mimes:' . $allowedExtensions],
             'disk' => ['nullable', 'string', 'max:50', Rule::in(config('media.allowed_disks', []))],
             'title' => ['nullable', 'string', 'max:255'],
             'alt_text' => ['nullable', 'string', 'max:255'],

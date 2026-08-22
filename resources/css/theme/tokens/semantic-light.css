@@ -1,0 +1,32 @@
+html {
+  color-scheme: light;
+
+  --ui-primary: var(--color-primary);
+  --ui-secondary: var(--color-secondary);
+  --ui-success: var(--color-success);
+  --ui-info: var(--color-info);
+  --ui-warning: var(--color-warning);
+  --ui-error: var(--color-danger);
+  --ui-neutral: var(--color-text-muted);
+
+  --color-bg: color-mix(in oklab, var(--neutral-50) 90%, var(--primary-50) 10%);
+  --color-surface: color-mix(in oklab, var(--neutral-50) 82%, white 18%);
+  --color-surface-raised: color-mix(in oklab, white 88%, var(--primary-50) 12%);
+  --color-text: var(--neutral-950);
+  --color-text-muted: var(--neutral-600);
+  --color-border: color-mix(in oklab, var(--neutral-300) 86%, var(--primary-200));
+  --color-link: var(--primary-600);
+  --color-link-hover: var(--primary-800);
+  --color-primary: var(--primary-600);
+  --color-secondary: var(--secondary-700);
+  --color-accent: var(--accent-600);
+  --color-success: var(--success-600);
+  --color-warning: var(--warning-600);
+  --color-danger: var(--danger-600);
+  --color-info: var(--info-600);
+  --color-primary-contrast: var(--neutral-50);
+  --color-focus: color-mix(in oklab, var(--primary-500) 60%, white);
+  --shadow-card: 0 18px 42px color-mix(in oklab, var(--neutral-950) 10%, transparent);
+  --shadow-raised: 0 12px 24px color-mix(in oklab, var(--neutral-950) 8%, transparent);
+  --shadow-button: 0 8px 16px color-mix(in oklab, var(--neutral-950) 6%, transparent);
+}

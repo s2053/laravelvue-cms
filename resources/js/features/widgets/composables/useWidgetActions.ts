@@ -1,7 +1,7 @@
+import { useAppToast } from '@/composables/useAppToast';
 import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { useWidgets } from '@/features/widgets/composables/useWidgets';
 import type { Widget } from '@/features/widgets/widgets.types';
-import { useToast } from 'primevue/usetoast';
 import { Ref, ref } from 'vue';
 
 export function useWidgetActions(table: { selectedRecords: Ref<Widget[]>; tableReload: () => void }) {
@@ -20,7 +20,7 @@ export function useWidgetActions(table: { selectedRecords: Ref<Widget[]>; tableR
     const initialForm = ref<Record<string, any>>({});
     const selectedIds = ref<number[]>([]);
 
-    const toast = useToast();
+    const toast = useAppToast();
     const { showDeleteConfirm } = useDeleteConfirm();
     const { bulkUpdateWidgets } = useWidgets();
 
@@ -71,7 +71,7 @@ export function useWidgetActions(table: { selectedRecords: Ref<Widget[]>; tableR
 
         try {
             await bulkUpdateWidgets(dialogAction.value, selectedIds.value, form);
-            toast.add({ severity: 'success', summary: 'Updated.', life: 2000 });
+            toast.success('Updated.');
             closeDialog();
             selectedIds.value = [];
             table.selectedRecords.value = [];
@@ -81,12 +81,7 @@ export function useWidgetActions(table: { selectedRecords: Ref<Widget[]>; tableR
             if (err.response?.status === 422 && err.response.data?.errors) {
                 serverErrors.value = err.response.data.errors;
             } else {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: err?.message || 'Operation failed',
-                    life: 4000,
-                });
+                toast.error('Error', err?.message || 'Operation failed');
             }
         }
     }

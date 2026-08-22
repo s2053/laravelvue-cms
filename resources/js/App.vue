@@ -1,5 +1,7 @@
 <template>
-    <router-view></router-view>
+    <UApp :toaster="{ position: 'top-right' }">
+        <router-view />
+    </UApp>
 </template>
 
 <script setup lang="ts">

@@ -1,74 +1,61 @@
 <script setup lang="ts">
-import AppConfigurator from '@/layouts/app/components/AppConfigurator.vue';
 import { useLayout } from '@/layouts/app/composables/layout';
-const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const { toggleMenu, layoutState } = useLayout();
+
+const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'));
+const title = computed(() => String(route.meta?.title || (isDashboardRoute.value ? 'Dashboard' : 'My App')));
 </script>
 
 <template>
-    <div class="layout-topbar">
-        <div class="layout-topbar-logo-container">
-            <button class="layout-menu-button layout-topbar-action" @click="toggleMenu">
-                <i class="pi pi-bars"></i>
-            </button>
-            <router-link to="/" class="layout-topbar-logo">
-                <span>WORK</span>
-            </router-link>
-        </div>
-
-        <div class="layout-topbar-actions">
-            <div class="layout-config-menu">
-                <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
-                    <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
+    <header class="app-shell-header">
+        <div class="flex h-16 items-center justify-between px-4 sm:px-6">
+            <div class="flex min-w-0 items-center gap-3">
+                <button
+                    v-if="isDashboardRoute"
+                    type="button"
+                    class="app-shell-action inline-flex h-10 w-10 items-center justify-center rounded-lg transition"
+                    @click="toggleMenu"
+                >
+                    <UIcon :name="layoutState.staticMenuDesktopInactive ? 'i-lucide-panel-left-open' : 'i-lucide-panel-left-close'" class="hidden size-5 lg:block" />
+                    <UIcon name="i-lucide-menu" class="size-5 lg:hidden" />
                 </button>
-                <div class="relative">
-                    <button
-                        v-styleclass="{
-                            selector: '@next',
-                            enterFromClass: 'hidden',
-                            enterActiveClass: 'animate-scalein',
-                            leaveToClass: 'hidden',
-                            leaveActiveClass: 'animate-fadeout',
-                            hideOnOutsideClick: true,
-                        }"
-                        type="button"
-                        class="layout-topbar-action layout-topbar-action-highlight"
-                    >
-                        <i class="pi pi-palette"></i>
-                    </button>
-                    <AppConfigurator />
-                </div>
+
+                <router-link to="/dashboard" class="flex items-center gap-3 no-underline">
+
+                    <div class="min-w-0">
+                        <p class="app-shell-brand-title truncate text-sm font-semibold">Home</p>
+                        <p v-if="!isDashboardRoute" class="app-shell-brand-subtitle truncate text-xs">{{ title }}</p>
+                    </div>
+                </router-link>
             </div>
 
-            <button
-                class="layout-topbar-menu-button layout-topbar-action"
-                v-styleclass="{
-                    selector: '@next',
-                    enterFromClass: 'hidden',
-                    enterActiveClass: 'animate-scalein',
-                    leaveToClass: 'hidden',
-                    leaveActiveClass: 'animate-fadeout',
-                    hideOnOutsideClick: true,
-                }"
-            >
-                <i class="pi pi-ellipsis-v"></i>
-            </button>
+            <div class="flex items-center gap-2">
+                <p v-if="isDashboardRoute" class="app-shell-page-title hidden truncate text-lg font-semibold sm:block">
+                    {{ title }}
+                </p>
 
-            <div class="layout-topbar-menu hidden lg:block">
-                <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
-                </div>
+                <button
+                    v-if="isDashboardRoute"
+                    type="button"
+                    class="app-shell-action inline-flex h-10 w-10 items-center justify-center rounded-lg transition"
+                >
+                    <UChip color="error" inset>
+                        <UIcon name="i-lucide-bell" class="size-5" />
+                    </UChip>
+                </button>
+
+                <button
+                    v-if="isDashboardRoute"
+                    type="button"
+                    class="app-shell-fab inline-flex h-10 w-10 items-center justify-center rounded-full transition"
+                >
+                    <UIcon name="i-lucide-plus" class="size-5" />
+                </button>
             </div>
         </div>
-    </div>
+    </header>
 </template>

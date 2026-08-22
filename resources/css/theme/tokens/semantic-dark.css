@@ -1,0 +1,33 @@
+html.dark,
+html.app-dark {
+    color-scheme: dark;
+
+    --ui-primary: var(--color-primary);
+    --ui-secondary: var(--color-secondary);
+    --ui-success: var(--color-success);
+    --ui-info: var(--color-info);
+    --ui-warning: var(--color-warning);
+    --ui-error: var(--color-danger);
+    --ui-neutral: var(--color-text-muted);
+
+    --color-bg: color-mix(in oklab, var(--neutral-950) 92%, var(--primary-950) 8%);
+    --color-surface: color-mix(in oklab, var(--neutral-900) 82%, var(--primary-900) 18%);
+    --color-surface-raised: color-mix(in oklab, var(--neutral-800) 72%, var(--primary-900) 28%);
+    --color-text: var(--neutral-50);
+    --color-text-muted: var(--neutral-300);
+    --color-border: color-mix(in oklab, var(--neutral-800) 78%, var(--primary-800));
+    --color-link: var(--primary-300);
+    --color-link-hover: var(--primary-200);
+    --color-primary: var(--primary-300);
+    --color-secondary: var(--secondary-300);
+    --color-accent: var(--accent-300);
+    --color-success: var(--success-300);
+    --color-warning: var(--warning-300);
+    --color-danger: var(--danger-300);
+    --color-info: var(--info-300);
+    --color-primary-contrast: var(--neutral-950);
+    --color-focus: color-mix(in oklab, var(--primary-300) 65%, white);
+    --shadow-card: 0 18px 46px color-mix(in oklab, black 24%, transparent);
+    --shadow-raised: 0 12px 28px color-mix(in oklab, black 28%, transparent);
+    --shadow-button: 0 8px 16px color-mix(in oklab, black 22%, transparent);
+}

@@ -1,74 +1,84 @@
 <template>
-    <div class="mb-4 grid gap-4 rounded-md border p-4 md:grid-cols-3">
-        <div>
-            <label class="mb-1 block font-semibold">Type</label>
-            <MultiSelect
-                v-model="localFilters.type"
-                :options="MediaTypeOptions"
-                optionLabel="label"
-                optionValue="value"
-                class="w-full"
-                placeholder="Select Type"
-                showClear
-            />
+    <section class="app-filter-panel mt-3">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+                <label for="media-filter-type" class="app-filter-field-label mb-1 block">Type</label>
+                <AppMultiSelect
+                    id="media-filter-type"
+                    v-model="localFilters.type"
+                    :items="MediaTypeOptions"
+                    label-key="label"
+                    value-key="value"
+                    name="mediaType"
+                    placeholder="Select type"
+                    clearable
+                    select-all
+                    class="w-full"
+                />
+            </div>
+            <div>
+                <label for="media-filter-visibility" class="app-filter-field-label mb-1 block">Visibility</label>
+                <AppMultiSelect
+                    id="media-filter-visibility"
+                    v-model="localFilters.visibility"
+                    :items="MediaVisibilityOptions"
+                    label-key="label"
+                    value-key="value"
+                    name="mediaVisibility"
+                    placeholder="Select visibility"
+                    clearable
+                    select-all
+                    class="w-full"
+                />
+            </div>
+            <div>
+                <label for="media-filter-status" class="app-filter-field-label mb-1 block">Status</label>
+                <AppMultiSelect
+                    id="media-filter-status"
+                    v-model="localFilters.status"
+                    :items="MediaStatusOptions"
+                    label-key="label"
+                    value-key="value"
+                    name="mediaStatus"
+                    placeholder="Select status"
+                    clearable
+                    select-all
+                    class="w-full"
+                />
+            </div>
         </div>
 
-        <div>
-            <label class="mb-1 block font-semibold">Visibility</label>
-            <MultiSelect
-                v-model="localFilters.visibility"
-                :options="MediaVisibilityOptions"
-                optionLabel="label"
-                optionValue="value"
-                class="w-full"
-                placeholder="Select Visibility"
-                showClear
-            />
+        <div class="mt-4 flex justify-end gap-2">
+            <AppButton size="sm" color="error" variant="outline" @click="resetFilters">Reset</AppButton>
+            <AppButton size="sm" @click="emitFilters">Apply Filters</AppButton>
         </div>
-
-        <div>
-            <label class="mb-1 block font-semibold">Status</label>
-            <MultiSelect
-                v-model="localFilters.status"
-                :options="MediaStatusOptions"
-                optionLabel="label"
-                optionValue="value"
-                class="w-full"
-                placeholder="Select Status"
-                showClear
-            />
-        </div>
-    </div>
+    </section>
 </template>
 
 <script setup lang="ts">
+import { AppButton, AppMultiSelect } from '@/components/ui';
 import { MediaStatusOptions, MediaTypeOptions, MediaVisibilityOptions } from '@/features/media/media.enum';
 import type { MediaFilters } from '@/features/media/media.types';
 import { reactive, watch } from 'vue';
 
-const props = defineProps<{
-    filters: MediaFilters;
-}>();
-
-const emit = defineEmits<{
-    (e: 'update:filters', value: MediaFilters): void;
-}>();
-
+const props = defineProps<{ filters: MediaFilters }>();
+const emit = defineEmits<{ (e: 'update:filters', value: MediaFilters): void }>();
 const localFilters = reactive<MediaFilters>({ ...props.filters });
 
 watch(
     () => props.filters,
-    (value) => {
-        Object.assign(localFilters, value);
-    },
+    (value) => Object.assign(localFilters, value),
     { deep: true },
 );
 
-watch(
-    localFilters,
-    (value) => {
-        emit('update:filters', { ...value });
-    },
-    { deep: true },
-);
+function emitFilters() {
+    emit('update:filters', { ...localFilters });
+}
+
+function resetFilters() {
+    localFilters.status = [];
+    localFilters.type = [];
+    localFilters.visibility = [];
+    emitFilters();
+}
 </script>

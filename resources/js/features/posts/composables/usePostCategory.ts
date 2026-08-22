@@ -3,8 +3,14 @@ import type { PostCategory, PostCategoryOption } from '@/features/posts/posts.ty
 import PostCategoryService from '@/features/posts/services/postCategory.service';
 import { ref } from 'vue';
 
-export function usePostCategory() {
-    const { handleError } = useApiErrorHandler();
+type UsePostCategoryOptions = { onError?: (error: unknown) => void };
+
+export function usePostCategory(config: UsePostCategoryOptions = {}) {
+    async function reportError(err: unknown) {
+        if (config.onError) return config.onError(err);
+        const { handleError } = useApiErrorHandler();
+        handleError(err);
+    }
 
     const postCategories = ref<PostCategory[]>([]);
     const options = ref<PostCategoryOption[]>([]);
@@ -20,7 +26,7 @@ export function usePostCategory() {
             const res = await PostCategoryService.getAll(params);
             postCategories.value = res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch post categories';
         } finally {
             loading.value = false;
@@ -33,7 +39,7 @@ export function usePostCategory() {
             const res = await PostCategoryService.getById(id);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch post category';
             throw err;
         }
@@ -46,7 +52,7 @@ export function usePostCategory() {
             const res = await PostCategoryService.getOptions(all, search);
             options.value = res.data; // assumes service wraps data in `data`
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch post category options';
         } finally {
             loading.value = false;
@@ -59,7 +65,7 @@ export function usePostCategory() {
             const res = await PostCategoryService.create(payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to create post category';
             throw err;
         }
@@ -71,18 +77,18 @@ export function usePostCategory() {
             const res = await PostCategoryService.update(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
-            error.value = err.message || 'Failed to update post tag';
+            await reportError(err);
+            error.value = err.message || 'Failed to update post category';
             throw err;
         }
     };
 
-    // Delete post tag by ID
+    // Delete post category by ID
     const deletePostCategory = async (id: number) => {
         try {
             await PostCategoryService.delete(id);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to delete post category';
             throw err;
         }
@@ -93,7 +99,7 @@ export function usePostCategory() {
         try {
             await PostCategoryService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }

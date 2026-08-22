@@ -1,11 +1,10 @@
 <template>
     <AppContent>
-        <h2>User Management</h2>
-
-        <!-- Top toolbar -->
-        <div class="mb-3 flex justify-between">
-            <Button icon="pi pi-plus" label="Add New" @click="openCreate" />
-        </div>
+        <AppPageHeader title="User Management">
+            <template #actions>
+                <AppButton icon="i-lucide-plus" @click="openCreate">Add New</AppButton>
+            </template>
+        </AppPageHeader>
 
         <AppDataTable
             :items="records"
@@ -17,106 +16,82 @@
             :selection="selectedRecords"
             :sortField="sortField"
             :sortOrder="sortOrder"
+            :columns="tableColumns"
+            selectable
             dataKey="id"
             @page="onPage"
             @sort="onSort"
             @selection-change="selectedRecords = $event"
         >
-            <!-- Table header -->
             <template #header>
                 <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
                     <div class="flex items-center">
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
 
                         <div class="ml-auto flex items-center gap-2">
-                            <TableToolBar v-model="globalFilterValue" showFilter @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
+                            <TableToolBar
+                                v-model="globalFilterValue"
+                                showFilter
+                                :filter-active="openFilter"
+                                @search="onGlobalSearch"
+                                @toggleFilter="openFilter = !openFilter"
+                            />
                         </div>
                     </div>
                 </TableToolBarWrapper>
 
-                <!-- Collapsible filter panel -->
                 <UserFilter v-if="openFilter" :roleOptions="roles" :filters="filters" @update:filters="onFiltersChanged" />
             </template>
 
-            <!-- Dynamic columns -->
-            <template #columns>
-                <Column selectionMode="multiple" headerStyle="width: 3rem" />
-
-                <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" sortable>
-                    <template v-if="col.field === 'status'" #body="{ data }">
-                        <Tag :value="data.status ? 'Active' : 'Inactive'" :severity="data.status ? 'success' : 'danger'" />
-                    </template>
-
-                    <template v-else-if="col.field === 'roles'" #body="{ data }">
-                        <div class="flex flex-wrap gap-1">
-                            <Tag
-                                v-for="(role, index) in data.roles.slice(0, 3)"
-                                :key="role.id"
-                                :value="role.name"
-                                class="mr-1 mb-1"
-                                severity="info"
-                            />
-                            <span v-if="data.roles.length > 3" class="text-sm text-gray-500"> +{{ data.roles.length - 3 }} more </span>
-                        </div>
-                    </template>
-
-                    <template v-else-if="col.field === 'created_at'" #body="{ data }">
-                        {{ formatDateTimeString(data.created_at) }}
-                    </template>
-
-                    <template v-else-if="col.field === 'email'" #body="{ data }">
-                        {{ data.email }}
-                        <div>
-                            <Tag
-                                :value="data.email_verified_at ? 'Verified' : 'Unverified'"
-                                :severity="data.email_verified_at ? 'success' : 'danger'"
-                            />
-                        </div>
-                    </template>
-                </Column>
+            <template #status-cell="{ row }">
+                <AppBadge :color="row.original.status ? 'success' : 'error'" variant="soft">
+                    {{ row.original.status ? 'Active' : 'Inactive' }}
+                </AppBadge>
             </template>
 
-            <!-- Row actions -->
-            <template #actions>
-                <Column header="Action">
-                    <template #body="{ data }">
-                        <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="openEdit(data)" />
-                        <Button
-                            icon="pi pi-trash"
-                            size="small"
-                            severity="danger"
-                            outlined
-                            rounded
-                            class="mr-2"
-                            @click="removeRecord(data.id, data.name)"
-                        />
+            <template #roles-cell="{ row }">
+                <div class="flex flex-wrap gap-1">
+                    <AppBadge v-for="role in row.original.roles.slice(0, 3)" :key="role.id" color="info" variant="soft">
+                        {{ role.name }}
+                    </AppBadge>
+                    <span v-if="row.original.roles.length > 3" class="app-inline-muted-text">
+                        +{{ row.original.roles.length - 3 }} more
+                    </span>
+                </div>
+            </template>
 
-                        <Button icon="pi pi-ellipsis-v" size="small" severity="secondary" outlined rounded @click="toggleMenu(data.id, $event)" />
+            <template #created_at-cell="{ row }">
+                {{ formatDateTimeString(row.original.created_at) }}
+            </template>
 
-                        <!-- Popup menu -->
-                        <Menu
-                            :ref="(el: any) => setMenuRef(data.id, el)"
-                            popup
-                            :model="[
-                                { label: 'Edit', icon: 'pi pi-pencil', command: () => openEdit(data) },
-                                { label: 'Update Status', icon: 'pi pi-cog', command: () => showUpdateDialogForSingle('status', data.id) },
-                                {
-                                    label: 'Update Email Verified at',
-                                    icon: 'pi pi-eye',
-                                    command: () => showUpdateDialogForSingle('email_verified_at', data.id),
-                                },
+            <template #email-cell="{ row }">
+                <div class="space-y-1">
+                    <div>{{ row.original.email }}</div>
+                    <AppBadge :color="row.original.email_verified_at ? 'success' : 'error'" variant="soft">
+                        {{ row.original.email_verified_at ? 'Verified' : 'Unverified' }}
+                    </AppBadge>
+                </div>
+            </template>
 
-                                { label: 'Remove', icon: 'pi pi-trash', command: () => removeRecord(data.id, data.title) },
-                            ]"
-                            class="!min-w-40"
-                        />
-                    </template>
-                </Column>
+            <template #actions-cell="{ row }">
+                <div class="flex items-center gap-2">
+                    <AppButton color="neutral" variant="outline" icon="i-lucide-pencil" size="sm" @click="openEdit(row.original as User)" />
+                    <AppButton
+                        color="error"
+                        variant="outline"
+                        icon="i-lucide-trash-2"
+                        size="sm"
+                        @click="removeRecord((row.original as User).id, (row.original as User).name)"
+                    />
+
+                    <AppDropdownMenu :items="rowMenuItems(row.original as User)" :content="{ align: 'end' }">
+                        <AppButton color="neutral" variant="outline" icon="i-lucide-ellipsis-vertical" size="sm" />
+                    </AppDropdownMenu>
+                </div>
             </template>
         </AppDataTable>
 
-        <!-- Create / Update dialog -->
-        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
+        <AppOverlayShell v-model:open="dialogVisible" :title="dialogTitle" size="md" :close="true" :dismissible="true">
             <template v-if="editingId">
                 <UserEditForm
                     :initialForm="formModel"
@@ -143,10 +118,9 @@
                     @cancel="dialogVisible = false"
                 />
             </template>
-        </Dialog>
+        </AppOverlayShell>
 
-        <!-- Bulk/single option dialog -->
-        <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
+        <AppOverlayShell v-model:open="isActionDialogVisible" :title="actionDialogTitle" size="md" :close="true" :dismissible="true">
             <UserOptionForm
                 :action="actionDialogAction"
                 :initialData="actionDialogInitial"
@@ -154,17 +128,18 @@
                 @submit="submitActionUpdate"
                 @cancel="isActionDialogVisible = false"
             />
-        </Dialog>
+        </AppOverlayShell>
     </AppContent>
 </template>
 
 <script setup lang="ts">
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { useDialogConfirm } from '@/composables/useDialogConfirm';
-import { useToast } from 'primevue/usetoast';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppDialogConfirm } from '@/composables/useAppDialogConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { computed, onMounted, ref } from 'vue';
 
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
+import { AppBadge, AppButton, AppDropdownMenu, AppOverlayShell, AppPageHeader, type AppDropdownMenuItem } from '@/components/ui';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 
 import { usePaginatedTable } from '@/composables/usePaginatedList';
@@ -178,21 +153,17 @@ import { UserEditForm, UserFilter, UserForm, UserOptionForm } from '@/features/u
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
-const { showDeleteConfirm } = useDeleteConfirm();
-const { showDialogConfirm } = useDialogConfirm();
-const toast = useToast();
+const { showDeleteConfirm } = useAppDeleteConfirm();
+const { showDialogConfirm } = useAppDialogConfirm();
+const toast = useAppToast();
 
 const { getUserById, createUser, updateUser, deleteUser, updateUserDetails, updateUserRoles, updateUserPassword } = useUsers();
-const { roles, fetchRoles } = useRoles();
+const { roles, fetchRoles } = useRoles({
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load roles', { duration: 4000 });
+    },
+});
 
-const menuRefs = ref<Record<number, any | null>>({});
-const setMenuRef = (id: number, el: any | null) => {
-    if (el) menuRefs.value[id] = el;
-    else delete menuRefs.value[id];
-};
-const toggleMenu = (id: number, ev: Event) => menuRefs.value[id]?.toggle(ev);
-
-// Table data / pagination / filters
 const {
     items: records,
     total,
@@ -225,9 +196,11 @@ const {
     initialSortOrder: -1,
     initialPerPage: 25,
     perPageOptions: [10, 25, 50, 100],
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load users', { duration: 4000 });
+    },
 });
 
-// Bulk actions
 const {
     bulkAction,
     bulkOptions,
@@ -240,19 +213,27 @@ const {
 
 const { visible: isActionDialogVisible, title: actionDialogTitle, action: actionDialogAction, initial: actionDialogInitial } = actionDialog;
 
-// Columns
-const allColumns = [
-    { field: 'id', label: 'ID' },
-    { field: 'name', label: 'Name' },
-    { field: 'email', label: 'Email' },
-    { field: 'status', label: 'Status' },
-    { field: 'roles', label: 'Roles' },
-    { field: 'created_at', label: 'Created At' },
-];
-const visibleColumns = ref<string[]>(['id', 'name', 'email', 'email_verified_at', 'status', 'roles', 'created_at']);
-const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
+type TableColumn = {
+    key: string;
+    label: string;
+    sortable?: boolean;
+    width?: string;
+    cellClass?: string;
+    headerClass?: string;
+};
 
-// Dialog & form state
+const allColumns: TableColumn[] = [
+    { key: 'id', label: 'ID', sortable: true, width: '80px' },
+    { key: 'name', label: 'Name', sortable: true },
+    { key: 'email', label: 'Email', sortable: true },
+    { key: 'status', label: 'Status', sortable: true, width: '120px' },
+    { key: 'roles', label: 'Roles', sortable: false },
+    { key: 'created_at', label: 'Created At', sortable: true, width: '180px' },
+    { key: 'actions', label: 'Actions', sortable: false, width: '160px', cellClass: 'text-right', headerClass: 'text-right' },
+];
+const visibleColumns = ref<string[]>(['id', 'name', 'email', 'status', 'roles', 'created_at', 'actions']);
+const tableColumns = computed(() => allColumns.filter((column) => visibleColumns.value.includes(column.key)));
+
 const dialogVisible = ref(false);
 const dialogTitle = ref('Create User');
 const dialogSubmitLabel = ref('Create');
@@ -270,7 +251,48 @@ const initialFormPayload: UserPayload = {
 
 const formModel = ref<UserPayload>({ ...initialFormPayload });
 
-// Dialog functions
+function rowMenuItems(user: User): AppDropdownMenuItem[][] {
+    return [
+        [
+            {
+                label: 'Edit',
+                icon: 'i-lucide-pencil',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    void openEdit(user);
+                },
+            },
+            {
+                label: 'Update Status',
+                icon: 'i-lucide-settings-2',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    showUpdateDialogForSingle('status', user.id);
+                },
+            },
+            {
+                label: 'Update Email Verified',
+                icon: 'i-lucide-badge-check',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    showUpdateDialogForSingle('email_verified_at', user.id);
+                },
+            },
+        ],
+        [
+            {
+                label: 'Remove',
+                icon: 'i-lucide-trash-2',
+                color: 'error',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    removeRecord(user.id, user.name);
+                },
+            },
+        ],
+    ];
+}
+
 async function openCreate() {
     dialogTitle.value = 'Create User';
     dialogSubmitLabel.value = 'Create';
@@ -293,12 +315,7 @@ async function openEdit(user: User) {
         formModel.value = { ...pickMatchData(latest, initialFormPayload), role_ids };
         dialogVisible.value = true;
     } catch (err: any) {
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err?.message || 'Failed to fetch record',
-            life: 4000,
-        });
+        toast.error('Error', err?.message || 'Failed to fetch record', { duration: 4000 });
     }
 }
 
@@ -310,10 +327,10 @@ async function handleSubmit(form: UserPayload) {
         const payload = pickCleanData({ ...form }, initialFormPayload);
         if (editingId.value) {
             await updateUser(editingId.value, payload);
-            toast.add({ severity: 'success', summary: 'User updated', life: 2000 });
+            toast.success('User updated', undefined, { duration: 2000 });
         } else {
             await createUser(payload);
-            toast.add({ severity: 'success', summary: 'User created', life: 2000 });
+            toast.success('User created', undefined, { duration: 2000 });
         }
         dialogVisible.value = false;
         tableReload();
@@ -321,30 +338,27 @@ async function handleSubmit(form: UserPayload) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Operation failed',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     } finally {
         submitting.value = false;
     }
 }
 
-// Delete
-function removeRecord(id: number, name?: string) {
+async function removeRecord(id: number, name?: string) {
     const message = name ? `Do you want to delete "${name}"?` : `Are you sure to delete this user?`;
-    showDeleteConfirm({
-        message,
-        onAccept: async () => {
-            await deleteUser(id);
-            tableReload();
-        },
-        successMessage: 'User deleted',
-        errorMessage: 'Failed to delete user',
-    });
+
+    try {
+        await showDeleteConfirm({
+            message,
+            onAccept: async () => {
+                await deleteUser(id);
+                tableReload();
+            },
+            successMessage: 'User deleted',
+            errorMessage: 'Failed to delete user',
+        });
+    } catch {}
 }
 
 async function handleUpdateDetails(details: { name: string; email: string }) {
@@ -355,7 +369,7 @@ async function handleUpdateDetails(details: { name: string; email: string }) {
         if (editingId.value) {
             await updateUserDetails(editingId.value, details);
 
-            toast.add({ severity: 'success', summary: 'User details updated', life: 2000 });
+            toast.success('User details updated', undefined, { duration: 2000 });
             dialogVisible.value = false;
             tableReload();
         }
@@ -363,7 +377,7 @@ async function handleUpdateDetails(details: { name: string; email: string }) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     } finally {
         submitting.value = false;
@@ -377,7 +391,7 @@ async function handleUpdateSecurity(security: { password?: string; password_conf
     try {
         if (editingId.value) {
             await updateUserPassword(editingId.value, security as { password: string; password_confirmation: string });
-            toast.add({ severity: 'success', summary: 'User security updated', life: 2000 });
+            toast.success('User security updated', undefined, { duration: 2000 });
             dialogVisible.value = false;
             tableReload();
         }
@@ -385,7 +399,7 @@ async function handleUpdateSecurity(security: { password?: string; password_conf
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     } finally {
         submitting.value = false;
@@ -393,44 +407,46 @@ async function handleUpdateSecurity(security: { password?: string; password_conf
 }
 
 async function handleUpdateRoles(rolesPayload: { role_ids: number[] }) {
-    if (submitting.value) return;
-    submitting.value = true;
+    if (submitting.value || !editingId.value) return;
+
+    const userId = editingId.value;
     serverErrors.value = {};
-    if (!editingId.value) return;
 
-    showDialogConfirm({
-        onAccept: async () => {
-            const edit_id = editingId.value || 0;
+    try {
+        await showDialogConfirm({
+            onAccept: async () => {
+                submitting.value = true;
 
-            try {
-                await updateUserRoles(edit_id, rolesPayload);
-                dialogVisible.value = false;
-                tableReload();
-            } catch (err: any) {
-                if (err.response?.status === 422 && err.response.data?.errors) {
-                    serverErrors.value = err.response.data.errors;
+                try {
+                    await updateUserRoles(userId, rolesPayload);
+                    dialogVisible.value = false;
+                    tableReload();
+                } catch (err: any) {
+                    if (err.response?.status === 422 && err.response.data?.errors) {
+                        serverErrors.value = err.response.data.errors;
+                    }
+                    throw err;
+                } finally {
+                    submitting.value = false;
                 }
-                throw err;
-            } finally {
-                submitting.value = false;
-            }
-        },
-        successMessage: 'User Updated',
-        errorMessage: 'Failed to update user',
-    });
+            },
+            successMessage: 'User Updated',
+            errorMessage: 'Failed to update user',
+        });
+    } catch {}
 }
 
 function showUpdateDialogForSingle(action: string, id: number) {
     const row = records.value.find((p) => p.id === id);
     if (!row) {
-        toast.add({ severity: 'warn', summary: 'Record not found', life: 2500 });
+        toast.warning('Record not found', undefined, { duration: 2500 });
         return;
     }
     openSingle(action, row);
 }
 
 onMounted(() => {
-    fetchRoles();
+    void fetchRoles();
     loadPageData({ page: 0, rows: numOfRows.value, filters });
 });
 </script>

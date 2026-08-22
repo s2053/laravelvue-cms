@@ -1,28 +1,46 @@
 <template>
     <div class="ml-auto flex items-center gap-2" aria-label="Table toolbar">
-        <InputGroup class="!w-[200px]">
-            <InputText v-model="query" placeholder="Search" @keyup.enter="querySearch" aria-label="Search" />
-            <InputGroupAddon>
-                <Button icon="pi pi-search" severity="secondary" @click="querySearch" aria-label="Search" />
-            </InputGroupAddon>
-        </InputGroup>
-        <Button v-if="showFilter" icon="pi pi-filter" outlined severity="secondary" @click="$emit('toggleFilter')" aria-label="Toggle filter" />
-        <!-- Add more toolbar actions here -->
+        <AppFieldGroup class="w-[200px]">
+            <AppInput v-model="query" placeholder="Search" aria-label="Search" @keyup.enter="querySearch" />
+            <AppButton
+                color="neutral"
+                variant="outline"
+                size="md"
+                square
+                icon="i-lucide-search"
+                aria-label="Search"
+                @click="querySearch"
+            />
+        </AppFieldGroup>
+        <AppButton
+            v-if="showFilter"
+            :color="filterActive ? 'success' : 'neutral'"
+            :variant="filterActive ? 'solid' : 'outline'"
+            size="md"
+            square
+            icon="i-lucide-filter"
+            :aria-label="filterActive ? 'Hide filters' : 'Show filters'"
+            :aria-pressed="filterActive"
+            :title="filterActive ? 'Filters are open' : 'Show filters'"
+            @click="$emit('toggleFilter')"
+        />
         <slot />
     </div>
 </template>
 
 <script setup lang="ts">
-import { defineEmits } from 'vue';
+import { AppButton, AppFieldGroup, AppInput } from '@/components/ui';
 
 const query = defineModel<string>();
 
 withDefaults(
     defineProps<{
         showFilter?: boolean;
+        filterActive?: boolean;
     }>(),
     {
         showFilter: false,
+        filterActive: false,
     },
 );
 

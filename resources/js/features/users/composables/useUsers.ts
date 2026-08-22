@@ -1,11 +1,8 @@
-import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import UserService from '@/features/users/services/user.service';
 import type { User, UserPayload } from '@/features/users/users.types';
 import { ref } from 'vue';
 
 export function useUsers() {
-    const { handleError } = useApiErrorHandler();
-
     const users = ref<User[]>([]);
     const loading = ref(false);
     const error = ref<string | null>(null);
@@ -18,7 +15,6 @@ export function useUsers() {
             const res = await UserService.getAll(params);
             users.value = res.data;
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to fetch users';
         } finally {
             loading.value = false;
@@ -31,7 +27,6 @@ export function useUsers() {
             const res = await UserService.getById(id);
             return res.data;
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to fetch user';
             throw err;
         }
@@ -43,7 +38,6 @@ export function useUsers() {
             const res = await UserService.create(payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to create user';
             throw err;
         }
@@ -55,7 +49,6 @@ export function useUsers() {
             const res = await UserService.update(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to update user';
             throw err;
         }
@@ -66,7 +59,6 @@ export function useUsers() {
         try {
             await UserService.delete(id);
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to delete user';
             throw err;
         }
@@ -78,7 +70,6 @@ export function useUsers() {
             const res = await UserService.updateDetails(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to update user details';
             throw err;
         }
@@ -90,7 +81,6 @@ export function useUsers() {
             const res = await UserService.updatePassword(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to update user password';
             throw err;
         }
@@ -102,7 +92,6 @@ export function useUsers() {
             const res = await UserService.updateRoles(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to update user roles';
             throw err;
         }
@@ -113,7 +102,6 @@ export function useUsers() {
         try {
             await UserService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
-            handleError(err);
             error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }

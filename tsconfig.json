@@ -12,7 +12,9 @@
         ] /* Specify a set of bundled library declaration files that describe the target runtime environment. */,
         "paths": {
             "@/*": ["./resources/js/*"],
-            "@css/*": ["./resources/css/*"]
+            "@css/*": ["./resources/css/*"],
+            "#build/ui": ["./node_modules/.nuxt-ui/ui"],
+            "#build/ui/*": ["./node_modules/.nuxt-ui/ui/*"]
         },
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -21,6 +23,8 @@
     },
 
     "include": [
+        "auto-imports.d.ts",
+        "components.d.ts",
         "resources/js/**/*",
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",

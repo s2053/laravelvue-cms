@@ -1,4 +1,4 @@
-import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
+import { useAppToast } from '@/composables/useAppToast';
 import type { PaginatedResponse } from '@/types/apiResponse';
 import { reactive, ref } from 'vue';
 
@@ -15,6 +15,7 @@ interface UsePaginatedTableOptions<F = Record<string, any>> {
     initialPage?: number;
     initialPerPage?: number;
     perPageOptions?: number[];
+    onError?: (error: unknown) => void | Promise<void>;
 }
 
 export function usePaginatedTable<T, F extends DefaultFilters>(
@@ -28,6 +29,8 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
     }) => Promise<PaginatedResponse<T>>,
     options: UsePaginatedTableOptions<F> = {},
 ) {
+    const toast = useAppToast();
+
     // Defaults
     const {
         initialFilters = { global: '' } as F,
@@ -53,8 +56,6 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
     const selectedRecords = ref<T[]>([]);
     const globalFilterValue = ref('');
     const openFilter = ref(false);
-
-    const { handleError } = useApiErrorHandler();
 
     // Fetch paginated data
     async function loadPage(
@@ -90,9 +91,12 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
             currentPage.value = resp.meta.current_page - 1;
             selectedRecords.value = [];
         } catch (err: any) {
-            handleError(err);
+            if (options.onError) {
+                await options.onError(err);
+            } else {
+                toast.error('Error', err instanceof Error ? err.message : 'Failed to load data', { duration: 4000 });
+            }
             error.value = err.message || 'Error fetching data';
-            console.error(err);
         } finally {
             loading.value = false;
         }
@@ -102,7 +106,7 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
 
     // Handle pagination change
     function onPage(event: { page: number; rows: number }) {
-        if (!initialLoadFinished && event.page === 0) {
+        if (!initialLoadFinished && event.page === 0 && event.rows === initialPerPage) {
             initialLoadFinished = true;
             return; // Skip initial load
         }
@@ -151,6 +155,12 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
     // Handle global search
     function onGlobalSearch(globalValue: string) {
         const trimmed = globalValue.trim();
+
+        if (trimmed === filters.global) {
+            globalFilterValue.value = trimmed;
+            return;
+        }
+
         filters.global = trimmed;
         globalFilterValue.value = trimmed;
 

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast';
+import { useAppToast } from '@/composables/useAppToast';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { AppPageHeader } from '@/components/ui';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 
 import PageForm from '@/features/pages/components/PageForm.vue';
@@ -19,12 +20,16 @@ import {
 } from '@/utils/dateHelper';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
-const toast = useToast();
+const toast = useAppToast();
 const route = useRoute();
 const router = useRouter();
 
-const { getPageById, createPage, updatePage } = usePages();
-const { categories, fetchCategories } = usePageCategories();
+const { getPageById, createPage, updatePage } = usePages({ onError: () => undefined });
+const { categories, fetchCategories } = usePageCategories({
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load page categories', { duration: 4000 });
+    },
+});
 
 const editingId = ref<number | null>(route.params.id ? Number(route.params.id) : null);
 const loading = ref(false);
@@ -77,12 +82,7 @@ onMounted(async () => {
 
             formModel.value = { ...pickMatchData(page, initialFormPayload) };
         } catch (err: any) {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Failed to fetch page',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Failed to fetch page', { duration: 4000 });
         } finally {
             loading.value = false;
         }
@@ -139,17 +139,17 @@ async function handleSubmit(form: PagePayload) {
 
             formModel.value = { ...pickMatchData(page, initialFormPayload) };
 
-            toast.add({ severity: 'success', summary: 'Page updated', life: 2000 });
+            toast.success('Page updated', undefined, { duration: 2000 });
         } else {
             await createPage(formData);
-            toast.add({ severity: 'success', summary: 'Page created', life: 2000 });
+            toast.success('Page created', undefined, { duration: 2000 });
             redirectAfterSubmit();
         }
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     }
 }
@@ -167,7 +167,7 @@ function handleCancel() {
 
 <template>
     <AppContent>
-        <h2 class="mb-4">{{ editingId ? 'Edit Page' : 'Create Page' }}</h2>
+        <AppPageHeader :title="editingId ? 'Edit Page' : 'Create Page'" />
 
         <div v-if="!editingId || (!loading && formModel.title)">
             <PageForm
@@ -182,6 +182,6 @@ function handleCancel() {
             />
         </div>
 
-        <div v-else class="py-8 text-center text-gray-500">Loading...</div>
+        <div v-else class="app-loading-state">Loading...</div>
     </AppContent>
 </template>

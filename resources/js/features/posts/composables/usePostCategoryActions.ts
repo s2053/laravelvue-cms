@@ -1,7 +1,7 @@
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { usePostCategory } from '@/features/posts/composables/usePostCategory';
 import { PostCategory } from '@/features/posts/posts.types';
-import { useToast } from 'primevue/usetoast';
 import { Ref, ref } from 'vue';
 
 export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategory[]>; tableReload: () => void }) {
@@ -23,9 +23,9 @@ export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategor
     const initialForm = ref<Record<string, any>>({});
     const selectedIds = ref<number[]>([]);
 
-    const toast = useToast();
-    const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdatePostCategories } = usePostCategory();
+    const toast = useAppToast();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
+    const { bulkUpdatePostCategories } = usePostCategory({ onError: () => undefined });
 
     // Trigger bulk action, handle delete separately
     function applyBulk() {
@@ -45,20 +45,22 @@ export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategor
     }
 
     // Show delete confirmation and execute delete if confirmed
-    function confirmDelete(ids: number[], title?: string) {
+    async function confirmDelete(ids: number[], title?: string) {
         const message = ids.length === 1 ? `Delete "${title ?? 'this record'}"?` : `Delete ${ids.length} selected records?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdatePostCategories('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Record deleted',
-            errorMessage: 'Failed to delete record',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdatePostCategories('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                },
+                successMessage: 'Record deleted',
+                errorMessage: 'Failed to delete record',
+            });
+        } catch {}
     }
 
     // Prepare and open the bulk/single update dialog
@@ -68,7 +70,6 @@ export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategor
         dialogTitle.value = selectedCount > 1 ? `Bulk Update ${action} [${selectedCount} selected]` : `Update ${action}`;
 
         initialForm.value = buildInitialForm(action, row);
-        console.log('Initial form data:', initialForm.value);
         dialogVisible.value = true;
     }
 
@@ -86,7 +87,7 @@ export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategor
         try {
             await bulkUpdatePostCategories(dialogAction.value, selectedIds.value, form);
 
-            toast.add({ severity: 'success', summary: 'Updated.', life: 2000 });
+            toast.success('Updated.', undefined, { duration: 2000 });
             closeDialog();
 
             selectedIds.value = [];
@@ -97,12 +98,7 @@ export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategor
             if (err.response?.status === 422 && err.response.data?.errors) {
                 serverErrors.value = err.response.data.errors;
             } else {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: err?.message || 'Operation failed',
-                    life: 4000,
-                });
+                toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
             }
         }
     }
@@ -124,7 +120,7 @@ export function usePostCategoryActions(table: { selectedRecords: Ref<PostCategor
 }
 
 // Prepare initial form data for dialog based on action and row data
-function buildInitialForm(action: string, row?: any) {
+function buildInitialForm(action: string, _row?: any) {
     // Provide default values per action when no row provided
     switch (action) {
         default:

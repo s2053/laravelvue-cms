@@ -1,8 +1,8 @@
 <template>
-    <div class="menu-editor rounded-md border p-6">
+    <div class="app-menu-builder p-5">
         <div class="mb-4 flex items-center justify-between border-b pb-2">
             <h3 class="text-lg font-semibold">Menu Structure</h3>
-            <Button :disabled="items?.length === 0" label="Remove All" severity="danger" text @click="removeAllItems" />
+            <AppButton :disabled="items?.length === 0" label="Remove All" color="error" variant="ghost" @click="removeAllItems" />
         </div>
 
         <!-- Show server error -->
@@ -15,9 +15,9 @@
             <div class="menu-structure-list min-w-full">
                 <VueNestable :value="items" :maxDepth="maxDepth" :threshold="20" @input="updateItems">
                     <template #default="{ item }">
-                        <div class="p-panel rounded border">
+                        <div class="app-menu-item">
                             <VueNestableHandle>
-                                <div class="p-panel-header flex cursor-pointer items-center justify-between" @click="item.open = !item.open">
+                                <div class="app-menu-item__header flex cursor-pointer items-center justify-between" @click="item.open = !item.open">
                                     <!-- Title on the left -->
 
                                     <span>{{ strTruncate(item.title, 45) }}</span>
@@ -32,8 +32,9 @@
                                 </div>
                             </VueNestableHandle>
 
-                            <div v-show="item.open" class="p-panel-content">
-                                <MenuItemNode :item="item" :formErrors="itemErrors[String(item.id)]" @update="updateItem" @remove="removeItem"> </MenuItemNode>
+                            <div v-show="item.open" class="app-menu-item__content">
+                                <MenuItemNode :item="item" :formErrors="itemErrors[String(item.id)]" @update="updateItem" @remove="removeItem">
+                                </MenuItemNode>
                             </div>
                         </div>
                     </template>
@@ -41,14 +42,15 @@
             </div>
         </div>
         <div class="mt-4 flex justify-end gap-2">
-            <Button label="Cancel" outlined @click="cancel" />
-            <Button label="Save" :loading="submitting" @click="save" />
+            <AppButton label="Cancel" variant="outline" color="secondary" @click="cancel" />
+            <AppButton label="Save" :loading="submitting" @click="save" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import FieldError from '@/components/common/FieldError.vue';
+import { AppButton } from '@/components/ui';
 import { MenuItemNode } from '@/features/widgets/components';
 import type { WidgetItem, WidgetPayload } from '@/features/widgets/widgets.types';
 import { strTruncate } from '@/utils/stringHelper';
@@ -288,9 +290,9 @@ function validateItems(list: WidgetItem[] = []): boolean {
 }
 
 .nestable-item {
-    width: 480px;
+    width: 100%;
     max-width: 100%;
-    min-width: 480px;
+    min-width: 0;
     margin-top: 8px;
     transition: box-shadow 0.2s ease;
 }
@@ -304,13 +306,23 @@ function validateItems(list: WidgetItem[] = []): boolean {
     width: 100%;
 }
 
-.p-panel-header {
+.app-menu-item {
+    overflow: hidden;
+    margin-bottom: 0.625rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 0.5rem);
+    background: var(--color-surface-raised);
+}
+
+.app-menu-item__header {
     padding: 8px 12px !important;
+    color: var(--color-text);
     font-weight: 500;
     cursor: pointer;
 }
 
-.p-panel-content {
+.app-menu-item__content {
+    border-top: 1px solid var(--color-border);
     padding: 12px;
 }
 </style>

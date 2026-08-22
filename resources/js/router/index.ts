@@ -1,7 +1,7 @@
 import { routes as accountRoutes } from '@/features/account/account.routes';
 import { routes as authRoutes } from '@/features/auth/auth.routes';
-import { routes as mediaRoutes } from '@/features/media/media.routes';
 import { useAuthStore } from '@/features/auth/auth.store';
+import { routes as mediaRoutes } from '@/features/media/media.routes';
 import { routes as pagesRoutes } from '@/features/pages/pages.routes';
 import { routes as postsRoutes } from '@/features/posts/posts.routes';
 import { routes as rbacRoutes } from '@/features/rbac/rbac.routes';
@@ -14,6 +14,12 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 const routes = [
     {
+        path: '/dashboard/labs',
+        name: 'dashboard.labs',
+        meta: { title: 'Dashboard Lab' },
+        component: () => import('@/pages/prototypes/DashboardLab.vue'),
+    },
+    {
         path: '/',
         component: AuthLayout,
         children: [...authRoutes],
@@ -22,6 +28,7 @@ const routes = [
         path: '/dashboard',
         component: AppLayout,
         children: [
+
             {
                 path: '',
                 name: 'dashboard',

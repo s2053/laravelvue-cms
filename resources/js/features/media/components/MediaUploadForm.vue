@@ -1,166 +1,258 @@
 <template>
     <div class="flex flex-col gap-4">
-        <div>
-            <label class="mb-2 block font-bold">File</label>
-            <input ref="fileInputRef" type="file" class="block w-full text-sm" @change="onFileChange" />
-            <FieldError :serverError="serverErrors?.file?.[0]" />
-        </div>
+        <div
+            class="rounded-md border border-dashed border-[var(--color-border)] p-6 transition"
+            :class="
+                isDragging
+                    ? 'border-[var(--color-primary)] bg-[color-mix(in_oklab,var(--color-primary)_10%,transparent)]'
+                    : 'border-[var(--color-border)] bg-[var(--color-surface)]'
+            "
+            @click="openFilePicker"
+            @dragenter.prevent="isDragging = true"
+            @dragover.prevent="isDragging = true"
+            @dragleave.prevent="isDragging = false"
+            @drop.prevent="handleDrop"
+        >
+            <input ref="fileInputRef" class="hidden" type="file" multiple :accept="acceptValue" @change="onFileChange" />
 
-        <div v-if="previewUrl" class="overflow-hidden rounded-md border bg-surface-50">
-            <img v-if="isImagePreview" :src="previewUrl" alt="Preview" class="h-48 w-full object-cover" />
-            <div v-else class="flex h-32 items-center justify-center px-4 text-sm text-surface-600">
-                {{ localForm.file?.name }}
+            <div class="flex flex-col items-center gap-3 text-center">
+                <AppButton icon="i-lucide-cloud-upload" color="primary" variant="ghost" size="xl" square aria-label="Upload files" />
+                <div>
+                    <div class="text-base font-semibold">Drop files here or click to browse</div>
+                    <div class="mt-1 text-sm text-[var(--color-text-muted)]">
+                        Upload multiple files at once. Supported types: {{ supportedFormatsLabel }}.
+                    </div>
+                </div>
+                <AppButton type="button" label="Add Files" icon="i-lucide-plus" @click.stop="openFilePicker" />
             </div>
         </div>
 
-        <div class="grid gap-4 md:grid-cols-2">
-            <div>
-                <label class="mb-2 block font-bold">Title</label>
-                <InputText v-model="localForm.title" class="w-full" placeholder="Media title" />
-                <FieldError :serverError="serverErrors?.title?.[0]" />
-            </div>
+        <div v-if="serverMessage" class="app-upload-error rounded-md border px-3 py-2 text-sm">
+            {{ serverMessage }}
+        </div>
 
-            <div>
-                <label class="mb-2 block font-bold">Storage Disk</label>
-                <Select
-                    v-model="localForm.disk"
-                    :options="diskOptions"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Disk"
-                />
-                <FieldError :serverError="serverErrors?.disk?.[0]" />
-            </div>
+        <div v-if="selectedFiles.length" class="grid gap-3 sm:grid-cols-2">
+            <div
+                v-for="item in selectedFiles"
+                :key="item.id"
+                class="overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm"
+            >
+                <div class="flex gap-3 p-3">
+                    <div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--color-surface-raised)]">
+                        <img v-if="item.isImage" :src="item.previewUrl || ''" :alt="item.file.name" class="h-full w-full object-cover" />
+                        <div v-else class="px-2 text-center text-xs text-[var(--color-text-muted)]">
+                            {{ item.extension.toUpperCase() }}
+                        </div>
+                    </div>
 
-            <div>
-                <label class="mb-2 block font-bold">Visibility</label>
-                <Select
-                    v-model="localForm.visibility"
-                    :options="MediaVisibilityOptions"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Visibility"
-                />
-                <FieldError :serverError="serverErrors?.visibility?.[0]" />
-            </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="truncate font-semibold" :title="item.file.name">{{ item.file.name }}</div>
+                        <div class="mt-1 text-sm text-[var(--color-text-muted)]">{{ formatFileSize(item.file.size) }}</div>
+                        <div class="mt-2 flex flex-wrap items-center gap-2">
+                            <AppBadge color="neutral" size="sm">{{ item.isImage ? 'Image' : item.extension.toUpperCase() }}</AppBadge>
+                            <span class="text-xs text-[var(--color-text-muted)]">{{ item.file.type || 'unknown type' }}</span>
+                        </div>
+                    </div>
 
-            <div class="flex items-center gap-2 pt-8">
-                <Checkbox v-model="localForm.status" binary inputId="media_status" />
-                <label for="media_status" class="font-bold">Active</label>
+                    <AppButton
+                        type="button"
+                        icon="i-lucide-x"
+                        color="error"
+                        variant="ghost"
+                        size="sm"
+                        square
+                        title="Remove file"
+                        @click.stop="removeFile(item.id)"
+                    />
+                </div>
             </div>
         </div>
 
-        <div>
-            <label class="mb-2 block font-bold">Alt Text</label>
-            <InputText v-model="localForm.alt_text" class="w-full" placeholder="Alt text" />
-            <FieldError :serverError="serverErrors?.alt_text?.[0]" />
+        <div v-else class="rounded-md border border-dashed border-[var(--color-border)] px-4 py-8 text-center text-sm text-[var(--color-text-muted)]">
+            No files selected yet.
         </div>
 
-        <div>
-            <label class="mb-2 block font-bold">Caption</label>
-            <InputText v-model="localForm.caption" class="w-full" placeholder="Caption" />
-            <FieldError :serverError="serverErrors?.caption?.[0]" />
-        </div>
+        <div class="flex items-center justify-between gap-3">
+            <div class="text-sm text-[var(--color-text-muted)]">
+                {{ selectedFiles.length }} file{{ selectedFiles.length === 1 ? '' : 's' }} ready to upload
+            </div>
 
-        <div>
-            <label class="mb-2 block font-bold">Description</label>
-            <Textarea v-model="localForm.description" class="w-full" rows="4" autoResize placeholder="Description" />
-            <FieldError :serverError="serverErrors?.description?.[0]" />
-        </div>
-
-        <div class="mt-2 flex justify-end gap-2">
-            <Button type="button" label="Cancel" severity="secondary" outlined @click="emit('cancel')" />
-            <Button type="button" :loading="submitting" label="Upload Media" @click="submit" />
+            <div class="flex gap-2">
+                <AppButton type="button" label="Clear" color="secondary" variant="outline" :disabled="!selectedFiles.length" @click="clearFiles" />
+                <AppButton type="button" label="Cancel" color="secondary" variant="outline" @click="emit('cancel')" />
+                <AppButton type="button" :loading="submitting" label="Upload Media" :disabled="!selectedFiles.length" @click="submit" />
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { MediaVisibility, MediaVisibilityOptions } from '@/features/media/media.enum';
-import type { MediaPayload } from '@/features/media/media.types';
-import { computed, ref, watch } from 'vue';
+import { AppBadge, AppButton } from '@/components/ui';
+import { MediaAllowedExtensions, MediaUploadAccept } from '@/features/media/media.enum';
+import type { MediaBulkUploadPayload } from '@/features/media/media.types';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
 const props = defineProps<{
-    initialForm: MediaPayload;
+    initialForm: MediaBulkUploadPayload;
     submitting?: boolean;
     serverErrors?: Record<string, string[]>;
 }>();
 
 const emit = defineEmits<{
-    (e: 'submit', value: MediaPayload): void;
+    (e: 'submit', value: MediaBulkUploadPayload): void;
     (e: 'cancel'): void;
 }>();
 
-const localForm = ref<MediaPayload>({
-    file: null,
-    disk: 'public',
-    title: '',
-    alt_text: '',
-    caption: '',
-    description: '',
-    visibility: MediaVisibility.PUBLIC,
-    status: true,
-    ...props.initialForm,
-});
+type UploadItem = {
+    id: string;
+    file: File;
+    previewUrl: string | null;
+    isImage: boolean;
+    extension: string;
+};
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
-const previewUrl = ref<string | null>(null);
+const isDragging = ref(false);
+const selectedFiles = ref<UploadItem[]>([]);
 
-const diskOptions = [
-    { label: 'Public', value: 'public' },
-    { label: 'S3', value: 's3' },
-];
+const acceptValue = MediaUploadAccept;
+const supportedFormatsLabel = MediaAllowedExtensions.slice(0, 6).join(', ') + '...';
 
-const isImagePreview = computed(() => Boolean(localForm.value.file?.type?.startsWith('image/')));
+const serverMessage = computed(() => {
+    return props.serverErrors?.files?.[0] || props.serverErrors?.['files.0']?.[0] || null;
+});
 
 watch(
     () => props.initialForm,
     (value) => {
-        localForm.value = {
-            file: null,
-            disk: 'public',
-            title: '',
-            alt_text: '',
-            caption: '',
-            description: '',
-            visibility: MediaVisibility.PUBLIC,
-            status: true,
-            ...value,
-        };
-        previewUrl.value = null;
-        if (fileInputRef.value) {
-            fileInputRef.value.value = '';
-        }
+        replaceFiles(value.files ?? []);
     },
-    { deep: true },
+    { deep: true, immediate: true },
 );
+
+onBeforeUnmount(() => {
+    clearPreviewUrls();
+});
+
+function openFilePicker() {
+    fileInputRef.value?.click();
+}
 
 function onFileChange(event: Event) {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] ?? null;
+    const files = Array.from(input.files ?? []);
+    appendFiles(files);
+    input.value = '';
+}
 
-    localForm.value.file = file;
+function handleDrop(event: DragEvent) {
+    isDragging.value = false;
 
-    if (!file) {
-        previewUrl.value = null;
-        return;
+    const files = Array.from(event.dataTransfer?.files ?? []);
+    appendFiles(files);
+}
+
+function appendFiles(files: File[]) {
+    if (!files.length) return;
+
+    const seen = new Set(selectedFiles.value.map((item) => item.id));
+    const uniqueFiles = files.filter((file) => {
+        const fileId = getFileId(file);
+        if (!isAllowedFile(file) || seen.has(fileId)) {
+            return false;
+        }
+
+        seen.add(fileId);
+        return true;
+    });
+    const previews = uniqueFiles.map((file) => createUploadItem(file));
+
+    selectedFiles.value = [...selectedFiles.value, ...previews];
+}
+
+function replaceFiles(files: File[]) {
+    clearPreviewUrls();
+    selectedFiles.value = files.filter(isAllowedFile).map((file) => createUploadItem(file));
+}
+
+function createUploadItem(file: File): UploadItem {
+    const extension = getExtension(file.name);
+    const isImage = file.type.startsWith('image/');
+    const previewUrl = isImage ? URL.createObjectURL(file) : null;
+
+    return {
+        id: getFileId(file),
+        file,
+        previewUrl,
+        isImage,
+        extension,
+    };
+}
+
+function removeFile(id: string) {
+    const item = selectedFiles.value.find((record) => record.id === id);
+
+    if (item?.previewUrl) {
+        URL.revokeObjectURL(item.previewUrl);
     }
 
-    if (file.type.startsWith('image/')) {
-        previewUrl.value = URL.createObjectURL(file);
-    } else {
-        previewUrl.value = 'file';
-    }
+    selectedFiles.value = selectedFiles.value.filter((record) => record.id !== id);
+}
 
-    if (!localForm.value.title) {
-        localForm.value.title = file.name.replace(/\.[^/.]+$/, '');
+function clearFiles() {
+    clearPreviewUrls();
+    selectedFiles.value = [];
+    if (fileInputRef.value) {
+        fileInputRef.value.value = '';
     }
+}
+
+function clearPreviewUrls() {
+    selectedFiles.value.forEach((item) => {
+        if (item.previewUrl) {
+            URL.revokeObjectURL(item.previewUrl);
+        }
+    });
 }
 
 function submit() {
-    emit('submit', { ...localForm.value });
+    emit('submit', {
+        files: selectedFiles.value.map((item) => item.file),
+    });
+}
+
+function isAllowedFile(file: File) {
+    return MediaAllowedExtensions.includes(getExtension(file.name));
+}
+
+function getFileId(file: File) {
+    return `${file.name}-${file.size}-${file.lastModified}`;
+}
+
+function getExtension(filename: string) {
+    return filename.includes('.') ? filename.split('.').pop()?.toLowerCase() || '' : '';
+}
+
+function formatFileSize(size: number) {
+    if (!size) return '-';
+
+    const units = ['B', 'KB', 'MB', 'GB'];
+    let value = size;
+    let index = 0;
+
+    while (value >= 1024 && index < units.length - 1) {
+        value /= 1024;
+        index++;
+    }
+
+    return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 </script>
+
+<style scoped>
+.app-upload-error {
+    border-color: color-mix(in oklab, var(--color-danger) 35%, var(--color-border));
+    background: color-mix(in oklab, var(--color-danger) 10%, var(--color-surface));
+    color: var(--form-error-text);
+}
+</style>

@@ -1,87 +1,81 @@
 <template>
-    <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
-        <div class="flex flex-col gap-4">
-            <!-- Show status field only for status action -->
-            <div v-if="action == 'status'">
-                <label for="status" class="mb-2 block font-bold">Status:</label>
-                <Select
-                    v-model="form.status"
-                    :options="filteredPageStatusOptions"
-                    name="status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Status"
-                />
-                <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
-            </div>
-
-            <!-- Show category field only for category action -->
-            <div v-if="action === 'page_category_id'">
-                <label for="status" class="mb-2 block font-bold">Category:</label>
-                <Select
-                    v-model="form.page_category_id"
-                    :options="categoryOptions"
-                    name="page_category_id"
-                    optionLabel="title"
-                    optionValue="id"
-                    class="w-full"
-                    placeholder="Select Category"
-                    showClear
-                />
-                <FieldError :formError="$form.page_category_id?.error?.message" :serverError="serverErrors?.page_category_id?.[0]" />
-            </div>
-
-            <!-- Show visibility field only for visibility action -->
-            <div v-if="action == 'visibility'">
-                <label for="visibility" class="mb-2 block font-bold">Visibility:</label>
-                <Select
-                    v-model="form.visibility"
-                    :options="PageVisibilityOptions"
-                    name="visibility"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select visibility"
-                />
-                <FieldError :formError="$form.visibility?.error?.message" :serverError="serverErrors?.visibility?.[0]" />
-            </div>
-
-            <!-- Show page_type field only for page_type action -->
-            <div v-if="action == 'page_type'">
-                <label for="page_type" class="mb-2 block font-bold">Page Type:</label>
-                <Select
-                    v-model="form.page_type"
-                    :options="PageTypeOptions"
-                    name="page_type"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Page Type"
-                />
-                <FieldError :formError="$form.page_type?.error?.message" :serverError="serverErrors?.page_type?.[0]" />
-            </div>
+    <form class="app-form" @submit.prevent="onSubmit">
+        <div v-if="action === 'status'" class="app-form-field">
+            <label for="page-action-status" class="app-form-label">Status:</label>
+            <AppSelect
+                id="page-action-status"
+                v-model="form.status"
+                :items="PageStatusOptions"
+                name="status"
+                labelKey="label"
+                valueKey="value"
+                class="w-full"
+                placeholder="Select Status"
+            />
+            <AppFieldError :formError="clientErrors.status" :serverError="serverErrors?.status?.[0]" />
         </div>
 
-        <div class="mt-4 flex justify-end gap-2">
-            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" label="Update" severity="primary"></Button>
+        <div v-if="action === 'page_category_id'" class="app-form-field">
+            <label for="page-action-category" class="app-form-label">Category:</label>
+            <AppSelect
+                id="page-action-category"
+                v-model="form.page_category_id"
+                :items="categoryOptions"
+                name="page_category_id"
+                labelKey="title"
+                valueKey="id"
+                class="w-full"
+                placeholder="Select Category"
+                clearable
+            />
+            <AppFieldError :formError="clientErrors.page_category_id" :serverError="serverErrors?.page_category_id?.[0]" />
         </div>
-    </Form>
+
+        <div v-if="action === 'visibility'" class="app-form-field">
+            <label for="page-action-visibility" class="app-form-label">Visibility:</label>
+            <AppSelect
+                id="page-action-visibility"
+                v-model="form.visibility"
+                :items="PageVisibilityOptions"
+                name="visibility"
+                labelKey="label"
+                valueKey="value"
+                class="w-full"
+                placeholder="Select visibility"
+            />
+            <AppFieldError :formError="clientErrors.visibility" :serverError="serverErrors?.visibility?.[0]" />
+        </div>
+
+        <div v-if="action === 'page_type'" class="app-form-field">
+            <label for="page-action-type" class="app-form-label">Page Type:</label>
+            <AppSelect
+                id="page-action-type"
+                v-model="form.page_type"
+                :items="PageTypeOptions"
+                name="page_type"
+                labelKey="label"
+                valueKey="value"
+                class="w-full"
+                placeholder="Select Page Type"
+            />
+            <AppFieldError :formError="clientErrors.page_type" :serverError="serverErrors?.page_type?.[0]" />
+        </div>
+
+        <div class="app-form-actions">
+            <AppButton type="button" color="neutral" variant="outline" @click="emit('cancel')">Cancel</AppButton>
+            <AppButton type="submit">Update</AppButton>
+        </div>
+    </form>
 </template>
+
 <script setup lang="ts">
-// imports
-import FieldError from '@/components/common/FieldError.vue';
+import { AppButton, AppFieldError, AppSelect } from '@/components/ui';
 import { PageStatus, PageStatusOptions, PageTypeOptions, PageVisibilityOptions } from '@/features/pages/enums';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
 
-// props / emits
 const props = withDefaults(
     defineProps<{
-        // action: 'status' | 'page_category_id' | 'visibility' | 'page_type';
-
         action: string;
         initialData?: Record<string, any>;
         serverErrors?: Record<string, string[]>;
@@ -91,33 +85,45 @@ const props = withDefaults(
 );
 const emit = defineEmits(['submit', 'cancel']);
 
-// local form state
 const form = ref({ ...props.initialData });
+const clientErrors = ref<Record<string, string>>({});
 
-// keep form in sync with incoming data
 watch(
     () => props.initialData,
-    (val) => Object.assign(form.value, val),
+    (value) => {
+        form.value = { ...value };
+        clientErrors.value = {};
+    },
+    { immediate: true },
 );
 
-// validation
-const resolver = zodResolver(
-    z.object({
-        status: z.enum(Object.values(PageStatus) as [string, ...string[]]),
-        visibility: z.enum(PageVisibilityOptions.map((o) => o.value) as any),
-        page_type: z.enum(PageTypeOptions.map((o) => o.value) as any),
-        page_category_id: z.number().nullable(),
-    }),
-);
+function onSubmit() {
+    const parsed = schemaForAction(props.action).safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
+    }
 
-// submit
-function onSubmit({ valid }: { valid: boolean }) {
-    if (!valid) return;
+    clientErrors.value = {};
     const payload = { ...form.value };
-    if (props.action === 'page_category_id' && !payload.page_category_id) payload.page_category_id = null;
+    if (props.action === 'page_category_id' && !payload.page_category_id) {
+        payload.page_category_id = null;
+    }
     emit('submit', payload);
 }
 
-// dropdown refs
-const filteredPageStatusOptions = PageStatusOptions;
+function schemaForAction(action: string) {
+    switch (action) {
+        case 'status':
+            return z.object({ status: z.enum(Object.values(PageStatus) as [string, ...string[]]) });
+        case 'visibility':
+            return z.object({ visibility: z.enum(PageVisibilityOptions.map((option) => option.value) as [string, ...string[]]) });
+        case 'page_type':
+            return z.object({ page_type: z.enum(PageTypeOptions.map((option) => option.value) as [string, ...string[]]) });
+        case 'page_category_id':
+            return z.object({ page_category_id: z.number().nullable() });
+        default:
+            return z.object({});
+    }
+}
 </script>

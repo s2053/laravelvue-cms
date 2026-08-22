@@ -1,10 +1,23 @@
-import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
 import type { Role, RolePayload } from '@/features/rbac/rbac.types';
 import RoleService from '@/features/rbac/services/role.service';
+import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
-export function useRoles() {
-    const { handleError } = useApiErrorHandler();
+type UseRolesOptions = {
+    onError?: (error: unknown) => void | Promise<void>;
+};
+
+export function useRoles(options: UseRolesOptions = {}) {
+    const toast = useAppToast();
+
+    async function reportError(error: unknown) {
+        if (options.onError) {
+            await options.onError(error);
+            return;
+        }
+
+        toast.error('Error', error instanceof Error ? error.message : 'Something went wrong', { duration: 4000 });
+    }
 
     const roles = ref<Role[]>([]);
     const loading = ref(false);
@@ -18,7 +31,7 @@ export function useRoles() {
             const res = await RoleService.getAll();
             roles.value = res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch roles';
         } finally {
             loading.value = false;
@@ -31,7 +44,7 @@ export function useRoles() {
             const res = await RoleService.getById(id);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch role';
             throw err;
         }
@@ -43,7 +56,7 @@ export function useRoles() {
             const res = await RoleService.create(payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to create role';
             throw err;
         }
@@ -55,7 +68,7 @@ export function useRoles() {
             const res = await RoleService.update(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update role';
             throw err;
         }
@@ -66,7 +79,7 @@ export function useRoles() {
         try {
             await RoleService.delete(id);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to delete role';
             throw err;
         }
@@ -77,7 +90,7 @@ export function useRoles() {
         try {
             await RoleService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }

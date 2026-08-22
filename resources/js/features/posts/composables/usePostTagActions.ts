@@ -1,7 +1,7 @@
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
 import { usePostTags } from '@/features/posts/composables/usePostTags';
-import { PostTag } from '@/features/posts/posts.types';
-import { Ref, ref } from 'vue';
+import type { PostTag } from '@/features/posts/posts.types';
+import { ref, type Ref } from 'vue';
 
 export function usePostTagActions(table: { selectedRecords: Ref<PostTag[]>; tableReload: () => void }) {
     // Current bulk action selected
@@ -14,8 +14,8 @@ export function usePostTagActions(table: { selectedRecords: Ref<PostTag[]>; tabl
 
     const selectedIds = ref<number[]>([]);
 
-    const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdatePostTags } = usePostTags();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
+    const { bulkUpdatePostTags } = usePostTags({ onError: () => undefined });
 
     // Trigger bulk action, handle delete separately
     function applyBulk() {
@@ -33,20 +33,22 @@ export function usePostTagActions(table: { selectedRecords: Ref<PostTag[]>; tabl
     }
 
     // Show delete confirmation and execute delete if confirmed
-    function confirmDelete(ids: number[], title?: string) {
+    async function confirmDelete(ids: number[], title?: string) {
         const message = ids.length === 1 ? `Delete "${title ?? 'this record'}"?` : `Delete ${ids.length} selected records?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdatePostTags('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Record deleted',
-            errorMessage: 'Failed to delete record',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdatePostTags('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                },
+                successMessage: 'Record deleted',
+                errorMessage: 'Failed to delete record',
+            });
+        } catch {}
     }
 
     return {

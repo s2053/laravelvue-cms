@@ -1,6 +1,5 @@
 <template>
-    <div class="layout-footer">
-        Work by
-        <a href="" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">Work</a>
-    </div>
+    <footer class="app-shell-footer px-4 py-3 text-xs sm:px-6">
+        CMS Control
+    </footer>
 </template>
