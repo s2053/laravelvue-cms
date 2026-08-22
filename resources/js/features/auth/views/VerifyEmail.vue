@@ -1,36 +1,32 @@
 <template>
-    <Card class="mx-auto w-full max-w-md">
-        <template #title>
+    <AppCard class="mx-auto w-full max-w-md">
+        <template #header>
             <div class="text-center text-2xl font-bold">Verify your email</div>
         </template>
 
-        <template #content>
-            <div class="mb-6 text-center text-sm">
+        <div class="app-form">
+            <div class="mb-6 text-center text-sm text-[var(--color-text-muted)]">
                 A verification email has been sent to <span class="font-medium">{{ user?.email }}</span
                 >.<br />
                 Please check your inbox and click the link to verify your email.
             </div>
 
-            <!-- Resend Verification Email Button -->
-            <div class="mb-4">
-                <Button label="Resend Verification Email" severity="primary" class="w-full" @click="handleResend" :disabled="resending" />
+            <div class="app-form-actions">
+                <AppButton block :loading="resending" :disabled="resending" @click="handleResend">Resend Verification Email</AppButton>
+                <AppButton block color="secondary" :loading="loggingOut" :disabled="loggingOut" @click="handleLogout">Logout</AppButton>
             </div>
-
-            <!-- Logout Button -->
-            <div class="text-center">
-                <Button label="Logout" severity="secondary" class="w-full" @click="handleLogout" :disabled="loggingOut" />
-            </div>
-        </template>
-    </Card>
+        </div>
+    </AppCard>
 </template>
 
 <script setup lang="ts">
+import { AppButton, AppCard } from '@/components/ui';
+import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
-import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const toast = useToast();
+const toast = useAppToast();
 const router = useRouter();
 
 const auth = useAuthStore();
@@ -45,28 +41,15 @@ async function handleResend() {
     try {
         await auth.fetchUser();
         if (auth.user?.email_verified_at) {
-            toast.add({
-                severity: 'info',
-                summary: 'Email Already Verified',
-                life: 3000,
-            });
+            toast.info('Email Already Verified', undefined, { duration: 3000 });
             router.push({ name: 'dashboard' });
             return;
         }
 
         await auth.resendVerificationEmail();
-        toast.add({
-            severity: 'success',
-            summary: 'Verification email resent!',
-            life: 3000,
-        });
+        toast.success('Verification email resent!', undefined, { duration: 3000 });
     } catch (err: any) {
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err?.response?.data?.message || 'Could not resend email.',
-            life: 4000,
-        });
+        toast.error('Error', err?.response?.data?.message || 'Could not resend email.', { duration: 4000 });
     } finally {
         setTimeout(() => {
             resending.value = false;
@@ -81,12 +64,7 @@ async function handleLogout() {
         await auth.logout();
         router.push({ name: 'login' });
     } catch (err: any) {
-        toast.add({
-            severity: 'error',
-            summary: 'Logout Failed',
-            detail: err?.message || 'An error occurred.',
-            life: 4000,
-        });
+        toast.error('Logout Failed', err?.message || 'An error occurred.', { duration: 4000 });
     } finally {
         loggingOut.value = false;
     }

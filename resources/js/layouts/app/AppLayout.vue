@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AppFooter, AppHeader, AppSidebar } from '@/layouts/app/components';
+import { AppHeader, AppSidebar } from '@/layouts/app/components';
 import { useLayout } from '@/layouts/app/composables/layout';
 import { computed } from 'vue';
 
@@ -22,13 +22,12 @@ const shellClasses = computed(() => ({
             <div class="app-shell-main flex flex-col">
                 <AppHeader />
                 <div class="min-h-0 flex-1 overflow-y-auto">
-                <router-view v-slot="{ Component, route }">
-                    <transition :name="getTransition(route.meta.transition)" mode="out-in">
-                        <component :is="Component" :key="route.path" />
-                    </transition>
-                </router-view>
-            </div>
-                <AppFooter />
+                    <router-view v-slot="{ Component, route }">
+                        <transition :name="getTransition(route.meta.transition)" mode="out-in">
+                            <component :is="Component" :key="route.path" />
+                        </transition>
+                    </router-view>
+                </div>
             </div>
         </div>
         <button

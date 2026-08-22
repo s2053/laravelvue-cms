@@ -28,7 +28,6 @@ const routes = [
         path: '/dashboard',
         component: AppLayout,
         children: [
-
             {
                 path: '',
                 name: 'dashboard',
@@ -43,25 +42,6 @@ const routes = [
             ...siteRoutes,
             ...widgetRoutes,
             ...accountRoutes,
-
-            {
-                path: 'settings/password',
-                name: 'settings.password',
-                meta: { title: 'Change Password' },
-                component: () => import('@/pages/settings/Password.vue'),
-            },
-            {
-                path: 'settings/profile',
-                name: 'settings.profile',
-                meta: { title: 'Profile' },
-                component: () => import('@/pages/settings/Profile.vue'),
-            },
-            {
-                path: 'settings/appearance',
-                name: 'settings.appearance',
-                meta: { title: 'Appearance' },
-                component: () => import('@/pages/settings/Appearance.vue'),
-            },
         ],
     },
 ];

@@ -1,12 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { AppPageHeader } from '@/components/ui';
+import AppContent from '@/layouts/app/components/AppContent.vue';
+</script>
 
 <template>
-    <div>
-        <h1 class="text-2xl font-bold">
-            Welcome to the Dashboard
-            <span class="rbcolor"> anotehr</span>
-            <span class=""> pin</span>
-        </h1>
-        <Button label="Click Me" class="p-button-raised p-button-info pt-1"> Click </Button>
-    </div>
+    <AppContent>
+        <AppPageHeader title="Dashboard" />
+    </AppContent>
 </template>
