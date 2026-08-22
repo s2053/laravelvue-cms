@@ -1,5 +1,6 @@
 import type { Role, RolePayload } from '@/features/rbac/rbac.types';
 import RoleService from '@/features/rbac/services/role.service';
+import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
 type UseRolesOptions = {
@@ -7,14 +8,15 @@ type UseRolesOptions = {
 };
 
 export function useRoles(options: UseRolesOptions = {}) {
+    const toast = useAppToast();
+
     async function reportError(error: unknown) {
         if (options.onError) {
             await options.onError(error);
             return;
         }
 
-        const { useApiErrorHandler } = await import('@/composables/useApiErrorHandler');
-        useApiErrorHandler().handleError(error);
+        toast.error('Error', error instanceof Error ? error.message : 'Something went wrong', { duration: 4000 });
     }
 
     const roles = ref<Role[]>([]);

@@ -1,5 +1,6 @@
 import type { PermissionGroup, PermissionGroupPayload } from '@/features/rbac/rbac.types';
 import PermissionGroupService from '@/features/rbac/services/permissionGroup.service';
+import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
 type UsePermissionGroupsOptions = {
@@ -7,14 +8,15 @@ type UsePermissionGroupsOptions = {
 };
 
 export function usePermissionGroups(options: UsePermissionGroupsOptions = {}) {
+    const toast = useAppToast();
+
     async function reportError(error: unknown) {
         if (options.onError) {
             await options.onError(error);
             return;
         }
 
-        const { useApiErrorHandler } = await import('@/composables/useApiErrorHandler');
-        useApiErrorHandler().handleError(error);
+        toast.error('Error', error instanceof Error ? error.message : 'Something went wrong', { duration: 4000 });
     }
 
     const permissionGroups = ref<PermissionGroup[]>([]);

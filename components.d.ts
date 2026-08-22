@@ -47,6 +47,7 @@ declare module 'vue' {
     UButton: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Button.vue')['default']
     UCard: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Card.vue')['default']
     UCheckbox: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Checkbox.vue')['default']
+    UCheckboxGroup: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/CheckboxGroup.vue')['default']
     UChip: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/Chip.vue')['default']
     UDashboardNavbar: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/DashboardNavbar.vue')['default']
     UDashboardPanel: typeof import('./node_modules/@nuxt/ui/dist/runtime/components/DashboardPanel.vue')['default']

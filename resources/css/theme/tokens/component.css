@@ -33,6 +33,7 @@ html {
     --overlay-body-line-height: 1.5;
     --overlay-backdrop-z-index: 100;
     --overlay-content-z-index: 101;
+    --overlay-floating-z-index: 102;
     --page-header-title: var(--color-text);
     --page-header-description: var(--color-text-muted);
     --header-bg: color-mix(in oklab, var(--color-surface) 84%, transparent);
@@ -398,6 +399,10 @@ html {
 
 .app-overlay-backdrop {
     z-index: var(--overlay-backdrop-z-index);
+}
+
+.app-select-menu__content {
+    z-index: var(--overlay-floating-z-index);
 }
 
 .app-page-header {

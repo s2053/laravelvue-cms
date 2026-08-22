@@ -43,6 +43,7 @@ const emit = defineEmits<{
         :disabled="disabled"
         :clear="clearable"
         :search-input="searchable"
+        :ui="{ content: 'app-select-menu__content' }"
         :size="size"
         :color="color"
         :variant="variant"

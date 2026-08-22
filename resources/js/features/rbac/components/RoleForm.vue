@@ -51,16 +51,13 @@
                         :modelValue="isGroupFullySelected(group)"
                         :indeterminate="isGroupPartiallySelected(group)"
                         :label="group.name"
-                        @update:model-value="toggleGroup(group)"
+                        @update:model-value="toggleGroup($event, group)"
                     />
 
                     <div class="mt-2 space-y-2 pl-6">
-                        <AppCheckbox
-                            v-for="permission in group.permissions ?? []"
-                            :key="permission.id"
-                            v-model="form.permissions"
-                            :value="permission.id"
-                            :label="permission.name"
+                        <AppCheckboxGroup
+                            v-model="selectedPermissionValues"
+                            :items="permissionItems(group)"
                         />
                     </div>
                 </section>
@@ -77,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppCheckbox, AppFieldError, AppInput } from '@/components/ui';
+import { AppButton, AppCheckbox, AppCheckboxGroup, AppFieldError, AppInput } from '@/components/ui';
 import type { Permission, PermissionGroup, RolePayload } from '@/features/rbac/rbac.types';
 import { slugify } from '@/utils/slugify';
 import { computed, ref, watch } from 'vue';
@@ -131,14 +128,23 @@ function isGroupPartiallySelected(group: PermissionGroup) {
     return selected.length > 0 && selected.length < perms.length;
 }
 
-function toggleGroup(group: PermissionGroup) {
+const selectedPermissionValues = computed({
+    get: () => form.value.permissions.map(String),
+    set: (values: string[]) => {
+        form.value.permissions = values.map(Number).filter(Number.isInteger);
+    },
+});
+
+function permissionItems(group: PermissionGroup) {
+    return (group.permissions ?? []).map((permission) => ({ label: permission.name, value: String(permission.id) }));
+}
+
+function toggleGroup(value: boolean | unknown[] | 'indeterminate', group: PermissionGroup) {
+    if (value === 'indeterminate') return;
+
     const perms = Array.isArray(group.permissions) ? group.permissions : [];
     const allIds = perms.map((perm: Permission) => perm.id);
-    if (isGroupFullySelected(group)) {
-        form.value.permissions = form.value.permissions.filter((id) => !allIds.includes(id));
-    } else {
-        form.value.permissions = Array.from(new Set([...form.value.permissions, ...allIds]));
-    }
+    form.value.permissions = value === true ? Array.from(new Set([...form.value.permissions, ...allIds])) : form.value.permissions.filter((id) => !allIds.includes(id));
 }
 
 const allPermissionIds = computed(() => props.groups.flatMap((g) => (Array.isArray(g.permissions) ? g.permissions.map((p) => p.id) : [])));
@@ -153,11 +159,7 @@ const areSomePermissionsSelected = computed(() => {
 function toggleAllPermissions(value: boolean | unknown[] | 'indeterminate') {
     if (value === 'indeterminate') return;
 
-    if (areAllPermissionsSelected.value) {
-        form.value.permissions = [];
-    } else {
-        form.value.permissions = [...allPermissionIds.value];
-    }
+    form.value.permissions = value === true ? [...allPermissionIds.value] : [];
 }
 
 function onSlugInput(event: Event) {

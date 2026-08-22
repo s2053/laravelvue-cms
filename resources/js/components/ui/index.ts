@@ -2,6 +2,7 @@ export { default as AppBadge } from '@/components/ui/AppBadge.vue';
 export { default as AppButton } from '@/components/ui/AppButton.vue';
 export { default as AppCard } from '@/components/ui/AppCard.vue';
 export { default as AppCheckbox } from '@/components/ui/AppCheckbox.vue';
+export { default as AppCheckboxGroup } from '@/components/ui/AppCheckboxGroup.vue';
 export { default as AppConfirmDialog } from '@/components/ui/AppConfirmDialog.vue';
 export { default as AppDropdownMenu } from '@/components/ui/AppDropdownMenu.vue';
 export { default as AppFieldError } from '@/components/ui/AppFieldError.vue';
