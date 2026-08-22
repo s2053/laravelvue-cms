@@ -1,7 +1,5 @@
 <template>
-    <h3 class="mb-6 border-b border-gray-200 pb-2 text-lg font-semibold text-gray-800">
-        <slot name="header">Profile</slot>
-    </h3>
+    <AppPageHeader title="Profile" />
     <div v-if="loading" class="flex items-center justify-center p-4">
         <p>Loading profile...</p>
     </div>
@@ -11,7 +9,8 @@
     </div>
 </template>
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast';
+import { AppPageHeader } from '@/components/ui';
+import { useAppToast } from '@/composables/useAppToast';
 import { onMounted, ref } from 'vue';
 
 import { useAuthStore } from '@/features/auth/auth.store';
@@ -21,8 +20,8 @@ import { useAccount } from '@/features/account/composables';
 import { User, UserProfilePayload } from '@/features/users/users.types';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
-const toast = useToast();
-const { updateProfile } = useAccount();
+const toast = useAppToast();
+const { updateProfile } = useAccount({ onError: () => undefined });
 const auth = useAuthStore();
 
 const loading = ref(false);
@@ -46,12 +45,7 @@ onMounted(async () => {
             formModel.value = { ...pickMatchData(auth.user, initialFormPayload) };
         }
     } catch (err: any) {
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err.message || 'Failed to load user info',
-            life: 4000,
-        });
+        toast.error('Error', err.message || 'Failed to load user info', { duration: 4000 });
     } finally {
         loading.value = false;
     }
@@ -87,17 +81,12 @@ async function handleSubmit(form: UserProfilePayload) {
         formModel.value = { ...pickMatchData(updated, initialFormPayload) };
         auth.setUser(updated);
 
-        toast.add({ severity: 'success', summary: 'Profile updated', life: 2000 });
+        toast.success('Profile updated', undefined, { duration: 2000 });
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err.message || 'Update failed',
-                life: 4000,
-            });
+            toast.error('Error', err.message || 'Update failed', { duration: 4000 });
         }
     } finally {
         submitting.value = false;

@@ -1,72 +1,52 @@
 <template>
-    <div class="w-full max-w-2xl">
-        <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit" class="flex flex-col gap-6">
-            <!-- Appearance Mode -->
-            <div class="flex flex-col gap-1">
-                <label for="appearance" class="mb-2 block font-bold">
-                    <i class="pi pi-moon mr-2"></i>
-                    Appearance:
-                </label>
-                <Dropdown
-                    v-model="form.appearance"
-                    :options="appearanceOptions"
-                    placeholder="Select Appearance Mode"
-                    optionLabel="label"
-                    optionValue="value"
-                />
-                <FieldError :formError="$form.appearance?.error?.message" :serverError="serverErrors?.appearance?.[0]" />
-            </div>
-
-            <!-- Submit -->
-            <div class="mt-4 flex justify-end gap-2">
-                <Button type="submit" label="Save Preferences" severity="success" :disabled="submitting" />
-            </div>
-        </Form>
-    </div>
+    <form class="app-form app-account-form" @submit.prevent="onSubmit">
+        <div class="app-form-field">
+            <label for="account-appearance" class="app-form-label">Appearance:</label
+            ><AppSelect
+                id="account-appearance"
+                v-model="form.appearance"
+                :items="appearanceOptions"
+                labelKey="label"
+                valueKey="value"
+                class="w-full"
+                placeholder="Select Appearance Mode"
+            /><AppFieldError :formError="clientErrors.appearance" :serverError="serverErrors?.appearance?.[0]" />
+        </div>
+        <div class="app-form-actions"><AppButton type="submit" :disabled="submitting">Save Preferences</AppButton></div>
+    </form>
 </template>
-
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { AppButton, AppFieldError, AppSelect } from '@/components/ui';
+import type { UserPreferences } from '@/features/users/users.types';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
-
-import type { UserPreferences } from '@/features/users/users.types';
-
-interface PreferencesFormProps {
-    initialForm: UserPreferences;
-    serverErrors?: Record<string, string[]>;
-    submitting?: boolean;
-}
-
-const props = defineProps<PreferencesFormProps>();
-const emit = defineEmits<{
-    (e: 'submit', payload: UserPreferences): void;
-}>();
-
+const props = withDefaults(defineProps<{ initialForm: UserPreferences; serverErrors?: Record<string, string[]>; submitting?: boolean }>(), {
+    submitting: false,
+});
+const emit = defineEmits<{ (e: 'submit', payload: UserPreferences): void }>();
 const form = ref<UserPreferences>({ ...props.initialForm });
-
-watch(
-    () => props.initialForm,
-    (newForm) => {
-        form.value = { ...newForm };
-    },
-    { immediate: true, deep: true },
-);
-
-// appearance options
+const clientErrors = ref<Record<string, string>>({});
 const appearanceOptions = [
     { label: 'Light', value: 'light' },
     { label: 'Dark', value: 'dark' },
     { label: 'System', value: 'system' },
 ];
-
-// zod resolver
-const resolver = zodResolver(z.object({}));
-
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) {
-        emit('submit', form.value);
+watch(
+    () => props.initialForm,
+    (value) => {
+        form.value = { ...value };
+        clientErrors.value = {};
+    },
+    { immediate: true, deep: true },
+);
+const schema = z.object({ appearance: z.string().min(1, { message: 'Appearance is required.' }) });
+function onSubmit() {
+    const parsed = schema.safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
     }
+    clientErrors.value = {};
+    emit('submit', { ...form.value });
 }
 </script>

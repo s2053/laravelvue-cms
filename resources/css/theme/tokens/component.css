@@ -338,7 +338,10 @@ html {
     font-size: var(--text-xl, 1.25rem);
 }
 
-.app-text-editor .ProseMirror :where(p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol) + :where(p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol) {
+.app-text-editor
+    .ProseMirror
+    :where(p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol)
+    + :where(p, h1, h2, h3, h4, h5, h6, blockquote, pre, ul, ol) {
     margin-top: 0.875rem;
 }
 
@@ -551,4 +554,95 @@ html {
 .app-shell-nav-child.is-active {
     background: var(--shell-nav-active-bg);
     color: var(--shell-nav-active-text);
+}
+
+.app-account-layout {
+    display: grid;
+    grid-template-columns: minmax(14rem, 16rem) minmax(0, 1fr);
+    gap: 1.5rem;
+    min-height: 32rem;
+}
+
+.app-account-layout__sidebar {
+    align-self: start;
+    padding: 1.25rem;
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+}
+
+.app-account-layout__title {
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.app-account-layout__nav {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.app-account-layout__link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: 0.5rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    transition:
+        background-color 160ms ease,
+        color 160ms ease;
+}
+
+.app-account-layout__link:hover,
+.app-account-layout__link.is-active {
+    background: var(--shell-nav-active-bg);
+    color: var(--shell-nav-active-text);
+}
+
+.app-account-layout__icon {
+    flex: 0 0 auto;
+}
+
+.app-account-layout__main {
+    min-width: 0;
+}
+
+.app-account-layout__main > .app-page-header {
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.app-account-form {
+    width: min(100%, 44rem);
+    padding: 1.5rem;
+    border: 1px solid var(--card-border);
+    border-radius: 0.75rem;
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+}
+
+.app-account-form .app-form-media-preview {
+    width: min(100%, 18rem);
+    min-height: 9rem;
+}
+
+.app-account-form .app-form-actions {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+@media (max-width: 768px) {
+    .app-account-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .app-account-form {
+        padding: 1rem;
+    }
 }

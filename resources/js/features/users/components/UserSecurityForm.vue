@@ -2,11 +2,10 @@
     <form class="app-form" @submit.prevent="onSubmit">
         <div class="app-form-field">
             <label for="user-security-password" class="app-form-label">Password:</label>
-            <AppInput
+            <AppPassword
                 id="user-security-password"
                 v-model="form.password"
                 name="password"
-                type="password"
                 placeholder="Password"
                 autocomplete="new-password"
                 class="w-full"
@@ -16,11 +15,10 @@
 
         <div class="app-form-field">
             <label for="user-security-password-confirmation" class="app-form-label">Confirm Password:</label>
-            <AppInput
+            <AppPassword
                 id="user-security-password-confirmation"
                 v-model="form.password_confirmation"
                 name="password_confirmation"
-                type="password"
                 placeholder="Confirm Password"
                 autocomplete="new-password"
                 class="w-full"
@@ -35,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppFieldError, AppInput } from '@/components/ui';
+import { AppButton, AppFieldError, AppPassword } from '@/components/ui';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
 

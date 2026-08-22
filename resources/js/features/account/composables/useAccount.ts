@@ -3,8 +3,14 @@ import AccountService from '@/features/account/services/account.service';
 import type { User, UserPreferences, UserSecurityPayload } from '@/features/users/users.types';
 import { ref } from 'vue';
 
-export function useAccount() {
-    const { handleError } = useApiErrorHandler();
+type UseAccountOptions = { onError?: (error: unknown) => void };
+
+export function useAccount(config: UseAccountOptions = {}) {
+    async function reportError(err: unknown) {
+        if (config.onError) return config.onError(err);
+        const { handleError } = useApiErrorHandler();
+        handleError(err);
+    }
 
     const user = ref<User | null>(null);
     const loading = ref(false);
@@ -19,7 +25,7 @@ export function useAccount() {
             user.value = res.data; // update store/local state
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update profile';
             throw err;
         } finally {
@@ -34,7 +40,7 @@ export function useAccount() {
         try {
             await AccountService.updateSecurity(payload);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update security settings';
             throw err;
         } finally {
@@ -51,7 +57,7 @@ export function useAccount() {
             user.value = res.data; // update state with new preferences
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update preferences';
             throw err;
         } finally {

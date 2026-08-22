@@ -14,17 +14,16 @@
 
         <div class="app-form-field">
             <label for="password" class="app-form-label">Password:</label>
-            <AppInput id="password" v-model="form.password" name="password" type="password" placeholder="Password" autocomplete="new-password" class="w-full" />
+            <AppPassword id="password" v-model="form.password" name="password" placeholder="Password" autocomplete="new-password" class="w-full" />
             <AppFieldError :formError="clientErrors.password" :serverError="serverErrors?.password?.[0]" />
         </div>
 
         <div class="app-form-field">
             <label for="password_confirmation" class="app-form-label">Confirm Password:</label>
-            <AppInput
+            <AppPassword
                 id="password_confirmation"
                 v-model="form.password_confirmation"
                 name="password_confirmation"
-                type="password"
                 placeholder="Confirm Password"
                 autocomplete="new-password"
                 class="w-full"
@@ -54,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppFieldError, AppInput, AppMultiSelect } from '@/components/ui';
+import { AppButton, AppFieldError, AppInput, AppMultiSelect, AppPassword } from '@/components/ui';
 import type { Role } from '@/features/rbac/rbac.types';
 import type { UserPayload } from '@/features/users/users.types';
 import { ref, watch } from 'vue';
