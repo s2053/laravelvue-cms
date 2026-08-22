@@ -1,11 +1,10 @@
 <template>
     <AppContent>
-        <h2>Post Tag Management</h2>
-
-        <!-- Top toolbar -->
-        <div class="mb-3 flex justify-between">
-            <Button icon="pi pi-plus" label="Add New" @click="openCreate" />
-        </div>
+        <AppPageHeader title="Post Tag Management">
+            <template #actions>
+                <AppButton icon="i-lucide-plus" @click="openCreate">Add New</AppButton>
+            </template>
+        </AppPageHeader>
 
         <AppDataTable
             :items="records"
@@ -17,19 +16,17 @@
             :selection="selectedRecords"
             :sortField="sortField"
             :sortOrder="sortOrder"
-            :paginatorTemplate="'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown'"
-            :currentPageReportTemplate="'{first} to {last} of {totalRecords}'"
+            :columns="tableColumns"
+            selectable
             dataKey="id"
             @page="onPage"
             @sort="onSort"
             @selection-change="selectedRecords = $event"
         >
-            <!-- Table header with bulk actions + search -->
             <template #header>
                 <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
                     <div class="flex items-center">
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
-
                         <div class="ml-auto flex items-center gap-2">
                             <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" />
                         </div>
@@ -37,49 +34,25 @@
                 </TableToolBarWrapper>
             </template>
 
-            <!-- Dynamic columns -->
-            <template #columns>
-                <Column selectionMode="multiple" headerStyle="width: 3rem" />
-
-                <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" sortable>
-                    <!-- Column-specific renderers -->
-                    <template v-if="col.field === 'created_at'" #body="{ data }">
-                        {{ formatDateTimeString(data.created_at) }}
-                    </template>
-
-                    <template v-else-if="col.field === 'title'" #body="{ data }">
-                        <div v-if="data.thumbnail">
-                            <img :src="data.thumbnail" alt="Thumbnail" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
-                        </div>
-                        {{ data.title }}
-                    </template>
-
-                    <template v-else-if="col.field === 'status'" #body="{ data }">
-                        <Tag :value="data.status ? 'Active' : 'Inactive'" :severity="data.status ? 'success' : 'danger'" />
-                    </template>
-                </Column>
+            <template #created_at-cell="{ row }">
+                {{ formatDateTimeString(row.original.created_at) }}
             </template>
 
-            <!-- Row-level actions -->
-            <template #actions>
-                <Column header="Action">
-                    <template #body="{ data }">
-                        <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="openEdit(data)" />
-                        <Button
-                            icon="pi pi-trash"
-                            size="small"
-                            severity="danger"
-                            outlined
-                            rounded
-                            class="mr-2"
-                            @click="removeRecord(data.id, data.title)"
-                        />
-                    </template>
-                </Column>
+            <template #actions-cell="{ row }">
+                <div class="flex items-center justify-end gap-2">
+                    <AppButton color="neutral" variant="outline" icon="i-lucide-pencil" size="sm" @click="openEdit(row.original as PostTag)" />
+                    <AppButton
+                        color="error"
+                        variant="outline"
+                        icon="i-lucide-trash-2"
+                        size="sm"
+                        @click="removeRecord((row.original as PostTag).id, (row.original as PostTag).title)"
+                    />
+                </div>
             </template>
         </AppDataTable>
 
-        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
+        <AppOverlayShell v-model:open="dialogVisible" :title="dialogTitle" size="md" :close="true" :dismissible="true">
             <PostTagForm
                 :initialForm="formModel"
                 :submitLabel="dialogSubmitLabel"
@@ -88,34 +61,29 @@
                 @submit="handleSubmit"
                 @cancel="dialogVisible = false"
             />
-        </Dialog>
+        </AppOverlayShell>
     </AppContent>
 </template>
 
 <script setup lang="ts">
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { PostTagForm } from '@/features/posts/components';
-
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import AppContent from '@/layouts/app/components/AppContent.vue';
-import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
-
-// Utils
+import { AppButton, AppOverlayShell, AppPageHeader } from '@/components/ui';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { usePaginatedTable } from '@/composables/usePaginatedList';
+import { PostTagForm } from '@/features/posts/components';
 import { usePostTagActions, usePostTags } from '@/features/posts/composables';
-import { PostTagFilters, PostTagPayload } from '@/features/posts/posts.types';
+import type { PostTag, PostTagFilters, PostTagPayload } from '@/features/posts/posts.types';
 import PostTagService from '@/features/posts/services/postTag.service';
+import AppContent from '@/layouts/app/components/AppContent.vue';
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 import { strTruncate } from '@/utils/stringHelper';
+import { onMounted, ref } from 'vue';
 
-const { showDeleteConfirm } = useDeleteConfirm();
-const toast = useToast();
-
-const { getPostTagById, createPostTag, updatePostTag, deletePostTag } = usePostTags();
-
-// Table data / pagination / filters
+const toast = useAppToast();
+const { showDeleteConfirm } = useAppDeleteConfirm();
+const { getPostTagById, createPostTag, updatePostTag, deletePostTag } = usePostTags({ onError: () => undefined });
 
 const {
     items: records,
@@ -143,32 +111,30 @@ const {
     initialSortField: 'created_at',
     initialSortOrder: -1,
     initialPerPage: 25,
-    perPageOptions: [10, 25, 50, 50],
+    perPageOptions: [10, 25, 50],
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load post tags', { duration: 4000 });
+    },
 });
 
-// Bulk + single‑row actions (dialog, toasts, etc.)
 const { bulkAction, bulkOptions, applyBulk } = usePostTagActions({ selectedRecords, tableReload });
 
-// Aliases for dialog refs
-
-const allColumns = [
-    { field: 'id', label: 'Id' },
-    { field: 'title', label: 'Title' },
-    { field: 'created_at', label: 'Created At' },
+const tableColumns = [
+    { key: 'id', label: 'ID', sortable: true, width: '80px' },
+    { key: 'title', label: 'Title', sortable: true },
+    { key: 'created_at', label: 'Created At', sortable: true, width: '180px' },
+    { key: 'actions', label: 'Actions', sortable: false, width: '120px', cellClass: 'text-right', headerClass: 'text-right' },
 ];
-const visibleColumns = ref<string[]>(['id', 'title', 'created_at']);
-const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
 
 onMounted(() => {
-    loadPageData({ page: 1, rows: numOfRows.value, filters });
+    void loadPageData({ page: 1, rows: numOfRows.value, filters });
 });
 
-// Dialog & form state
 const dialogVisible = ref(false);
 const dialogTitle = ref('Create Post Tag');
 const dialogSubmitLabel = ref('Create');
 const editingId = ref<number | null>(null);
-const serverErrors = ref<{ [key: string]: string[] }>({});
+const serverErrors = ref<Record<string, string[]>>({});
 
 const initialFormPayload: PostTagPayload = {
     title: '',
@@ -178,7 +144,6 @@ const initialFormPayload: PostTagPayload = {
 
 const formModel = ref<PostTagPayload>({ ...initialFormPayload });
 
-// Opens dialog for creating a new category
 function openCreate() {
     dialogTitle.value = 'Create Post Tag';
     dialogSubmitLabel.value = 'Create';
@@ -188,74 +153,57 @@ function openCreate() {
     dialogVisible.value = true;
 }
 
-// Opens dialog for editing an existing category
-async function openEdit(category: any) {
+async function openEdit(tag: PostTag) {
     dialogTitle.value = 'Edit Post Tag';
     dialogSubmitLabel.value = 'Update';
-    editingId.value = category.id;
+    editingId.value = tag.id;
     serverErrors.value = {};
 
     try {
-        const latest = await getPostTagById(category.id);
+        const latest = await getPostTagById(tag.id);
         formModel.value = { ...pickMatchData(latest, initialFormPayload) };
         dialogVisible.value = true;
     } catch (err: any) {
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err?.message || 'Failed to fetch record',
-            life: 4000,
-        });
+        toast.error('Error', err?.message || 'Failed to fetch record', { duration: 4000 });
     }
 }
 
-// Handles form submit for create or update
 async function handleSubmit(form: PostTagPayload) {
     serverErrors.value = {};
+
     try {
         const payload = pickCleanData({ ...form }, initialFormPayload);
 
         if (editingId.value) {
             await updatePostTag(editingId.value, payload);
-            toast.add({ severity: 'success', summary: 'Record updated', life: 2000 });
+            toast.success('Record updated', undefined, { duration: 2000 });
         } else {
             await createPostTag(payload);
-            toast.add({ severity: 'success', summary: 'Record created', life: 2000 });
+            toast.success('Record created', undefined, { duration: 2000 });
         }
+
         dialogVisible.value = false;
         tableReload();
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Operation failed',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     }
 }
 
-// Confirms and deletes post tags
-
-// Row‑level Operation
 function removeRecord(id: number, title?: string) {
-    let message = '';
-    if (title === undefined || title === null || title.trim() === '') {
-        message = `Are You Sure To Delete It?`;
-    } else {
-        message = `Do you want to delete ${title ? `\"${strTruncate(title)}\"` : 'this record'}?`;
-    }
-    showDeleteConfirm({
+    const message = title?.trim() ? `Do you want to delete "${strTruncate(title)}"?` : 'Are you sure to delete this record?';
+
+    void showDeleteConfirm({
         message,
         onAccept: async () => {
             await deletePostTag(id);
             tableReload();
         },
         successMessage: 'Record deleted',
-        errorMessage: 'Failed to delete records',
+        errorMessage: 'Failed to delete record',
     });
 }
 </script>

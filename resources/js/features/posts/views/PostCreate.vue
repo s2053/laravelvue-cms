@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useToast } from 'primevue/usetoast';
+import { useAppToast } from '@/composables/useAppToast';
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -21,13 +21,13 @@ import {
 } from '@/utils/dateHelper';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
-const toast = useToast();
+const toast = useAppToast();
 const route = useRoute();
 const router = useRouter();
 
 const { users: authors, fetchUsers } = useUsers();
 
-const { getPostById, createPost, updatePost } = usePosts();
+const { getPostById, createPost, updatePost } = usePosts({ onError: () => undefined });
 const { options: categories, fetchOptions: fetchCategoryOptions } = usePostCategory();
 const { options: tagOptions, fetchOptions: fetchTagOptions } = usePostTags();
 
@@ -86,12 +86,7 @@ onMounted(async () => {
 
             formModel.value = { ...pickMatchData(post, initialFormPayload), category_ids, tag_ids };
         } catch (err: any) {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Failed to fetch post',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Failed to fetch post', { duration: 4000 });
         } finally {
             loading.value = false;
         }
@@ -149,17 +144,17 @@ async function handleSubmit(form: PostPayload) {
 
             formModel.value = { ...pickMatchData(post, initialFormPayload), category_ids, tag_ids };
 
-            toast.add({ severity: 'success', summary: 'Post updated', life: 2000 });
+            toast.success('Post updated', undefined, { duration: 2000 });
         } else {
             await createPost(formData);
-            toast.add({ severity: 'success', summary: 'Post created', life: 2000 });
+            toast.success('Post created', undefined, { duration: 2000 });
             redirectAfterSubmit();
         }
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({ severity: 'error', summary: 'Error', detail: err?.message || 'Operation failed', life: 4000 });
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     } finally {
         submitting.value = false;

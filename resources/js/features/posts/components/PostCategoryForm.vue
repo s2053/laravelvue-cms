@@ -1,194 +1,141 @@
 <template>
-    <Form v-slot="$form" :initialValues="categoryForm" :resolver="resolver" :key="editingId || 'create'" @submit="onSubmit">
-        <Tabs v-model:value="activeTab">
-            <!-- Tab Navigation -->
-            <TabList>
-                <Tab value="main" as="div">
-                    <i class="pi pi-info-circle mr-2"></i>
-                    <span class="font-bold whitespace-nowrap">Details</span>
-                </Tab>
-                <Tab value="meta" as="div">
-                    <i class="pi pi-tag mr-2"></i>
-                    <span class="font-bold whitespace-nowrap">Meta/SEO</span>
-                </Tab>
-            </TabList>
+    <form class="app-form" @submit.prevent="onSubmit">
+        <AppTabs v-model="activeTab" :items="tabs" />
 
-            <!-- Tab Content Panels -->
-            <TabPanels>
-                <!-- Main Tab -->
-                <TabPanel value="main" as="div">
-                    <div class="flex flex-col gap-4">
-                        <!-- Title Field -->
-                        <div>
-                            <label for="title" class="mb-2 block font-bold">Category title:</label>
-                            <InputText v-model="categoryForm.title" name="title" placeholder="Category title" class="w-full" />
-                            <FieldError :formError="$form.title?.error?.message" :serverError="serverErrors?.title?.[0]" />
+        <div v-if="activeTab === 'main'" class="mt-4 space-y-4">
+            <div class="app-form-field">
+                <label for="post-category-title" class="app-form-label">Category title:</label>
+                <AppInput id="post-category-title" v-model="form.title" name="title" placeholder="Category title" class="w-full" />
+                <AppFieldError :formError="clientErrors.title" :serverError="serverErrors?.title?.[0]" />
+                <div class="app-form-slug-row mt-3">
+                    <label for="post-category-slug" class="app-form-slug-label">Slug:</label>
+                    <span v-if="!slugEdit" :title="form.slug" class="app-form-slug-value">{{ form.slug }}</span>
+                    <AppInput
+                        v-else
+                        id="post-category-slug"
+                        v-model="form.slug"
+                        name="slug"
+                        placeholder="Slug"
+                        size="sm"
+                        class="app-form-slug-input"
+                        @update:model-value="onSlugInput"
+                    />
+                    <AppButton
+                        type="button"
+                        :color="slugEdit ? 'success' : 'neutral'"
+                        variant="ghost"
+                        size="sm"
+                        icon="i-lucide-pencil"
+                        :title="slugEdit ? 'Finish editing slug' : 'Edit slug'"
+                        @click="slugEdit = !slugEdit"
+                    />
+                </div>
+                <AppFieldError :formError="clientErrors.slug" :serverError="serverErrors?.slug?.[0]" />
+            </div>
 
-                            <!-- Slug Display & Edit -->
-                            <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
-                                <label for="slug" class="font-semibold whitespace-nowrap">Slug:</label>
-                                <template v-if="!slugEdit">
-                                    <span :title="categoryForm.slug" class="w-0 max-w-full flex-1 truncate">
-                                        {{ categoryForm.slug }}
-                                    </span>
-                                </template>
-                                <template v-else>
-                                    <InputText
-                                        v-model="categoryForm.slug"
-                                        name="slug"
-                                        placeholder="Slug"
-                                        class="flex-grow text-sm"
-                                        @input="onSlugInput"
-                                        size="small"
-                                    />
-                                </template>
-                                <Button
-                                    icon="pi pi-pencil"
-                                    size="small"
-                                    type="button"
-                                    @click="slugEdit = !slugEdit"
-                                    :severity="slugEdit ? 'success' : 'secondary'"
-                                    class="h-6 min-w-6 text-xs"
-                                    variant="text"
-                                    :title="'Edit Slug'"
-                                />
-                            </div>
+            <div class="app-form-field">
+                <label for="post-category-description" class="app-form-label">Description:</label>
+                <AppInput id="post-category-description" v-model="form.description" name="description" placeholder="Description" class="w-full" />
+                <AppFieldError :formError="clientErrors.description" :serverError="serverErrors?.description?.[0]" />
+            </div>
 
-                            <FieldError :formError="$form.slug?.error?.message" :serverError="serverErrors?.slug?.[0]" />
-                        </div>
+            <div class="app-form-field">
+                <label for="post-category-parent" class="app-form-label">Parent Category:</label>
+                <AppSelect
+                    id="post-category-parent"
+                    v-model="form.parent_id"
+                    :items="categoryOptions"
+                    name="parent_id"
+                    labelKey="title"
+                    valueKey="id"
+                    clearable
+                    placeholder="Select Category"
+                    class="w-full"
+                />
+                <AppFieldError :formError="clientErrors.parent_id" :serverError="serverErrors?.parent_id?.[0]" />
+            </div>
 
-                        <!-- Description Field -->
-                        <div>
-                            <label for="description" class="mb-2 block font-bold">Description:</label>
-                            <InputText v-model="categoryForm.description" name="description" placeholder="Description" class="w-full" />
-                            <FieldError :formError="$form.description?.error?.message" :serverError="serverErrors?.description?.[0]" />
-                        </div>
-
-                        <!-- Category -->
-                        <div>
-                            <label for="parent_id" class="mb-2 block font-bold">Parent Category:</label>
-                            <Select
-                                v-model="categoryForm.parent_id"
-                                :options="categoryOptions"
-                                name="parent_id"
-                                optionLabel="title"
-                                optionValue="id"
-                                class="w-full"
-                                placeholder="Select Category"
-                                showClear
-                            />
-                            <FieldError :formError="$form.parent_id?.error?.message" :serverError="serverErrors?.parent_id?.[0]" />
-                        </div>
-
-                        <!-- Featured image -->
-                        <div>
-                            <label for="featured_image" class="mb-2 block font-bold">Featured Image:</label>
-                            <div v-if="categoryForm.featured_image" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
-                                <img
-                                    :src="categoryForm.featured_image"
-                                    alt="Thumbnail preview"
-                                    class="block max-h-32 w-full max-w-xs rounded object-contain"
-                                />
-
-                                <!-- Remove button/icon (top-right corner) -->
-                                <div class="absolute top-0 right-0">
-                                    <Button
-                                        @click="removeMedia"
-                                        icon="pi pi-trash"
-                                        severity="danger"
-                                        aria-label="Cancel"
-                                        size="small"
-                                        title="Remove"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <MediaUploader v-model:file="categoryForm.featured_image_file" />
-                            </div>
-                            <FieldError
-                                :formError="$form.featured_image_file?.error?.message"
-                                :serverError="serverErrors?.featured_image_file?.[0]"
-                            />
-                        </div>
-
-                        <!-- Status and sort Field -->
-                        <div class="flex gap-4">
-                            <!-- Status Field -->
-                            <div class="flex-1">
-                                <label for="status" class="mb-2 block font-bold">Status:</label>
-                                <Select
-                                    v-model="categoryForm.status"
-                                    :options="statusOptions"
-                                    name="status"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    class="w-full"
-                                    placeholder="Select Status"
-                                />
-                                <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
-                            </div>
-
-                            <!-- Sort Order Field -->
-                            <div class="flex-1">
-                                <label for="sort_order" class="mb-2 block font-bold">Sort Order:</label>
-                                <InputNumber
-                                    v-model="categoryForm.sort_order"
-                                    name="sort_order"
-                                    :min="0"
-                                    class="w-full"
-                                    placeholder="Enter Sort Order"
-                                />
-                                <FieldError :formError="$form.sort_order?.error?.message" :serverError="serverErrors?.sort_order?.[0]" />
-                            </div>
-                        </div>
+            <div class="app-form-field">
+                <label for="post-category-featured-image" class="app-form-label">Featured Image:</label>
+                <div v-if="form.featured_image" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                    <img :src="form.featured_image" alt="Thumbnail preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
+                    <div class="absolute top-0 right-0">
+                        <AppButton
+                            type="button"
+                            color="error"
+                            variant="ghost"
+                            icon="i-lucide-trash-2"
+                            size="sm"
+                            title="Remove"
+                            @click="removeMedia"
+                        />
                     </div>
-                </TabPanel>
+                </div>
+                <MediaUploader id="post-category-featured-image" v-model:file="form.featured_image_file" />
+                <AppFieldError :formError="clientErrors.featured_image_file" :serverError="serverErrors?.featured_image_file?.[0]" />
+            </div>
 
-                <!-- Meta Tab -->
-                <TabPanel value="meta" as="div">
-                    <div class="flex flex-col gap-4">
-                        <div>
-                            <label for="meta_title" class="mb-2 block font-bold">Meta Title:</label>
-                            <InputText v-model="categoryForm.meta_title" name="meta_title" placeholder="Meta Title" class="w-full" />
-                            <FieldError :formError="$form.meta_title?.error?.message" :serverError="serverErrors?.meta_title?.[0]" />
-                        </div>
-                        <div>
-                            <label for="meta_description" class="mb-2 block font-bold">Meta Description:</label>
-                            <InputText
-                                v-model="categoryForm.meta_description"
-                                name="meta_description"
-                                placeholder="Meta Description"
-                                class="w-full"
-                            />
-                            <FieldError :formError="$form.meta_description?.error?.message" :serverError="serverErrors?.meta_description?.[0]" />
-                        </div>
-                    </div>
-                </TabPanel>
-            </TabPanels>
-        </Tabs>
-
-        <!-- Footer Actions -->
-        <div class="mt-4 flex justify-end gap-2">
-            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" :label="submitLabel" :disabled="submitting" severity="primary" />
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div class="app-form-field">
+                    <label for="post-category-status" class="app-form-label">Status:</label>
+                    <AppSelect
+                        id="post-category-status"
+                        v-model="form.status"
+                        :items="statusOptions"
+                        name="status"
+                        labelKey="label"
+                        valueKey="value"
+                        class="w-full"
+                    />
+                    <AppFieldError :formError="clientErrors.status" :serverError="serverErrors?.status?.[0]" />
+                </div>
+                <div class="app-form-field">
+                    <label for="post-category-sort-order" class="app-form-label">Sort Order:</label>
+                    <AppInput
+                        id="post-category-sort-order"
+                        v-model.number="form.sort_order"
+                        type="number"
+                        min="0"
+                        name="sort_order"
+                        placeholder="Enter Sort Order"
+                        class="w-full"
+                    />
+                    <AppFieldError :formError="clientErrors.sort_order" :serverError="serverErrors?.sort_order?.[0]" />
+                </div>
+            </div>
         </div>
-    </Form>
+
+        <div v-else class="mt-4 space-y-4">
+            <div class="app-form-field">
+                <label for="post-category-meta-title" class="app-form-label">Meta Title:</label>
+                <AppInput id="post-category-meta-title" v-model="form.meta_title" name="meta_title" placeholder="Meta Title" class="w-full" />
+            </div>
+            <div class="app-form-field">
+                <label for="post-category-meta-description" class="app-form-label">Meta Description:</label>
+                <AppInput
+                    id="post-category-meta-description"
+                    v-model="form.meta_description"
+                    name="meta_description"
+                    placeholder="Meta Description"
+                    class="w-full"
+                />
+            </div>
+        </div>
+
+        <div class="app-form-actions">
+            <AppButton type="button" color="neutral" variant="outline" @click="emit('cancel')">Cancel</AppButton>
+            <AppButton type="submit" :disabled="submitting">{{ submitLabel }}</AppButton>
+        </div>
+    </form>
 </template>
 
 <script setup lang="ts">
-import { zodResolver } from '@primevue/forms/resolvers/zod';
+import MediaUploader from '@/components/common/MediaUploader.vue';
+import { AppButton, AppFieldError, AppInput, AppSelect, AppTabs } from '@/components/ui';
+import type { PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
+import { slugify } from '@/utils/slugify';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
-
-import MediaUploader from '@/components/common/MediaUploader.vue';
-
-import FieldError from '@/components/common/FieldError.vue';
-
-import { slugify } from '@/utils/slugify';
-
-import { PostCategoryOption, PostCategoryPayload } from '@/features/posts/posts.types';
-
-// Props & Emits
 
 const props = defineProps<{
     initialForm: PostCategoryPayload;
@@ -198,85 +145,75 @@ const props = defineProps<{
     submitting: boolean;
     categoryOptions: PostCategoryOption[];
 }>();
-
 const emit = defineEmits(['submit', 'cancel']);
-
-// Reactive state
+const form = ref<PostCategoryPayload>({ ...props.initialForm });
+const clientErrors = ref<Record<string, string>>({});
 const slugEdit = ref(false);
 const activeTab = ref('main');
 const isEditMode = computed(() => props.editingId !== null);
+const tabs = [
+    { label: 'Details', value: 'main', icon: 'i-lucide-info' },
+    { label: 'Meta/SEO', value: 'meta', icon: 'i-lucide-tags' },
+];
+const statusOptions = [
+    { label: 'Active', value: true },
+    { label: 'Inactive', value: false },
+];
 
-const categoryForm = ref<PostCategoryPayload>({ ...props.initialForm });
-
-// Watchers
 watch(
     () => props.initialForm,
-    (newVal) => {
-        categoryForm.value = { ...newVal };
+    (value) => {
+        form.value = { ...value };
+        clientErrors.value = {};
+        slugEdit.value = false;
+        activeTab.value = 'main';
     },
     { immediate: true },
 );
 
 watch(
-    () => categoryForm.value.title,
-    (newTitle) => {
-        if (!isEditMode.value) {
-            categoryForm.value.slug = slugify(newTitle);
-        }
+    () => form.value.title,
+    (title) => {
+        if (!isEditMode.value) form.value.slug = slugify(title);
     },
 );
 
-// Form validation resolver
-const resolver = zodResolver(
-    z
-        .object({
-            title: z.string().min(1, { message: 'Category title is required.' }),
-            slug: z.string().optional(),
-            description: z.string().nullable().optional(),
-            meta_title: z.string().nullable().optional(),
-            meta_description: z.string().nullable().optional(),
-            status: z.boolean(),
-            parent_id: z.number({ message: 'Parent category must be a number' }).nullable().optional(),
-            sort_order: z
-                .number({ message: 'Sort order must be a number' })
-                .min(0, { message: 'Sort order must be zero or greater' })
-                .nullable()
-                .optional(),
-        })
-        .superRefine((data, ctx) => {
-            const { parent_id } = data;
+const schema = z
+    .object({
+        title: z.string().trim().min(1, { message: 'Category title is required.' }),
+        slug: z.string().optional(),
+        description: z.string().nullable().optional(),
+        meta_title: z.string().nullable().optional(),
+        meta_description: z.string().nullable().optional(),
+        status: z.boolean(),
+        parent_id: z.number({ message: 'Parent category must be a number' }).nullable().optional(),
+        sort_order: z
+            .number({ message: 'Sort order must be a number' })
+            .min(0, { message: 'Sort order must be zero or greater' })
+            .nullable()
+            .optional(),
+    })
+    .superRefine((data, context) => {
+        if (data.parent_id != null && props.editingId && data.parent_id === props.editingId) {
+            context.addIssue({ code: 'custom', path: ['parent_id'], message: 'Category cannot be its own parent.' });
+        }
+    });
 
-            if (parent_id == null) return;
-
-            if (props.editingId && parent_id === props.editingId) {
-                ctx.addIssue({
-                    code: 'custom',
-                    path: ['parent_id'],
-                    message: 'Category cannot be its own parent.',
-                });
-            }
-        }),
-);
-
-// Handle slug input (enforce slug format)
-function onSlugInput(event: Event) {
-    const input = event.target as HTMLInputElement;
-    categoryForm.value.slug = slugify(input.value);
+function onSlugInput(value: string | number | null) {
+    form.value.slug = slugify(String(value ?? ''));
 }
 
-// Remove thumbnail from form
 function removeMedia() {
-    categoryForm.value.featured_image = null;
+    form.value.featured_image = null;
 }
 
-// Emit submit if valid
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) emit('submit', categoryForm.value);
+function onSubmit() {
+    const parsed = schema.safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
+    }
+    clientErrors.value = {};
+    emit('submit', { ...form.value });
 }
-
-// Status dropdown options
-const statusOptions = [
-    { label: 'Active', value: true },
-    { label: 'Inactive', value: false },
-];
 </script>

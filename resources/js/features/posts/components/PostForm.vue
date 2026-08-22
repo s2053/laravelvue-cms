@@ -1,306 +1,231 @@
 <template>
-    <Form ref="formRef" v-slot="$form" :initialValues="form" :key="editingId || 'create'" :resolver="resolver" @submit="onSubmit">
+    <form class="app-form" @submit.prevent="onSubmit">
         <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <!-- Main Column -->
-            <div class="flex flex-col gap-4 md:col-span-2">
-                <!-- Title -->
-                <div>
-                    <label for="title" class="mb-2 block font-bold">Title:</label>
-                    <InputText v-model="form.title" name="title" type="text" placeholder="Title" class="w-full" />
-                    <FieldError :formError="$form.title?.error?.message" :serverError="serverErrors?.title?.[0]" />
-
-                    <!-- Slug label and input on one line -->
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <label for="slug" class="font-semibold whitespace-nowrap">Slug:</label>
-                        <template v-if="!slugEdit">
-                            <span class="w-0 max-w-full flex-1 truncate overflow-hidden text-sm whitespace-nowrap text-gray-600" :title="form.slug">
-                                {{ form.slug }}
-                            </span>
-                        </template>
-                        <template v-else>
-                            <InputText
-                                v-model="form.slug"
-                                name="slug"
-                                type="text"
-                                placeholder="Slug"
-                                class="mt-1 flex-grow text-sm"
-                                @input="onSlugInput"
-                                size="small"
-                            />
-                        </template>
-                        <Button
-                            icon="pi pi-pencil"
-                            size="small"
+            <div class="space-y-4 md:col-span-2">
+                <div class="app-form-field">
+                    <label for="post-title" class="app-form-label">Title:</label>
+                    <AppInput id="post-title" v-model="form.title" name="title" placeholder="Title" class="w-full" /><AppFieldError
+                        :formError="clientErrors.title"
+                        :serverError="serverErrors?.title?.[0]"
+                    />
+                    <div class="app-form-slug-row">
+                        <label for="post-slug" class="app-form-slug-label">Slug:</label>
+                        <span v-if="!slugEdit" :title="form.slug" class="app-form-slug-value">{{ form.slug }}</span>
+                        <AppInput
+                            v-else
+                            id="post-slug"
+                            v-model="form.slug"
+                            name="slug"
+                            placeholder="Slug"
+                            size="sm"
+                            class="app-form-slug-input"
+                            @update:model-value="onSlugInput"
+                        /><AppButton
                             type="button"
+                            :color="slugEdit ? 'success' : 'neutral'"
+                            variant="ghost"
+                            size="sm"
+                            icon="i-lucide-pencil"
                             @click="slugEdit = !slugEdit"
-                            :severity="slugEdit ? 'success' : 'secondary'"
-                            class="h-6 min-w-6 text-xs"
-                            variant="text"
-                            :title="'Edit Slug'"
                         />
                     </div>
-                    <FieldError :formError="$form.slug?.error?.message" :serverError="serverErrors?.slug?.[0]" />
+                    <AppFieldError :formError="clientErrors.slug" :serverError="serverErrors?.slug?.[0]" />
                 </div>
-
-                <!-- Excerpt -->
-                <div>
-                    <label for="excerpt" class="mb-2 block font-bold">Excerpt:</label>
-                    <InputText v-model="form.excerpt" name="excerpt" type="text" placeholder="Excerpt" class="w-full" />
-                    <FieldError :formError="$form.excerpt?.error?.message" :serverError="serverErrors?.excerpt?.[0]" />
+                <div class="app-form-field">
+                    <label for="post-excerpt" class="app-form-label">Excerpt:</label>
+                    <AppTextarea
+                        id="post-excerpt"
+                        v-model="form.excerpt"
+                        name="excerpt"
+                        placeholder="Excerpt"
+                        :rows="3"
+                        class="w-full"
+                    /><AppFieldError :formError="clientErrors.excerpt" :serverError="serverErrors?.excerpt?.[0]" />
                 </div>
-
-                <!-- Content -->
-                <!-- <div>
-                    <label for="content" class="mb-2 block font-bold">Content:</label>
-                    <Textarea v-model="form.content" name="content" placeholder="Content" class="w-full" rows="10" />
-                    <FieldError :formError="$form.content?.error?.message" :serverError="serverErrors?.content?.[0]" />
-                </div> -->
-
-                <!-- Editor Content -->
-                <div>
-                    <label for="content" class="mb-2 block font-bold">Editor:</label>
+                <div class="app-form-field">
+                    <label for="post-content" class="app-form-label">Content:</label>
                     <AppTextEditor
+                        id="post-content"
                         v-model="form.content"
                         name="content"
                         minHeight="400px"
                         showCharacterCount
                         :characterCountMax="5000"
-                    />
-                    <FieldError :formError="$form.content?.error?.message" :serverError="serverErrors?.content?.[0]" />
+                    /><AppFieldError :formError="clientErrors.content" :serverError="serverErrors?.content?.[0]" />
                 </div>
             </div>
-
-            <!-- Sidebar Column -->
-            <div class="flex flex-col gap-4">
-                <AppCard>
-                    <template #header> Publish </template>
-                    <div class="flex flex-col gap-4">
-                        <!-- Status -->
-                        <div class="flex items-start gap-4">
-                            <label for="status" class="w-40 pt-2 text-sm font-bold">Status:</label>
-                            <div class="flex-1">
-                                <Select
-                                    v-model="form.status"
-                                    :options="filteredPostStatusOptions"
-                                    name="status"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    class="app-input-sm w-full"
-                                    placeholder="Select Status"
-                                />
-                                <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
-                            </div>
+            <div class="space-y-4">
+                <AppFormSection title="Publish">
+                    <div class="space-y-4">
+                        <div class="app-form-field">
+                            <label for="post-status" class="app-form-label">Status:</label>
+                            <AppSelect
+                                id="post-status"
+                                v-model="form.status"
+                                :items="filteredPostStatusOptions"
+                                labelKey="label"
+                                valueKey="value"
+                                class="w-full"
+                            /><AppFieldError :formError="clientErrors.status" :serverError="serverErrors?.status?.[0]" />
                         </div>
-
-                        <!-- Published At -->
-                        <div v-if="form.status != PostStatus.SCHEDULED" class="flex items-start gap-4">
-                            <label for="published_at" class="w-40 pt-2 text-sm font-bold">Publish Date:</label>
-                            <div class="flex-1">
-                                <InputText
-                                    v-model="form.published_at"
-                                    name="published_at"
-                                    type="datetime-local"
-                                    class="app-input-sm w-full"
-                                    :max="getMaxDateTimeLocal()"
-                                />
-                                <FieldError :formError="$form.published_at?.error?.message" :serverError="serverErrors?.published_at?.[0]" />
-                            </div>
+                        <div v-if="form.status !== PostStatus.SCHEDULED" class="app-form-field">
+                            <label for="post-published-at" class="app-form-label">Publish Date:</label>
+                            <AppInput
+                                id="post-published-at"
+                                v-model="form.published_at"
+                                type="datetime-local"
+                                :max="getMaxDateTimeLocal()"
+                                class="w-full"
+                            /><AppFieldError :formError="clientErrors.published_at" :serverError="serverErrors?.published_at?.[0]" />
                         </div>
-
-                        <!-- Scheduled At -->
-                        <div v-if="form.status === PostStatus.SCHEDULED" class="flex items-start gap-4">
-                            <label for="scheduled_at" class="w-40 pt-2 text-sm font-bold">Schedule Date:</label>
-                            <div class="flex-1">
-                                <InputText
-                                    v-model="form.scheduled_at"
-                                    name="scheduled_at"
-                                    type="datetime-local"
-                                    class="app-input-sm w-full"
-                                    :max="getMaxDateTimeLocal()"
-                                />
-                                <FieldError :formError="$form.scheduled_at?.error?.message" :serverError="serverErrors?.scheduled_at?.[0]" />
-                            </div>
+                        <div v-else class="app-form-field">
+                            <label for="post-scheduled-at" class="app-form-label">Schedule Date:</label>
+                            <AppInput
+                                id="post-scheduled-at"
+                                v-model="form.scheduled_at"
+                                type="datetime-local"
+                                :max="getMaxDateTimeLocal()"
+                                class="w-full"
+                            /><AppFieldError :formError="clientErrors.scheduled_at" :serverError="serverErrors?.scheduled_at?.[0]" />
                         </div>
-
-                        <!-- Post Visibility -->
-                        <div class="flex items-start gap-4">
-                            <label for="visibility" class="w-40 pt-2 text-sm font-bold">Visibility:</label>
-                            <div class="flex-1">
-                                <Select
-                                    v-model="form.visibility"
-                                    :options="PostVisibilityOptions"
-                                    name="visibility"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    class="app-input-sm w-full"
-                                    placeholder="Select Post Visibility"
-                                />
-                                <FieldError :formError="$form.visibility?.error?.message" :serverError="serverErrors?.visibility?.[0]" />
-                            </div>
+                        <div class="app-form-field">
+                            <label for="post-visibility" class="app-form-label">Visibility:</label>
+                            <AppSelect
+                                id="post-visibility"
+                                v-model="form.visibility"
+                                :items="PostVisibilityOptions"
+                                labelKey="label"
+                                valueKey="value"
+                                class="w-full"
+                            /><AppFieldError :formError="clientErrors.visibility" :serverError="serverErrors?.visibility?.[0]" />
                         </div>
-
-                        <!-- Post Author -->
-                        <div class="flex items-start gap-4">
-                            <label for="author_id" class="w-40 pt-2 text-sm font-bold">Author:</label>
-                            <div class="flex-1">
-                                <Select
-                                    v-model="form.author_id"
-                                    :options="authors"
-                                    name="author_id"
-                                    optionLabel="name"
-                                    optionValue="id"
-                                    class="app-input-sm w-full"
-                                    placeholder="Select Post Author"
-                                    showClear
-                                />
-                                <FieldError :formError="$form.author_id?.error?.message" :serverError="serverErrors?.author_id?.[0]" />
-                            </div>
+                        <div class="app-form-field">
+                            <label for="post-author" class="app-form-label">Author:</label>
+                            <AppSelect
+                                id="post-author"
+                                v-model="form.author_id"
+                                :items="authors"
+                                labelKey="name"
+                                valueKey="id"
+                                clearable
+                                class="w-full"
+                                placeholder="Select Post Author"
+                            /><AppFieldError :formError="clientErrors.author_id" :serverError="serverErrors?.author_id?.[0]" />
                         </div>
                     </div>
-
-                    <template #footer>
-                        <div class="mt-5 flex justify-end gap-4">
-                            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-                            <Button type="submit" :label="submitLabel" severity="primary" />
-                        </div>
-                    </template>
-                </AppCard>
-
-                <AppCard>
-                    <template #header> Categories & Tags </template>
-                    <div class="flex flex-col gap-4">
-                        <!-- Post Type -->
-                        <div>
-                            <label for="post_type" class="mb-2 block font-bold">Post Type:</label>
-                            <Select
+                </AppFormSection>
+                <AppFormSection title="Categories & Tags" collapsible>
+                    <div class="space-y-4">
+                        <div class="app-form-field">
+                            <label for="post-type" class="app-form-label">Post Type:</label>
+                            <AppSelect
+                                id="post-type"
                                 v-model="form.post_type"
-                                :options="PostTypeOptions"
-                                name="post_type"
-                                optionLabel="label"
-                                optionValue="value"
+                                :items="PostTypeOptions"
+                                labelKey="label"
+                                valueKey="value"
                                 class="w-full"
-                                placeholder="Select Post Type"
-                            />
-                            <FieldError :formError="$form.post_type?.error?.message" :serverError="serverErrors?.post_type?.[0]" />
+                            /><AppFieldError :formError="clientErrors.post_type" :serverError="serverErrors?.post_type?.[0]" />
                         </div>
-                        <!-- Categories -->
-                        <div>
-                            <label for="category_ids" class="mb-2 block font-bold">Categories:</label>
-
-                            <MultiSelect
-                                display="chip"
+                        <div class="app-form-field">
+                            <label for="post-categories" class="app-form-label">Categories:</label>
+                            <AppMultiSelect
+                                id="post-categories"
                                 v-model="form.category_ids"
-                                :options="categoryOptions"
-                                name="category_ids"
-                                optionLabel="title"
-                                optionValue="id"
+                                :items="categoryOptions"
+                                labelKey="title"
+                                valueKey="id"
+                                clearable
                                 class="w-full"
                                 placeholder="Select Categories"
-                            />
-                            <FieldError :formError="$form.category_ids?.error?.messsage" :serverError="serverErrors?.category_ids?.[0]" />
+                            /><AppFieldError :formError="clientErrors.category_ids" :serverError="serverErrors?.category_ids?.[0]" />
                         </div>
-
-                        <!-- Tags -->
-                        <div>
-                            <label for="tag_ids" class="mb-2 block font-bold">Tags:</label>
-                            <MultiSelect
-                                display="chip"
+                        <div class="app-form-field">
+                            <label for="post-tags" class="app-form-label">Tags:</label>
+                            <AppMultiSelect
+                                id="post-tags"
                                 v-model="form.tag_ids"
-                                :options="tagOptions"
-                                name="tag_ids"
-                                optionLabel="title"
-                                optionValue="id"
+                                :items="tagOptions"
+                                labelKey="title"
+                                valueKey="id"
+                                clearable
                                 class="w-full"
                                 placeholder="Select Tags"
-                                :maxSelectedLabels="5"
+                            /><AppFieldError :formError="clientErrors.tag_ids" :serverError="serverErrors?.tag_ids?.[0]" />
+                        </div>
+                    </div>
+                </AppFormSection>
+                <AppFormSection title="Media" collapsible>
+                    <div class="app-form-field">
+                        <label class="app-form-label">Thumbnail:</label>
+                        <div v-if="form.thumbnail" class="app-form-media-preview relative flex justify-center">
+                            <img :src="form.thumbnail" alt="Thumbnail preview" class="max-h-32 w-full max-w-xs rounded object-contain" /><AppButton
+                                type="button"
+                                color="error"
+                                variant="solid"
+                                size="sm"
+                                icon="i-lucide-trash-2"
+                                class="absolute top-2 right-2"
+                                @click="removeMedia"
                             />
-
-                            <FieldError :formError="$form.tag_ids?.error?.message" :serverError="serverErrors?.tag_ids?.[0]" />
                         </div>
+                        <MediaUploader v-model:file="form.thumbnailFile" /><AppFieldError
+                            :formError="clientErrors.thumbnail"
+                            :serverError="serverErrors?.thumbnail?.[0]"
+                        />
                     </div>
-                </AppCard>
-
-                <AppCard>
-                    <template #header> Media </template>
-                    <div class="flex flex-col gap-4">
-                        <!-- Thumbnail -->
-                        <div>
-                            <label for="thumbnailFile" class="mb-2 block font-bold">Thumbnail:</label>
-                            <div v-if="form.thumbnail" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
-                                <img :src="form.thumbnail" alt="Thumbnail preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
-                                <div class="absolute top-0 right-0">
-                                    <Button
-                                        @click="removeMedia"
-                                        icon="pi pi-trash"
-                                        severity="danger"
-                                        aria-label="Cancel"
-                                        size="small"
-                                        title="Remove"
-                                    />
-                                </div>
-                            </div>
-                            <MediaUploader v-model:file="form.thumbnailFile" />
-                            <FieldError :formError="$form.thumbnail?.error?.message" :serverError="serverErrors?.thumbnail?.[0]" />
+                </AppFormSection>
+                <AppFormSection title="Options" collapsible>
+                    <AppCheckbox v-model="form.is_commentable" label="Commentable" /><AppFieldError
+                        :formError="clientErrors.is_commentable"
+                        :serverError="serverErrors?.is_commentable?.[0]"
+                /></AppFormSection>
+                <AppFormSection title="Meta" collapsible>
+                    <div class="space-y-4">
+                        <div class="app-form-field">
+                            <label for="post-meta-title" class="app-form-label">Meta Title:</label>
+                            <AppInput id="post-meta-title" v-model="form.meta_title" name="meta_title" placeholder="Meta Title" class="w-full" />
                         </div>
-                    </div>
-                </AppCard>
-
-                <AppPanel v-model:collapsed="optionsCollapsed">
-                    <template #header> Options </template>
-                    <div class="flex items-center gap-4">
-                        <label for="is_commentable" class="min-w-[120px] font-bold">Commentable:</label>
-                        <div class="flex flex-col">
-                            <ToggleSwitch v-model="form.is_commentable" name="is_commentable" />
-                            <FieldError :formError="$form.is_commentable?.error?.message" :serverError="serverErrors?.is_commentable?.[0]" />
-                        </div>
-                    </div>
-                </AppPanel>
-
-                <AppPanel v-model:collapsed="metaCollapsed">
-                    <template #header> Meta </template>
-                    <div class="flex flex-col gap-4">
-                        <div>
-                            <label for="meta_title" class="mb-2 block font-bold">Meta Title:</label>
-                            <InputText v-model="form.meta_title" name="meta_title" type="text" placeholder="Meta Title" class="w-full" />
-                            <FieldError :formError="$form.meta_title?.error?.message" :serverError="serverErrors?.meta_title?.[0]" />
-                        </div>
-                        <div>
-                            <label for="meta_description" class="mb-2 block font-bold">Meta Description:</label>
-                            <InputText
+                        <div class="app-form-field">
+                            <label for="post-meta-description" class="app-form-label">Meta Description:</label>
+                            <AppTextarea
+                                id="post-meta-description"
                                 v-model="form.meta_description"
                                 name="meta_description"
-                                type="text"
                                 placeholder="Meta Description"
+                                :rows="3"
                                 class="w-full"
                             />
-                            <FieldError :formError="$form.meta_description?.error?.message" :serverError="serverErrors?.meta_description?.[0]" />
                         </div>
                     </div>
-                </AppPanel>
+                </AppFormSection>
             </div>
         </div>
-
-        <div class="mt-6 flex justify-end gap-2">
-            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" :label="submitLabel" :disabled="submitting" severity="primary" />
+        <div class="app-form-actions">
+            <AppButton type="button" color="neutral" variant="outline" @click="emit('cancel')">Cancel</AppButton>
+            <AppButton type="submit" :disabled="submitting">{{ submitLabel }}</AppButton>
         </div>
-    </Form>
+    </form>
 </template>
-
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
 import MediaUploader from '@/components/common/MediaUploader.vue';
-import AppCard from '@/components/ui/AppCard.vue';
-import AppPanel from '@/components/ui/AppPanel.vue';
-import AppTextEditor from '@/components/ui/AppTextEditor.vue';
+import {
+    AppButton,
+    AppCheckbox,
+    AppFieldError,
+    AppFormSection,
+    AppInput,
+    AppMultiSelect,
+    AppSelect,
+    AppTextEditor,
+    AppTextarea,
+} from '@/components/ui';
 import { PostStatus, PostStatusOptions, PostType, PostTypeOptions, PostVisibility, PostVisibilityOptions } from '@/features/posts/posts.enum';
 import type { PostPayload } from '@/features/posts/posts.types';
-import { getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';
+import { formatLocalDateTime, getDefaultScheduledDateTimeLocal, getMaxDateTimeLocal } from '@/utils/dateHelper';
 import { slugify } from '@/utils/slugify';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
-
 const props = defineProps<{
     initialForm: PostPayload;
     submitLabel: string;
@@ -312,79 +237,78 @@ const props = defineProps<{
     authors: { id: number; name: string }[];
 }>();
 const emit = defineEmits(['submit', 'cancel']);
-
 const form = ref<PostPayload>({ ...props.initialForm });
-const formRef = ref();
+const clientErrors = ref<Record<string, string>>({});
 const slugEdit = ref(false);
-const optionsCollapsed = ref(true);
-const metaCollapsed = ref(true);
 const scheduledAtMin = ref(getDefaultScheduledDateTimeLocal());
-
 const isEditMode = computed(() => props.editingId !== null);
-const filteredPostStatusOptions = computed(() => (isEditMode.value ? PostStatusOptions : PostStatusOptions.filter((o) => o.value !== 'archived')));
-
+const filteredPostStatusOptions = computed(() =>
+    isEditMode.value ? PostStatusOptions : PostStatusOptions.filter((option) => option.value !== PostStatus.ARCHIVED),
+);
 watch(
     () => props.initialForm,
-    (val) => {
-        form.value = { ...val };
+    (value) => {
+        form.value = { ...value };
+        clientErrors.value = {};
+        slugEdit.value = false;
     },
+    { immediate: true },
 );
-
 watch(
     () => form.value.title,
     (title) => {
         if (!isEditMode.value) form.value.slug = slugify(title);
     },
 );
-
 watch(
     () => form.value.status,
-    (newStatus) => {
+    (status) => {
         const wasScheduled = props.initialForm.status === PostStatus.SCHEDULED;
-        if (isEditMode.value && wasScheduled && newStatus === PostStatus.SCHEDULED) {
-            form.value.scheduled_at = props.initialForm.scheduled_at;
-        } else if (newStatus === PostStatus.SCHEDULED) {
-            form.value.scheduled_at = getDefaultScheduledDateTimeLocal();
-        }
+        if (isEditMode.value && wasScheduled && status === PostStatus.SCHEDULED) form.value.scheduled_at = props.initialForm.scheduled_at;
+        else if (status === PostStatus.SCHEDULED) form.value.scheduled_at = getDefaultScheduledDateTimeLocal();
     },
 );
-
-function onSlugInput(e: Event) {
-    form.value.slug = slugify((e.target as HTMLInputElement).value);
+function onSlugInput(value: string | number | null) {
+    form.value.slug = slugify(String(value ?? ''));
 }
-
 function removeMedia() {
     form.value.thumbnail = '';
 }
-
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) emit('submit', form.value);
+function onSubmit() {
+    const parsed = schema.safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
+    }
+    clientErrors.value = {};
+    emit('submit', { ...form.value });
 }
-
-const resolver = zodResolver(
-    z.object({
-        title: z.string().min(1, { message: 'Title is required.' }),
-        slug: z.string().optional(),
-        post_type: z.enum(Object.values(PostType) as [string, ...string[]]),
-        is_commentable: z.boolean(),
-        excerpt: z.string().nullable().optional(),
-        content: z.string().nullable().optional(),
-        thumbnail: z.string().nullable().optional(),
-        meta_title: z.string().nullable().optional(),
-        meta_description: z.string().nullable().optional(),
-        meta_keywords: z.string().nullable().optional(),
-        status: z.enum(Object.values(PostStatus) as [string, ...string[]]),
-        visibility: z.enum(Object.values(PostVisibility) as [string, ...string[]]),
-        scheduled_at: z
-            .string()
-            .nullable()
-            .optional()
-            .refine((val) => form.value.status !== PostStatus.SCHEDULED || (val && val >= scheduledAtMin.value), {
-                message: `Scheduled date must be at least ${scheduledAtMin.value}`,
-            }),
-        published_at: z.string().nullable().optional(),
-        category_ids: z.array(z.number()).nullable().optional(),
-        tag_ids: z.array(z.number()).nullable().optional(),
-    }),
-);
+const schema = z.object({
+    title: z.string().trim().min(1, { message: 'Title is required.' }),
+    slug: z.string().optional(),
+    post_type: z.enum(Object.values(PostType) as [string, ...string[]]),
+    is_commentable: z.boolean(),
+    excerpt: z.string().nullable().optional(),
+    content: z.string().nullable().optional(),
+    thumbnail: z.string().nullable().optional(),
+    meta_title: z.string().nullable().optional(),
+    meta_description: z.string().nullable().optional(),
+    status: z.enum(Object.values(PostStatus) as [string, ...string[]]),
+    visibility: z.enum(Object.values(PostVisibility) as [string, ...string[]]),
+    scheduled_at: z
+        .string()
+        .nullable()
+        .optional()
+        .refine(
+            (value) =>
+                form.value.status !== PostStatus.SCHEDULED ||
+                (props.initialForm.status === PostStatus.SCHEDULED && isEditMode.value) ||
+                (value && value >= scheduledAtMin.value),
+            { message: `Scheduled date must be at least ${formatLocalDateTime(scheduledAtMin.value)}` },
+        ),
+    published_at: z.string().nullable().optional(),
+    author_id: z.number().nullable().optional(),
+    category_ids: z.array(z.number()).nullable().optional(),
+    tag_ids: z.array(z.number()).nullable().optional(),
+});
 </script>

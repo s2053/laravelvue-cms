@@ -3,8 +3,14 @@ import type { Post } from '@/features/posts/posts.types';
 import PostService from '@/features/posts/services/post.service';
 import { ref } from 'vue';
 
-export function usePosts() {
-    const { handleError } = useApiErrorHandler();
+type UsePostsOptions = { onError?: (error: unknown) => void };
+
+export function usePosts(config: UsePostsOptions = {}) {
+    async function reportError(err: unknown) {
+        if (config.onError) return config.onError(err);
+        const { handleError } = useApiErrorHandler();
+        handleError(err);
+    }
 
     const posts = ref<Post[]>([]);
     const paginatedRes = ref<any>({});
@@ -19,7 +25,7 @@ export function usePosts() {
             const res = await PostService.getAll(params);
             posts.value = res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch posts';
         } finally {
             loading.value = false;
@@ -32,7 +38,7 @@ export function usePosts() {
             const res = await PostService.getById(id);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch post';
             throw err;
         }
@@ -43,7 +49,7 @@ export function usePosts() {
         try {
             await PostService.create(post);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to create post';
             throw err;
         }
@@ -55,7 +61,7 @@ export function usePosts() {
             const res = await PostService.update(id, post);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update post';
             throw err;
         }
@@ -66,7 +72,7 @@ export function usePosts() {
         try {
             await PostService.delete(id);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to delete post';
             throw err;
         }
@@ -77,7 +83,7 @@ export function usePosts() {
         try {
             await PostService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }
