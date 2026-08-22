@@ -1,17 +1,30 @@
 <template>
     <AppContent>
-        <div class="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-                <h2 class="mb-1">Media Library</h2>
-                <p class="text-surface-500 text-sm">Manage uploaded assets, edit metadata, and reuse media across the CMS.</p>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2">
-                <Button icon="pi pi-plus" label="Add Media" @click="openUploadDialog" />
-                <Button icon="pi pi-th-large" :severity="viewMode === 'grid' ? 'primary' : 'secondary'" outlined @click="viewMode = 'grid'" />
-                <Button icon="pi pi-bars" :severity="viewMode === 'list' ? 'primary' : 'secondary'" outlined @click="viewMode = 'list'" />
-            </div>
-        </div>
+        <AppPageHeader title="Media Library" description="Manage uploaded assets, edit metadata, and reuse media across the CMS.">
+            <template #actions>
+                <div class="flex flex-wrap items-center gap-2">
+                    <AppButton icon="i-lucide-plus" @click="openUploadDialog">Add Media</AppButton>
+                    <AppButton
+                        :color="viewMode === 'grid' ? 'primary' : 'neutral'"
+                        variant="outline"
+                        icon="i-lucide-layout-grid"
+                        size="sm"
+                        square
+                        aria-label="Grid view"
+                        @click="viewMode = 'grid'"
+                    />
+                    <AppButton
+                        :color="viewMode === 'list' ? 'primary' : 'neutral'"
+                        variant="outline"
+                        icon="i-lucide-list"
+                        size="sm"
+                        square
+                        aria-label="List view"
+                        @click="viewMode = 'list'"
+                    />
+                </div>
+            </template>
+        </AppPageHeader>
 
         <div class="media-panel mb-4">
             <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -22,20 +35,13 @@
                 <div class="ml-auto flex w-fit flex-col items-end gap-2">
                     <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
                         <TableToolBar v-model="globalFilterValue" showFilter @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter">
-                            <InputGroup class="!w-[190px]">
-                                <InputGroupAddon>
-                                    <i class="pi pi-sort-alt text-surface-500" aria-hidden="true"></i>
-                                </InputGroupAddon>
-                                <Select
-                                    v-model="sortOptionModel"
-                                    :options="sortOptions"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    class="w-full"
-                                    placeholder="Sort"
-                                    @change="applySort"
-                                />
-                            </InputGroup>
+                            <AppSelect
+                                v-model="sortOptionModel"
+                                :items="sortOptions"
+                                class="w-[190px]"
+                                placeholder="Sort"
+                                @update:model-value="applySort"
+                            />
                         </TableToolBar>
                     </TableToolBarWrapper>
                 </div>
@@ -44,11 +50,11 @@
             <MediaFilter v-if="openFilter" :filters="filters" @update:filters="onFiltersChanged" />
         </div>
 
-        <div v-if="loading" class="media-panel text-surface-500 border-dashed p-12 text-center">Loading media library...</div>
+        <div v-if="loading" class="media-panel border-dashed p-12 text-center text-[var(--color-text-muted)]">Loading media library...</div>
 
         <div v-else-if="records.length === 0" class="media-panel border-dashed p-12 text-center">
             <div class="text-lg font-semibold">No media found</div>
-            <p class="text-surface-500 mt-2 text-sm">Upload your first asset or change the current search and filters.</p>
+            <p class="mt-2 text-sm text-[var(--color-text-muted)]">Upload your first asset or change the current search and filters.</p>
         </div>
 
         <div v-else-if="viewMode === 'grid'" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
@@ -64,28 +70,22 @@
             >
                 <div class="relative">
                     <div class="absolute top-2 left-2 z-10">
-                        <Checkbox
-                            :modelValue="isSelected(item.id)"
-                            binary
-                            inputId="media-item"
-                            @update:modelValue="toggleSelection(item)"
-                            @click.stop
-                        />
+                        <AppCheckbox :modelValue="isSelected(item.id)" @update:modelValue="toggleSelection(item)" @click.stop />
                     </div>
 
                     <div class="absolute top-2 right-2 z-10 flex gap-1.5 opacity-0 transition group-hover:opacity-100">
-                        <Button icon="pi pi-trash" severity="danger" rounded outlined size="small" @click.stop="removeMediaRecord(item)" />
+                        <AppButton icon="i-lucide-trash-2" color="error" variant="outline" size="sm" square @click.stop="removeMediaRecord(item)" />
                     </div>
 
                     <div class="media-thumb aspect-[4/3] overflow-hidden">
                         <img v-if="isImage(item)" :src="getPreviewUrl(item)" :alt="item.title || item.filename" class="h-full w-full object-cover" />
-                        <div v-else class="text-surface-500 flex h-full items-center justify-center px-4 text-center text-sm">
+                        <div v-else class="flex h-full items-center justify-center px-4 text-center text-sm text-[var(--color-text-muted)]">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
 
                         <span
                             v-if="item.extension"
-                            class="border-surface-0/20 bg-surface-900/70 text-surface-0 dark:border-surface-0/20 dark:bg-surface-0/75 dark:text-surface-900 absolute right-2 bottom-2 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-sm"
+                            class="absolute right-2 bottom-2 rounded-md border border-black/20 bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm"
                         >
                             {{ item.extension.toUpperCase() }}
                         </span>
@@ -103,7 +103,7 @@
                         </button>
                     </div>
 
-                    <div class="text-surface-500 flex items-center justify-between text-[11px]">
+                    <div class="flex items-center justify-between text-[11px] text-[var(--color-text-muted)]">
                         <span>{{ formatFileSize(item.size) }}</span>
                         <span class="truncate">{{ item.created_at ? formatDateOnly(item.created_at) : '-' }}</span>
                     </div>
@@ -114,11 +114,11 @@
         <div v-else class="media-panel overflow-hidden">
             <div v-for="item in records" :key="item.id" class="flex flex-col gap-4 border-b p-4 last:border-b-0 md:flex-row md:items-center">
                 <div class="flex items-center gap-4">
-                    <Checkbox :modelValue="isSelected(item.id)" binary inputId="media-list-item" @update:modelValue="toggleSelection(item)" />
+                    <AppCheckbox :modelValue="isSelected(item.id)" :name="`media-list-item-${item.id}`" @update:modelValue="toggleSelection(item)" />
 
                     <div class="media-thumb h-20 w-24 overflow-hidden rounded-lg">
                         <img v-if="isImage(item)" :src="getPreviewUrl(item)" :alt="item.title || item.filename" class="h-full w-full object-cover" />
-                        <div v-else class="text-surface-500 flex h-full items-center justify-center text-xs">
+                        <div v-else class="flex h-full items-center justify-center text-xs text-[var(--color-text-muted)]">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
                     </div>
@@ -128,35 +128,34 @@
                     <button type="button" class="truncate text-left font-semibold hover:underline" @click="openDetails(item.id)">
                         {{ item.title || item.original_name || item.filename }}
                     </button>
-                    <div class="text-surface-500 mt-1 truncate text-sm">{{ item.original_name || item.filename }}</div>
+                    <div class="mt-1 truncate text-sm text-[var(--color-text-muted)]">{{ item.original_name || item.filename }}</div>
                     <div class="mt-2 flex flex-wrap gap-2">
-                        <Tag :value="item.type" severity="secondary" />
-                        <Tag :value="item.visibility" :severity="item.visibility === 'public' ? 'success' : 'warning'" />
-                        <Tag :value="item.status ? 'Active' : 'Inactive'" :severity="item.status ? 'success' : 'danger'" />
+                        <AppBadge color="neutral" size="sm">{{ item.type }}</AppBadge>
+                        <AppBadge :color="item.visibility === 'public' ? 'success' : 'warning'" size="sm">{{ item.visibility }}</AppBadge>
+                        <AppBadge :color="item.status ? 'success' : 'error'" size="sm">{{ item.status ? 'Active' : 'Inactive' }}</AppBadge>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2 md:ml-auto">
-                    <span class="text-surface-500 text-sm">{{ formatFileSize(item.size) }}</span>
-                    <Button icon="pi pi-pencil" rounded outlined size="small" @click="openDetails(item.id)" />
-                    <Button icon="pi pi-trash" severity="danger" rounded outlined size="small" @click="removeMediaRecord(item)" />
+                    <span class="text-sm text-[var(--color-text-muted)]">{{ formatFileSize(item.size) }}</span>
+                    <AppButton icon="i-lucide-pencil" color="neutral" variant="outline" size="sm" square @click="openDetails(item.id)" />
+                    <AppButton icon="i-lucide-trash-2" color="error" variant="outline" size="sm" square @click="removeMediaRecord(item)" />
                 </div>
             </div>
         </div>
 
         <div class="mt-5 flex justify-end">
-            <Paginator
-                :rows="per_page"
-                :totalRecords="total"
-                :first="currentPage * per_page"
-                :rowsPerPageOptions="perPageOptions"
-                template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-                currentPageReportTemplate="{first} to {last} of {totalRecords}"
-                @page="onPage"
+            <AppPagination
+                :page="currentPage"
+                :total="total"
+                :items-per-page="per_page"
+                :rows-per-page-options="perPageOptions"
+                @update:page="onPageChange"
+                @update:items-per-page="onRowsChange"
             />
         </div>
 
-        <Dialog v-model:visible="uploadDialogVisible" modal header="Upload Media" :style="{ width: '48rem' }">
+        <AppOverlayShell v-model:open="uploadDialogVisible" title="Upload Media" size="lg">
             <MediaUploadForm
                 :initialForm="uploadFormModel"
                 :submitting="uploading"
@@ -164,47 +163,34 @@
                 @submit="handleUpload"
                 @cancel="uploadDialogVisible = false"
             />
-        </Dialog>
+        </AppOverlayShell>
 
-        <Dialog
-            v-model:visible="detailsVisible"
-            modal
-            :closable="false"
-            contentClass="h-full overflow-hidden"
-            :style="{ width: '72rem', maxWidth: '96vw', height: '90vh' }"
+        <AppOverlayShell
+            v-model:open="detailsVisible"
+            title="Attachment details"
+            :description="selectedMedia ? selectedMedia.title || selectedMedia.original_name || selectedMedia.filename : undefined"
+            size="2xl"
         >
-            <template #header>
-                <div class="flex w-full items-center justify-between gap-4">
-                    <div class="min-w-0">
-                        <div class="truncate text-lg font-semibold">Attachment details</div>
-                        <div v-if="selectedMedia" class="text-surface-500 truncate text-sm">
-                            {{ selectedMedia.title || selectedMedia.original_name || selectedMedia.filename }}
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-2">
-                        <Button
-                            icon="pi pi-chevron-left"
-                            severity="secondary"
-                            outlined
-                            rounded
-                            size="small"
-                            :disabled="!canGoToPrevious"
-                            @click="goToPreviousMedia"
-                        />
-                        <Button
-                            icon="pi pi-chevron-right"
-                            severity="secondary"
-                            outlined
-                            rounded
-                            size="small"
-                            :disabled="!canGoToNext"
-                            @click="goToNextMedia"
-                        />
-                        <Button icon="pi pi-times" severity="secondary" outlined rounded size="small" @click="closeDetails" />
-                    </div>
-                </div>
-            </template>
+            <div class="mb-4 flex justify-end gap-2">
+                <AppButton
+                    icon="i-lucide-chevron-left"
+                    color="neutral"
+                    variant="outline"
+                    size="sm"
+                    square
+                    :disabled="!canGoToPrevious"
+                    @click="goToPreviousMedia"
+                />
+                <AppButton
+                    icon="i-lucide-chevron-right"
+                    color="neutral"
+                    variant="outline"
+                    size="sm"
+                    square
+                    :disabled="!canGoToNext"
+                    @click="goToNextMedia"
+                />
+            </div>
 
             <MediaDetailsForm
                 ref="detailsFormRef"
@@ -217,31 +203,32 @@
 
             <template #footer>
                 <div class="flex w-full flex-wrap items-center justify-end gap-2">
-                    <Button label="Close" severity="secondary" outlined @click="closeDetails" />
-                    <Button v-if="selectedMedia" label="Delete" severity="danger" outlined @click="handleDetailsDelete" />
-                    <Button v-if="detailsEditing" label="Cancel" severity="secondary" outlined @click="cancelDetailsEdit" />
-                    <Button v-if="detailsEditing" :loading="detailsSubmitting" label="Save Changes" @click="submitDetailsEdit" />
-                    <Button v-else label="Edit" @click="startDetailsEdit" />
+                    <AppButton label="Close" color="secondary" variant="outline" @click="closeDetails" />
+                    <AppButton v-if="selectedMedia" label="Delete" color="error" variant="outline" @click="handleDetailsDelete" />
+                    <AppButton v-if="detailsEditing" label="Cancel" color="secondary" variant="outline" @click="cancelDetailsEdit" />
+                    <AppButton v-if="detailsEditing" :loading="detailsSubmitting" label="Save Changes" @click="submitDetailsEdit" />
+                    <AppButton v-else label="Edit" @click="startDetailsEdit" />
                 </div>
             </template>
-        </Dialog>
+        </AppOverlayShell>
     </AppContent>
 </template>
 
 <script setup lang="ts">
 import { BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { AppBadge, AppButton, AppCheckbox, AppOverlayShell, AppPageHeader, AppPagination, AppSelect } from '@/components/ui';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { usePaginatedTable } from '@/composables/usePaginatedList';
 import { MediaDetailsForm, MediaFilter, MediaUploadForm } from '@/features/media/components';
 import { useMedia } from '@/features/media/composables';
 import type { MediaBulkUploadPayload, MediaFilters, MediaPayload, MediaRecord } from '@/features/media/media.types';
 import MediaService from '@/features/media/services/media.service';
 import AppContent from '@/layouts/app/components/AppContent.vue';
-import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, ref } from 'vue';
 
-const toast = useToast();
-const { showDeleteConfirm } = useDeleteConfirm();
+const toast = useAppToast();
+const { showDeleteConfirm } = useAppDeleteConfirm();
 const { getMediaById, bulkCreateMedia, updateMedia, deleteMedia, bulkUpdateMedia } = useMedia();
 
 const {
@@ -324,6 +311,14 @@ function applySort() {
     reload(1);
 }
 
+function onPageChange(page: number) {
+    onPage({ page, rows: per_page.value });
+}
+
+function onRowsChange(rows: number) {
+    onPage({ page: 0, rows });
+}
+
 function openUploadDialog() {
     uploadFormModel.value = {
         files: [],
@@ -342,7 +337,7 @@ async function handleUpload(payload: MediaBulkUploadPayload) {
         await bulkCreateMedia(payload);
         uploadDialogVisible.value = false;
         reload(currentPage.value + 1);
-        toast.add({ severity: 'success', summary: 'Media uploaded', life: 2000 });
+        toast.success('Media uploaded');
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             uploadServerErrors.value = err.response.data.errors;
@@ -377,7 +372,7 @@ async function handleDetailsSubmit(payload: Partial<MediaPayload>) {
         selectedMedia.value = updated;
         replaceRecord(updated);
         detailsEditing.value = false;
-        toast.add({ severity: 'success', summary: 'Media updated', life: 2000 });
+        toast.success('Media updated');
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             detailsServerErrors.value = err.response.data.errors;
@@ -502,7 +497,7 @@ async function applyBulk() {
     selectedRecords.value = [];
     bulkAction.value = null;
     reload(currentPage.value + 1);
-    toast.add({ severity: 'success', summary: 'Bulk update applied', life: 2000 });
+    toast.success('Bulk update applied');
 }
 
 function replaceRecord(updated: MediaRecord) {
@@ -551,21 +546,21 @@ function formatDateOnly(dateString?: string | null) {
 
 <style scoped>
 .media-panel {
-    border: 1px solid var(--surface-border);
+    border: 1px solid var(--color-border);
     border-radius: 1rem;
     padding: 1rem;
-    background: var(--surface-card);
+    background: var(--card-bg);
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .media-item {
-    border: 1px solid var(--surface-border);
+    border: 1px solid var(--card-border);
     border-radius: 1rem;
-    background: var(--surface-card);
+    background: var(--card-bg);
     box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
 .media-thumb {
-    background: var(--surface-ground);
+    background: var(--color-surface-raised);
 }
 </style>

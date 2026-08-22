@@ -1,5 +1,5 @@
-import type { PaginatedResponse } from '@/types/apiResponse';
 import { useAppToast } from '@/composables/useAppToast';
+import type { PaginatedResponse } from '@/types/apiResponse';
 import { reactive, ref } from 'vue';
 
 type SortOrder = 1 | -1;
@@ -106,7 +106,7 @@ export function usePaginatedTable<T, F extends DefaultFilters>(
 
     // Handle pagination change
     function onPage(event: { page: number; rows: number }) {
-        if (!initialLoadFinished && event.page === 0) {
+        if (!initialLoadFinished && event.page === 0 && event.rows === initialPerPage) {
             initialLoadFinished = true;
             return; // Skip initial load
         }

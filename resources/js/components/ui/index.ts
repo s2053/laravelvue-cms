@@ -13,6 +13,7 @@ export { default as AppInput } from '@/components/ui/AppInput.vue';
 export { default as AppMultiSelect } from '@/components/ui/AppMultiSelect.vue';
 export { default as AppOverlayShell } from '@/components/ui/AppOverlayShell.vue';
 export { default as AppPageHeader } from '@/components/ui/AppPageHeader.vue';
+export { default as AppPagination } from '@/components/ui/AppPagination.vue';
 export { default as AppPanel } from '@/components/ui/AppPanel.vue';
 export { default as AppPassword } from '@/components/ui/AppPassword.vue';
 export { default as AppSelect } from '@/components/ui/AppSelect.vue';

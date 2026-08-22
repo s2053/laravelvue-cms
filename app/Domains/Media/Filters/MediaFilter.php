@@ -81,7 +81,9 @@ class MediaFilter extends QueryFilter
             $sortDir = 'desc';
         }
 
-        return $this->builder->orderBy($sortBy, $sortDir);
+        return $this->builder
+            ->orderBy($sortBy, $sortDir)
+            ->orderBy('id', $sortDir);
     }
 
     protected function applyWhereIn(string $column, string|array|null $value): void

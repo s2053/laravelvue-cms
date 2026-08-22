@@ -4,9 +4,7 @@ import { z } from 'zod';
 const nullableText = (maxLength?: number) =>
     z.preprocess(
         (value) => (value === '' ? null : value),
-        maxLength
-            ? z.union([z.string().trim().max(maxLength), z.null()]).optional()
-            : z.union([z.string().trim(), z.null()]).optional(),
+        maxLength ? z.union([z.string().trim().max(maxLength), z.null()]).optional() : z.union([z.string().trim(), z.null()]).optional(),
     );
 
 export const mediaDetailsSchema = z.object({

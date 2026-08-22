@@ -1,6 +1,6 @@
 import { useApiErrorHandler } from '@/composables/useApiErrorHandler';
-import MediaService from '@/features/media/services/media.service';
 import type { MediaBulkUploadPayload, MediaPayload, MediaRecord } from '@/features/media/media.types';
+import MediaService from '@/features/media/services/media.service';
 import { ref } from 'vue';
 
 export function useMedia() {
