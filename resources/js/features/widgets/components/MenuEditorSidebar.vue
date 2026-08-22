@@ -4,8 +4,7 @@ import { MenuSourcePanel } from '@/features/widgets/components';
 import type { WidgetItemPayload } from '@/features/widgets/widgets.types';
 import { ref } from 'vue';
 
-import FieldError from '@/components/common/FieldError.vue';
-import { AppButton, AppFormSection, AppInput } from '@/components/ui';
+import { AppButton, AppFieldError, AppFormSection, AppInput } from '@/components/ui';
 import { usePageCategories, usePages } from '@/features/pages/composables';
 import { usePostCategory, usePosts, usePostTags } from '@/features/posts/composables';
 import { ContentType } from '@/features/widgets/widgets.enum';
@@ -224,12 +223,12 @@ function addCustomLink() {
                 <div>
                     <label class="mb-1 block text-sm">Title</label>
                     <AppInput v-model="customTitle" placeholder="e.g. Home" class="w-full" />
-                    <FieldError :formError="formErrors.title" />
+                    <AppFieldError :formError="formErrors.title" />
                 </div>
                 <div>
                     <label class="mb-1 block text-sm">URL</label>
                     <AppInput v-model="customUrl" placeholder="e.g. /contact or https://example.com" class="w-full" />
-                    <FieldError :formError="formErrors.url" />
+                    <AppFieldError :formError="formErrors.url" />
                 </div>
                 <AppButton label="Add to Menu" class="w-full" size="sm" :loading="isAddingCustom" @click="addCustomLink" />
             </div>

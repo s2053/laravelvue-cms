@@ -1,8 +1,8 @@
 <template>
-    <AppCard class="mx-auto w-full max-w-md">
-        <template #header>
+    <section class="app-auth-card mx-auto w-full max-w-md">
+        <div class="mb-6">
             <div class="text-center text-2xl font-bold">Verify your email</div>
-        </template>
+        </div>
 
         <div class="app-form">
             <div class="mb-6 text-center text-sm text-[var(--color-text-muted)]">
@@ -16,11 +16,11 @@
                 <AppButton block color="secondary" :loading="loggingOut" :disabled="loggingOut" @click="handleLogout">Logout</AppButton>
             </div>
         </div>
-    </AppCard>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppCard } from '@/components/ui';
+import { AppButton } from '@/components/ui';
 import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
 import { ref } from 'vue';

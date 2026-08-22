@@ -3,7 +3,7 @@
         <div v-if="action === 'status'">
             <label for="widget-action-status" class="mb-2 block font-bold">Status:</label>
             <AppSelect id="widget-action-status" v-model="form.status" :items="statusOptions" placeholder="Select status" class="w-full" />
-            <FieldError :form-error="formError" :server-error="serverErrors?.status?.[0]" />
+            <AppFieldError :formError="formError" :serverError="serverErrors?.status?.[0]" />
         </div>
         <div class="mt-4 flex justify-end gap-2">
             <AppButton type="button" label="Cancel" color="secondary" variant="outline" @click="emit('cancel')" />
@@ -13,8 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { AppButton, AppSelect } from '@/components/ui';
+import { AppButton, AppFieldError, AppSelect } from '@/components/ui';
 import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 

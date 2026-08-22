@@ -1,6 +1,5 @@
 export { default as AppBadge } from '@/components/ui/AppBadge.vue';
 export { default as AppButton } from '@/components/ui/AppButton.vue';
-export { default as AppCard } from '@/components/ui/AppCard.vue';
 export { default as AppCheckbox } from '@/components/ui/AppCheckbox.vue';
 export { default as AppCheckboxGroup } from '@/components/ui/AppCheckboxGroup.vue';
 export { default as AppConfirmDialog } from '@/components/ui/AppConfirmDialog.vue';
@@ -14,7 +13,6 @@ export { default as AppMultiSelect } from '@/components/ui/AppMultiSelect.vue';
 export { default as AppOverlayShell } from '@/components/ui/AppOverlayShell.vue';
 export { default as AppPageHeader } from '@/components/ui/AppPageHeader.vue';
 export { default as AppPagination } from '@/components/ui/AppPagination.vue';
-export { default as AppPanel } from '@/components/ui/AppPanel.vue';
 export { default as AppPassword } from '@/components/ui/AppPassword.vue';
 export { default as AppSelect } from '@/components/ui/AppSelect.vue';
 export { default as AppTabs } from '@/components/ui/AppTabs.vue';

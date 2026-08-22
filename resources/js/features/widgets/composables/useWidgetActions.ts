@@ -1,5 +1,5 @@
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
 import { useAppToast } from '@/composables/useAppToast';
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
 import { useWidgets } from '@/features/widgets/composables/useWidgets';
 import type { Widget } from '@/features/widgets/widgets.types';
 import { Ref, ref } from 'vue';
@@ -21,7 +21,7 @@ export function useWidgetActions(table: { selectedRecords: Ref<Widget[]>; tableR
     const selectedIds = ref<number[]>([]);
 
     const toast = useAppToast();
-    const { showDeleteConfirm } = useDeleteConfirm();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
     const { bulkUpdateWidgets } = useWidgets();
 
     function applyBulk() {

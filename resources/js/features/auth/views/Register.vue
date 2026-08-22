@@ -1,23 +1,23 @@
 <template>
-    <AppCard class="mx-auto w-full max-w-md">
-        <template #header>
+    <section class="app-auth-card mx-auto w-full max-w-md">
+        <div class="mb-6">
             <div class="text-center text-2xl font-bold">Create your account</div>
-        </template>
+        </div>
 
         <form class="app-form" @submit.prevent="onSubmit">
             <div class="app-form-field">
                 <label class="app-form-label" for="register-name">Username</label>
-                <AppInput id="register-name" v-model="form.name" name="name" autocomplete="name" />
+                <AppInput id="register-name" v-model="form.name" name="name" autocomplete="name" class="w-full" />
                 <AppFieldError :formError="clientErrors.name" :serverError="serverErrors?.name?.[0]" />
             </div>
             <div class="app-form-field">
                 <label class="app-form-label" for="register-email">Email</label>
-                <AppInput id="register-email" v-model="form.email" name="email" type="email" autocomplete="email" />
+                <AppInput id="register-email" v-model="form.email" name="email" type="email" autocomplete="email" class="w-full" />
                 <AppFieldError :formError="clientErrors.email" :serverError="serverErrors?.email?.[0]" />
             </div>
             <div class="app-form-field">
                 <label class="app-form-label" for="register-password">Password</label>
-                <AppPassword id="register-password" v-model="form.password" name="password" autocomplete="new-password" />
+                <AppPassword id="register-password" v-model="form.password" name="password" autocomplete="new-password" class="w-full" />
                 <AppFieldError :formError="clientErrors.password" :serverError="serverErrors?.password?.[0]" />
             </div>
             <div class="app-form-field">
@@ -27,6 +27,7 @@
                     v-model="form.password_confirmation"
                     name="password_confirmation"
                     autocomplete="new-password"
+                    class="w-full"
                 />
                 <AppFieldError :formError="clientErrors.password_confirmation" />
             </div>
@@ -35,11 +36,11 @@
                 <router-link to="/login" class="text-[var(--color-primary)] hover:underline">Already have an account? Log in</router-link>
             </div>
         </form>
-    </AppCard>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppCard, AppFieldError, AppInput, AppPassword } from '@/components/ui';
+import { AppButton, AppFieldError, AppInput, AppPassword } from '@/components/ui';
 import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
 import type { RegisterPayload } from '@/features/auth/auth.types';

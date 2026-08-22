@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { AppButton, AppInput, AppPageHeader, AppSelect } from '@/components/ui';
+import { AppButton, AppFieldError, AppInput, AppPageHeader, AppSelect } from '@/components/ui';
 import { useAppToast } from '@/composables/useAppToast';
 import { MenuLocationOptions } from '@/features/widgets/widgets.enum';
 import { onMounted, ref } from 'vue';
@@ -169,7 +168,7 @@ function addMenuItems(items: WidgetItem[]) {
                                 />
                             </div>
                         </div>
-                        <FieldError :serverError="locationServerErrors?.location?.[0]" />
+                        <AppFieldError :serverError="locationServerErrors?.location?.[0]" />
                     </div>
                 </div>
             </div>

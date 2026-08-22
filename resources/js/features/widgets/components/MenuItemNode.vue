@@ -3,7 +3,7 @@
         <div>
             <label>Label</label>
             <AppInput v-model="localItem.title" placeholder="Enter Label" class="w-full" />
-            <FieldError :formError="formErrors?.title" />
+            <AppFieldError :formError="formErrors?.title" />
         </div>
 
         <div>
@@ -28,8 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { AppButton, AppInput, AppSelect } from '@/components/ui';
+import { AppButton, AppFieldError, AppInput, AppSelect } from '@/components/ui';
 import { reactive, ref, toRef, watch } from 'vue';
 
 import { ContentType } from '@/features/widgets/widgets.enum';

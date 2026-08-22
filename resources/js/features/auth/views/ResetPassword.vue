@@ -1,14 +1,14 @@
 <template>
-    <AppCard class="mx-auto w-full max-w-md">
-        <template #header>
+    <section class="app-auth-card mx-auto w-full max-w-md">
+        <div class="mb-6">
             <div class="text-center text-2xl font-bold">Reset Password</div>
-        </template>
+        </div>
 
         <form class="app-form" @submit.prevent="onSubmit">
             <div class="mb-6 text-center text-sm text-[var(--color-text-muted)]">Enter your new password below to reset your account.</div>
             <div class="app-form-field">
                 <label class="app-form-label" for="reset-password">New Password</label>
-                <AppPassword id="reset-password" v-model="form.password" name="password" autocomplete="new-password" />
+                <AppPassword id="reset-password" v-model="form.password" name="password" autocomplete="new-password" class="w-full" />
                 <AppFieldError :formError="clientErrors.password" :serverError="serverErrors?.password?.[0]" />
             </div>
             <div class="app-form-field">
@@ -18,6 +18,7 @@
                     v-model="form.password_confirmation"
                     name="password_confirmation"
                     autocomplete="new-password"
+                    class="w-full"
                 />
                 <AppFieldError :formError="clientErrors.password_confirmation" />
             </div>
@@ -26,11 +27,11 @@
                 <RouterLink :to="{ name: 'login' }" class="text-[var(--color-text-muted)] hover:underline">Back to Login</RouterLink>
             </div>
         </form>
-    </AppCard>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppCard, AppFieldError, AppPassword } from '@/components/ui';
+import { AppButton, AppFieldError, AppPassword } from '@/components/ui';
 import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
 import { onMounted, ref } from 'vue';

@@ -1,22 +1,22 @@
 <template>
-    <AppCard class="mx-auto w-full max-w-md">
-        <template #header>
+    <section class="app-auth-card mx-auto w-full max-w-md">
+        <div class="mb-6">
             <div v-if="localMessage" class="mb-4 text-center text-sm text-[var(--color-primary)]">
                 {{ localMessage }}
             </div>
             <div class="text-center text-2xl font-bold">Login to your account</div>
-        </template>
+        </div>
 
         <form class="app-form" @submit.prevent="onSubmit">
             <div class="app-form-field">
                 <label class="app-form-label" for="login-email">Email</label>
-                <AppInput id="login-email" v-model="form.email" name="email" type="email" autocomplete="email" />
+                <AppInput id="login-email" v-model="form.email" name="email" type="email" autocomplete="email" class="w-full" />
                 <AppFieldError :formError="clientErrors.email" :serverError="serverErrors?.email?.[0]" />
             </div>
 
             <div class="app-form-field">
                 <label class="app-form-label" for="login-password">Password</label>
-                <AppPassword id="login-password" v-model="form.password" name="password" autocomplete="current-password" />
+                <AppPassword id="login-password" v-model="form.password" name="password" autocomplete="current-password" class="w-full" />
                 <AppFieldError :formError="clientErrors.password" :serverError="serverErrors?.password?.[0]" />
             </div>
 
@@ -31,11 +31,11 @@
                 <router-link to="/forgot-password" class="text-[var(--color-text-muted)] hover:underline">Forgot Password?</router-link>
             </div>
         </form>
-    </AppCard>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppCard, AppCheckbox, AppFieldError, AppInput, AppPassword } from '@/components/ui';
+import { AppButton, AppCheckbox, AppFieldError, AppInput, AppPassword } from '@/components/ui';
 import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
 import type { LoginPayload } from '@/features/auth/auth.types';

@@ -7,8 +7,8 @@
 
         <!-- Show server error -->
         <div class="mb-2">
-            <FieldError :serverError="serverErrors ? Object.values(serverErrors).flat().join('\n') : undefined" />
-            <FieldError :formError="formError" />
+            <AppFieldError :serverError="serverErrors ? Object.values(serverErrors).flat().join('\n') : undefined" />
+            <AppFieldError :formError="formError" />
         </div>
 
         <div class="menu-structure-wrapper overflow-x-auto pb-2">
@@ -49,8 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { AppButton } from '@/components/ui';
+import { AppButton, AppFieldError } from '@/components/ui';
 import { MenuItemNode } from '@/features/widgets/components';
 import type { WidgetItem, WidgetPayload } from '@/features/widgets/widgets.types';
 import { strTruncate } from '@/utils/stringHelper';

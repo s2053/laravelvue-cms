@@ -1,5 +1,5 @@
 <template>
-    <AppPanel :toggleable="false" background="transparent" :shadow="false" class="mt-3">
+    <section class="app-filter-panel mt-3">
         <!-- Filter Fields -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <!-- Status Filter -->
@@ -24,11 +24,11 @@
             <AppButton size="sm" label="Reset" color="error" variant="outline" @click="resetFilters" />
             <AppButton size="sm" label="Apply Filters" @click="emitFilters" />
         </div>
-    </AppPanel>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppMultiSelect, AppPanel } from '@/components/ui';
+import { AppButton, AppMultiSelect } from '@/components/ui';
 import type { WidgetFilters } from '@/features/widgets/widgets.types';
 import { reactive, watch } from 'vue';
 

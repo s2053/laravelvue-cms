@@ -37,6 +37,4 @@ const shellClasses = computed(() => ({
             @click="layoutState.staticMenuMobileActive = false"
         />
     </div>
-    <Toast />
-    <ConfirmDialog />
 </template>

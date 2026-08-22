@@ -1,8 +1,8 @@
+import { useAppToast } from '@/composables/useAppToast';
 import type { AxiosError } from 'axios';
-import { useToast } from 'primevue/usetoast';
 
 export function useApiErrorHandler() {
-    const toast = useToast();
+    const toast = useAppToast();
 
     function handleError(error: unknown, customMessage?: string) {
         let summary = 'Error';
@@ -41,10 +41,10 @@ export function useApiErrorHandler() {
 
             if (status != 422) {
                 toast.add({
-                    severity: getSeverityByStatus(status),
-                    summary,
-                    detail: customMessage || message,
-                    life: 5000,
+                    color: getSeverityByStatus(status),
+                    title: summary,
+                    description: customMessage || message,
+                    duration: 5000,
                 });
             }
             // toast.add({
@@ -54,19 +54,9 @@ export function useApiErrorHandler() {
             //     life: 5000,
             // });
         } else if (error instanceof Error) {
-            toast.add({
-                severity: 'error',
-                summary,
-                detail: customMessage || error.message,
-                life: 5000,
-            });
+            toast.error(summary, customMessage || error.message, { duration: 5000 });
         } else {
-            toast.add({
-                severity: 'error',
-                summary,
-                detail: customMessage || 'An unknown error occurred.',
-                life: 5000,
-            });
+            toast.error(summary, customMessage || 'An unknown error occurred.', { duration: 5000 });
         }
     }
 
@@ -78,10 +68,10 @@ export function useApiErrorHandler() {
         return typeof data === 'object' && data !== null && 'message' in data && typeof (data as any).message === 'string';
     }
 
-    function getSeverityByStatus(status?: number): 'info' | 'warn' | 'error' {
+    function getSeverityByStatus(status?: number): 'info' | 'warning' | 'error' {
         if (!status) return 'error';
         if (status >= 500) return 'error';
-        if (status >= 400) return 'warn';
+        if (status >= 400) return 'warning';
         return 'info';
     }
 

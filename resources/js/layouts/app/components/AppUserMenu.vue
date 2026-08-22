@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
-import { useToast } from 'primevue/usetoast';
+import type { DropdownMenuItem } from '@nuxt/ui';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import type { DropdownMenuItem } from '@nuxt/ui';
 
 const props = defineProps<{
     collapsed?: boolean;
 }>();
 
 const auth = useAuthStore();
-const toast = useToast();
+const toast = useAppToast();
 const router = useRouter();
 
 const appearance = ref<'light' | 'dark'>(document.documentElement.classList.contains('app-dark') ? 'dark' : 'light');
@@ -31,7 +31,7 @@ const setAppearance = (value: 'light' | 'dark') => {
 
 const logout = async () => {
     await auth.logout();
-    toast.add({ severity: 'success', summary: 'Logged out', detail: 'You have successfully logged out.' });
+    toast.success('Logged out', 'You have successfully logged out.');
     router.push('/login');
 };
 

@@ -84,6 +84,14 @@ html {
     padding: 1rem;
 }
 
+.app-auth-card {
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-lg, 0.75rem);
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem;
+}
+
 .app-filter-field-label {
     color: var(--color-text);
     font-size: var(--text-sm, 0.875rem);

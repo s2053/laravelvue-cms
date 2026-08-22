@@ -1,14 +1,22 @@
 <template>
-    <AppCard class="mx-auto w-full max-w-md">
-        <template #header>
+    <section class="app-auth-card mx-auto w-full max-w-md">
+        <div class="mb-6">
             <div class="text-center text-2xl font-bold">Forgot Password</div>
-        </template>
+        </div>
 
         <form class="app-form" @submit.prevent="onSubmit">
             <div class="mb-6 text-center text-sm text-[var(--color-text-muted)]">Enter your email address to receive a password reset link.</div>
             <div class="app-form-field">
                 <label class="app-form-label" for="forgot-email">Email</label>
-                <AppInput id="forgot-email" v-model="form.email" name="email" type="email" autocomplete="email" placeholder="Email address" />
+                <AppInput
+                    id="forgot-email"
+                    v-model="form.email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="Email address"
+                    class="w-full"
+                />
                 <AppFieldError :formError="clientErrors.email" :serverError="serverErrors?.email?.[0]" />
             </div>
             <div class="app-form-actions"><AppButton type="submit" block :disabled="submitting">Send Reset Link</AppButton></div>
@@ -16,11 +24,11 @@
                 <RouterLink :to="{ name: 'login' }" class="text-[var(--color-text-muted)] hover:underline">Back to Login</RouterLink>
             </div>
         </form>
-    </AppCard>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { AppButton, AppCard, AppFieldError, AppInput } from '@/components/ui';
+import { AppButton, AppFieldError, AppInput } from '@/components/ui';
 import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
 import { ref } from 'vue';

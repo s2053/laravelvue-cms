@@ -4,7 +4,7 @@
             <div>
                 <label for="widget-title" class="mb-2 block font-bold">Widget title:</label>
                 <AppInput id="widget-title" v-model="widgetForm.title" placeholder="Widget title" class="w-full" />
-                <FieldError :form-error="errors.title" :server-error="serverErrors?.title?.[0]" />
+                <AppFieldError :formError="errors.title" :serverError="serverErrors?.title?.[0]" />
                 <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
                     <label for="widget-slug" class="font-semibold whitespace-nowrap">Slug:</label>
                     <AppInput
@@ -27,12 +27,12 @@
                         @click="slugEdit = !slugEdit"
                     />
                 </div>
-                <FieldError :form-error="errors.slug" :server-error="serverErrors?.slug?.[0]" />
+                <AppFieldError :formError="errors.slug" :serverError="serverErrors?.slug?.[0]" />
             </div>
             <div>
                 <label for="widget-description" class="mb-2 block font-bold">Description:</label>
                 <AppTextarea id="widget-description" v-model="widgetForm.description" placeholder="Description" :rows="3" class="w-full" />
-                <FieldError :form-error="errors.description" :server-error="serverErrors?.description?.[0]" />
+                <AppFieldError :formError="errors.description" :serverError="serverErrors?.description?.[0]" />
             </div>
             <div>
                 <label for="widget-type" class="mb-2 block font-bold">Widget Type:</label>
@@ -43,7 +43,7 @@
                     placeholder="Select widget type"
                     class="w-full"
                 />
-                <FieldError :form-error="errors.widget_type" :server-error="serverErrors?.widget_type?.[0]" />
+                <AppFieldError :formError="errors.widget_type" :serverError="serverErrors?.widget_type?.[0]" />
             </div>
             <div v-if="widgetForm.widget_type === WidgetType.COLLECTION">
                 <label for="widget-content-type" class="mb-2 block font-bold">Content Type:</label>
@@ -54,19 +54,19 @@
                     placeholder="Select content type"
                     class="w-full"
                 />
-                <FieldError :form-error="errors.content_type" :server-error="serverErrors?.content_type?.[0]" />
+                <AppFieldError :formError="errors.content_type" :serverError="serverErrors?.content_type?.[0]" />
             </div>
             <div>
                 <label for="widget-status" class="mb-2 block font-bold">Status:</label>
                 <AppSelect id="widget-status" v-model="widgetForm.status" :items="statusOptions" placeholder="Select status" class="w-full" />
-                <FieldError :form-error="errors.status" :server-error="serverErrors?.status?.[0]" />
+                <AppFieldError :formError="errors.status" :serverError="serverErrors?.status?.[0]" />
             </div>
             <AppCheckbox v-model="widgetForm.is_default" label="Is Default" />
             <AppCheckbox v-model="widgetForm.nestable" label="Nestable" />
             <div>
                 <label for="widget-icon" class="mb-2 block font-bold">Icon:</label>
                 <AppInput id="widget-icon" v-model="widgetForm.icon" placeholder="Widget icon (optional)" class="w-full" />
-                <FieldError :form-error="errors.icon" :server-error="serverErrors?.icon?.[0]" />
+                <AppFieldError :formError="errors.icon" :serverError="serverErrors?.icon?.[0]" />
             </div>
         </div>
         <div class="mt-4 flex justify-end gap-2">
@@ -77,8 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { AppButton, AppCheckbox, AppInput, AppSelect, AppTextarea } from '@/components/ui';
+import { AppButton, AppCheckbox, AppFieldError, AppInput, AppSelect, AppTextarea } from '@/components/ui';
 import { ContentType, ContentTypeOptions, WidgetType, WidgetTypeOptions } from '@/features/widgets/widgets.enum';
 import type { WidgetPayload } from '@/features/widgets/widgets.types';
 import { slugify } from '@/utils/slugify';
