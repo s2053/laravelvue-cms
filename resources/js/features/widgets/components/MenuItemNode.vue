@@ -2,33 +2,34 @@
     <div class="grid grid-cols-2 gap-3">
         <div>
             <label>Label</label>
-            <InputText v-model="localItem.title" placeholder="Enter Label" class="w-full" />
+            <AppInput v-model="localItem.title" placeholder="Enter Label" class="w-full" />
             <FieldError :formError="formErrors?.title" />
         </div>
 
         <div>
             <label>Target</label>
-            <Select v-model="localItem.target" :options="targetOptions" optionLabel="label" optionValue="value" class="w-full" />
+            <AppSelect v-model="localItem.target" :items="targetOptions" class="w-full" />
         </div>
 
         <div>
             <label>URL</label>
-            <InputText v-model="localItem.url" placeholder="Enter URL" class="w-full" :disabled="localItem.content_type !== ContentType.CUSTOM" />
+            <AppInput v-model="localItem.url" placeholder="Enter URL" class="w-full" :disabled="localItem.content_type !== ContentType.CUSTOM" />
         </div>
 
         <div>
             <label>Icon</label>
-            <InputText v-model="localItem.icon" placeholder="Icon" class="w-full" />
+            <AppInput v-model="localItem.icon" placeholder="Icon" class="w-full" />
         </div>
     </div>
 
     <div class="mt-3">
-        <Button severity="danger" size="small" text @click="handleRemove">Remove</Button>
+        <AppButton color="error" size="sm" variant="ghost" @click="handleRemove">Remove</AppButton>
     </div>
 </template>
 
 <script setup lang="ts">
 import FieldError from '@/components/common/FieldError.vue';
+import { AppButton, AppInput, AppSelect } from '@/components/ui';
 import { reactive, ref, toRef, watch } from 'vue';
 
 import { ContentType } from '@/features/widgets/widgets.enum';
@@ -66,14 +67,6 @@ const toggleOpen = () => {
 </script>
 
 <style scoped>
-.p-panel {
-    border: 1px solid #dcdcde;
-    border-radius: 4px;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-    margin-bottom: 10px;
-    overflow: hidden;
-}
-
 label {
     font-size: 11px;
     font-weight: 600;

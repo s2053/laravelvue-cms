@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { AppPageHeader, AppTabs } from '@/components/ui';
+import { useAppToast } from '@/composables/useAppToast';
 import { useSiteInfo } from '@/features/sites/composables';
-import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
 import { SiteContactForm, SiteGeneralForm } from '@/features/sites/components';
@@ -9,8 +10,8 @@ import AppContent from '@/layouts/app/components/AppContent.vue';
 import { SiteInfoPayload } from '@/features/sites/sites.types';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
-const toast = useToast();
-const { siteInfo, fetchSiteInfo, updateSiteInfo } = useSiteInfo();
+const toast = useAppToast();
+const { siteInfo, fetchSiteInfo, updateSiteInfo } = useSiteInfo({ onError: () => undefined });
 
 const activeTab = ref<'general' | 'contact'>('general');
 const loading = ref(false);
@@ -50,12 +51,7 @@ onMounted(async () => {
             formModel.value = { ...pickMatchData(siteInfo.value, initialFormPayload) };
         }
     } catch (err: any) {
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err.message || 'Failed to load site info',
-            life: 4000,
-        });
+        toast.error('Error', err.message || 'Failed to load site info', { duration: 4000 });
     } finally {
         loading.value = false;
     }
@@ -96,17 +92,12 @@ async function handleSubmit(form: typeof initialFormPayload) {
     try {
         const updated = await updateSiteInfo(formData);
         formModel.value = { ...pickMatchData(updated, initialFormPayload) };
-        toast.add({ severity: 'success', summary: 'Site Info updated', life: 2000 });
+        toast.success('Site Info updated', undefined, { duration: 2000 });
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err.message || 'Update failed',
-                life: 4000,
-            });
+            toast.error('Error', err.message || 'Update failed', { duration: 4000 });
         }
     } finally {
         submitting.value = false;
@@ -116,31 +107,25 @@ async function handleSubmit(form: typeof initialFormPayload) {
 
 <template>
     <AppContent>
-        <h2 class="mb-4">Site Information</h2>
+        <AppPageHeader title="Site Information" />
 
         <div v-if="!loading">
-            <Tabs v-model:value="activeTab">
-                <TabList>
-                    <Tab value="general" as="div">
-                        <i class="pi pi-cog mr-2"></i>
-                        <span class="font-bold whitespace-nowrap">General</span>
-                    </Tab>
-                    <Tab value="contact" as="div">
-                        <i class="pi pi-phone mr-2"></i>
-                        <span class="font-bold whitespace-nowrap">Contact</span>
-                    </Tab>
-                </TabList>
-
-                <TabPanels>
-                    <TabPanel value="general" as="div">
-                        <SiteGeneralForm :initialForm="formModel" :serverErrors="serverErrors" :submitting="submitting" @submit="handleSubmit" />
-                    </TabPanel>
-
-                    <TabPanel value="contact" as="div">
-                        <SiteContactForm :initialForm="formModel" :serverErrors="serverErrors" :submitting="submitting" @submit="handleSubmit" />
-                    </TabPanel>
-                </TabPanels>
-            </Tabs>
+            <AppTabs
+                v-model="activeTab"
+                :items="[
+                    { label: 'General', value: 'general', icon: 'i-lucide-settings-2' },
+                    { label: 'Contact', value: 'contact', icon: 'i-lucide-phone' },
+                ]"
+            />
+            <div class="mt-4">
+                <SiteGeneralForm
+                    v-if="activeTab === 'general'"
+                    :initialForm="formModel"
+                    :serverErrors="serverErrors"
+                    :submitting="submitting"
+                    @submit="handleSubmit"
+                /><SiteContactForm v-else :initialForm="formModel" :serverErrors="serverErrors" :submitting="submitting" @submit="handleSubmit" />
+            </div>
         </div>
 
         <div v-else class="py-8 text-center text-gray-500">Loading...</div>

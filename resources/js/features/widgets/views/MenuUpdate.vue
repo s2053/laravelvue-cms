@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import FieldError from '@/components/common/FieldError.vue';
+import { AppButton, AppInput, AppPageHeader, AppSelect } from '@/components/ui';
+import { useAppToast } from '@/composables/useAppToast';
 import { MenuLocationOptions } from '@/features/widgets/widgets.enum';
-import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -13,7 +14,7 @@ import type { WidgetItem, WidgetPayload } from '@/features/widgets/widgets.types
 
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 
-const toast = useToast();
+const toast = useAppToast();
 const route = useRoute();
 const router = useRouter();
 
@@ -53,12 +54,7 @@ onMounted(async () => {
             formModel.value = { ...pickMatchData(widget, initialFormPayload) };
             originalLocation.value = widget.location ?? null;
         } catch (err: any) {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Failed to load widget',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Failed to load widget');
         } finally {
             loading.value = false;
         }
@@ -76,18 +72,13 @@ async function handleSubmit(form: WidgetPayload) {
         if (editingId.value) {
             const updated = await updateWidgetItems(editingId.value, payload.items || []);
             formModel.value.items = updated.items ?? [];
-            toast.add({ severity: 'success', summary: 'Menu updated', life: 2000 });
+            toast.success('Menu updated');
         }
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Operation failed',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Operation failed');
         }
     } finally {
         submitting.value = false;
@@ -105,17 +96,12 @@ async function handleLocationUpdate() {
         formModel.value.location = updated.location ?? null;
         originalLocation.value = updated.location ?? null;
         locationEditing.value = false;
-        toast.add({ severity: 'success', summary: 'Menu location updated', life: 2000 });
+        toast.success('Menu location updated');
     } catch (err: any) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             locationServerErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Failed to update menu location',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Failed to update menu location');
         }
     } finally {
         locationSubmitting.value = false;
@@ -147,45 +133,35 @@ function addMenuItems(items: WidgetItem[]) {
 
 <template>
     <AppContent>
-        <h2 class="mb-4">
-            {{ editingId ? `Edit Menu: ${formModel.title || 'Loading...'}` : 'Create Menu' }}
-        </h2>
+        <AppPageHeader :title="editingId ? `Edit Menu: ${formModel.title || 'Loading...'}` : 'Create Menu'" />
 
         <div v-if="!editingId || (!loading && formModel.title)">
-            <div class="mb-6 rounded-md border p-4">
+            <div class="app-menu-section mb-6 p-4">
                 <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div class="min-w-0 flex-1">
                         <label class="mb-2 block font-bold">Menu Location:</label>
                         <div class="flex flex-col gap-2 md:flex-row md:items-center">
                             <div class="w-full md:max-w-xs">
-                                <Select
+                                <AppSelect
                                     v-if="locationEditing"
                                     v-model="formModel.location"
-                                    :options="MenuLocationOptions"
-                                    optionLabel="label"
-                                    optionValue="value"
+                                    :items="MenuLocationOptions"
                                     placeholder="Select Menu Location"
                                     class="w-full"
                                 />
-                                <InputText v-else :modelValue="formModel.location || 'Not assigned'" class="w-full" disabled />
+                                <AppInput v-else :modelValue="formModel.location || 'Not assigned'" class="w-full" disabled />
                             </div>
 
                             <div class="flex gap-2">
-                                <Button
+                                <AppButton
                                     v-if="!locationEditing"
-                                    icon="pi pi-pencil"
+                                    icon="i-lucide-pencil"
                                     label="Edit Location"
-                                    outlined
+                                    variant="outline"
                                     @click="enableLocationEditing"
                                 />
-                                <Button
-                                    v-if="locationEditing"
-                                    label="Cancel"
-                                    severity="secondary"
-                                    outlined
-                                    @click="cancelLocationEditing"
-                                />
-                                <Button
+                                <AppButton v-if="locationEditing" label="Cancel" color="secondary" variant="outline" @click="cancelLocationEditing" />
+                                <AppButton
                                     v-if="locationEditing"
                                     label="Update Location"
                                     :loading="locationSubmitting"
@@ -198,7 +174,7 @@ function addMenuItems(items: WidgetItem[]) {
                 </div>
             </div>
 
-            <div class="grid grid-cols-[1fr_2fr] gap-6">
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(18rem,1fr)_minmax(0,2fr)]">
                 <MenuEditorSidebar @add="addMenuItems" />
 
                 <!-- Right Builder: Draggable menu structure -->

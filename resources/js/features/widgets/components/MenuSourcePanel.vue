@@ -1,8 +1,8 @@
 <script setup lang="ts">
+import { AppButton, AppCheckbox, AppFormSection, AppInput } from '@/components/ui';
 import { useDebounce } from '@/composables/useDebounce';
 import { ContentType } from '@/features/widgets/widgets.enum';
 import type { WidgetItemPayload } from '@/features/widgets/widgets.types';
-import { Button, Checkbox, InputText, Panel, Skeleton } from 'primevue';
 import { ref, watch } from 'vue';
 
 // ---------------------------
@@ -130,12 +130,12 @@ const togglePanel = () => {
 </script>
 
 <template>
-    <Panel :header="props.title" toggleable :collapsed="isCollapsed()" @toggle="togglePanel">
+    <AppFormSection :title="props.title" collapsible :open="!isCollapsed()" class="app-menu-source-panel" @update:open="togglePanel">
         <div class="space-y-2 p-2">
-            <InputText v-model="searchQuery" placeholder="Search..." class="mb-2 w-full" />
+            <AppInput v-model="searchQuery" placeholder="Search..." class="mb-2 w-full" />
 
             <div v-if="loading">
-                <Skeleton v-for="i in 3" :key="i" height="1.5rem" />
+                <div v-for="i in 3" :key="i" class="h-6 animate-pulse rounded bg-gray-200/10" />
             </div>
 
             <div v-else>
@@ -143,15 +143,15 @@ const togglePanel = () => {
 
                 <div v-else>
                     <div v-for="item in items" :key="item.id" class="mb-2 flex items-center">
-                        <Checkbox v-model="selectedIds" :inputId="`${props.name}-${item.id}`" :value="item.id" />
+                        <AppCheckbox v-model="selectedIds" :name="`${props.name}-${item.id}`" :value="item.id" />
                         <label :for="`${props.name}-${item.id}`" class="ml-2 cursor-pointer text-sm">{{ item.title }}</label>
                     </div>
                 </div>
 
-                <Button label="Add to Menu" size="small" class="mt-2 w-full" @click="addSelected" />
+                <AppButton label="Add to Menu" size="sm" class="mt-2 w-full" @click="addSelected" />
             </div>
         </div>
-    </Panel>
+    </AppFormSection>
 </template>
 
 <style scoped>

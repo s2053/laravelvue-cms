@@ -1,32 +1,34 @@
 <template>
-    <Panel class="mt-3">
+    <AppPanel :toggleable="false" background="transparent" :shadow="false" class="mt-3">
         <!-- Filter Fields -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <!-- Status Filter -->
             <div>
                 <label for="status" class="mb-1 block font-semibold">Status</label>
-                <MultiSelect
+                <AppMultiSelect
                     v-model="localFilters.status"
-                    :options="statusOptions"
-                    name="status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="app-input-sm w-full"
-                    placeholder="Select Status"
-                    showClear
+                    :items="statusOptions"
+                    label-key="label"
+                    value-key="value"
+                    name="widget-status"
+                    class="w-full"
+                    placeholder="Select status"
+                    clearable
+                    select-all
                 />
             </div>
         </div>
 
         <!-- Filter Action Buttons -->
         <div class="mt-4 flex justify-end gap-2">
-            <Button size="small" label="Reset" outlined severity="danger" @click="resetFilters" />
-            <Button size="small" label="Apply Filters" severity="primary" @click="emitFilters" />
+            <AppButton size="sm" label="Reset" color="error" variant="outline" @click="resetFilters" />
+            <AppButton size="sm" label="Apply Filters" @click="emitFilters" />
         </div>
-    </Panel>
+    </AppPanel>
 </template>
 
 <script setup lang="ts">
+import { AppButton, AppMultiSelect, AppPanel } from '@/components/ui';
 import type { WidgetFilters } from '@/features/widgets/widgets.types';
 import { reactive, watch } from 'vue';
 

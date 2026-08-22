@@ -1,72 +1,54 @@
 <template>
-    <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
-        <div class="flex flex-col gap-4">
-            <!-- Show status field only for status action -->
-            <div v-if="action == 'status'">
-                <label for="status" class="mb-2 block font-bold">Status:</label>
-                <Select
-                    v-model="form.status"
-                    :options="statusOptions"
-                    name="status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Status"
-                />
-                <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
-            </div>
+    <form class="app-form" @submit.prevent="onSubmit">
+        <div v-if="action === 'status'">
+            <label for="widget-action-status" class="mb-2 block font-bold">Status:</label>
+            <AppSelect id="widget-action-status" v-model="form.status" :items="statusOptions" placeholder="Select status" class="w-full" />
+            <FieldError :form-error="formError" :server-error="serverErrors?.status?.[0]" />
         </div>
-
         <div class="mt-4 flex justify-end gap-2">
-            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" label="Update" severity="primary"></Button>
+            <AppButton type="button" label="Cancel" color="secondary" variant="outline" @click="emit('cancel')" />
+            <AppButton type="submit" label="Update" />
         </div>
-    </Form>
+    </form>
 </template>
+
 <script setup lang="ts">
-// imports
 import FieldError from '@/components/common/FieldError.vue';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { ref, watch } from 'vue';
+import { AppButton, AppSelect } from '@/components/ui';
+import { computed, ref, watch } from 'vue';
 import { z } from 'zod';
 
-// props / emits
-const props = withDefaults(
-    defineProps<{
-        action: string;
-        initialData?: Record<string, any>;
-        serverErrors?: Record<string, string[]>;
-    }>(),
-    { initialData: () => ({}) },
-);
+const props = withDefaults(defineProps<{ action: string; initialData?: Record<string, any>; serverErrors?: Record<string, string[]> }>(), {
+    initialData: () => ({}),
+});
 const emit = defineEmits(['submit', 'cancel']);
-
-// local form state
 const form = ref({ ...props.initialData });
-
-// keep form in sync with incoming data
+const formError = ref('');
 watch(
     () => props.initialData,
-    (val) => Object.assign(form.value, val),
+    (value) => {
+        form.value = { ...value };
+        formError.value = '';
+    },
 );
-
-// validation
-const resolver = zodResolver(
-    z.object({
-        status: z.boolean({ message: 'Status is required' }),
-    }),
-);
-
-// submit
-function onSubmit({ valid }: { valid: boolean }) {
-    if (!valid) return;
-    const payload = { ...form.value };
-    emit('submit', payload);
-}
-
-// Status dropdown options
 const statusOptions = [
     { label: 'Active', value: true },
     { label: 'Inactive', value: false },
 ];
+const schema = z.object({ status: z.boolean({ message: 'Status is required' }) });
+const isStatusAction = computed(() => props.action === 'status');
+
+function onSubmit() {
+    formError.value = '';
+    if (!isStatusAction.value) {
+        emit('submit', { ...form.value });
+        return;
+    }
+    const result = schema.safeParse(form.value);
+    if (!result.success) {
+        formError.value = result.error.issues[0]?.message ?? 'Status is required';
+        return;
+    }
+    emit('submit', { ...form.value });
+}
 </script>
