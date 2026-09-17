@@ -3,10 +3,10 @@ import { AppHeader, AppSidebar } from '@/layouts/app/components';
 import { useLayout } from '@/layouts/app/composables/layout';
 import { computed } from 'vue';
 
-const { layoutState, isSidebarActive } = useLayout();
+const { layoutState } = useLayout();
 
-function getTransition(routeMetaTransition) {
-    return routeMetaTransition ?? 'slide-left';
+function getTransition(routeMetaTransition: unknown) {
+    return typeof routeMetaTransition === 'string' ? routeMetaTransition : 'slide-left';
 }
 
 const shellClasses = computed(() => ({
@@ -15,26 +15,18 @@ const shellClasses = computed(() => ({
 </script>
 
 <template>
-    <div class="app-shell h-screen overflow-hidden" :class="shellClasses">
-        <div class="app-shell flex h-screen overflow-hidden">
-            <AppSidebar />
+    <UDashboardGroup unit="px" :persistent="false" class="app-shell h-screen overflow-hidden" :class="shellClasses">
+        <AppSidebar />
 
-            <div class="app-shell-main flex flex-col">
-                <AppHeader />
-                <div class="min-h-0 flex-1 overflow-y-auto">
-                    <router-view v-slot="{ Component, route }">
-                        <transition :name="getTransition(route.meta.transition)" mode="out-in">
-                            <component :is="Component" :key="route.path" />
-                        </transition>
-                    </router-view>
-                </div>
-            </div>
-        </div>
-        <button
-            v-if="isSidebarActive"
-            type="button"
-            class="app-shell-backdrop fixed inset-0 z-30 lg:hidden"
-            @click="layoutState.staticMenuMobileActive = false"
-        />
-    </div>
+        <UDashboardPanel class="app-shell-main min-w-0">
+            <AppHeader />
+            <main class="min-h-0 flex-1 overflow-y-auto">
+                <router-view v-slot="{ Component, route }">
+                    <transition :name="getTransition(route.meta.transition)" mode="out-in">
+                        <component :is="Component" :key="route.path" />
+                    </transition>
+                </router-view>
+            </main>
+        </UDashboardPanel>
+    </UDashboardGroup>
 </template>

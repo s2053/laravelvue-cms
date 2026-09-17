@@ -43,7 +43,59 @@ watch(
 </script>
 
 <template>
-    <div class="space-y-1">
+    <div v-if="collapsed">
+        <UTooltip v-if="!item.children?.length" :text="item.label" :content="{ side: 'right', sideOffset: 8 }">
+            <router-link
+                v-if="item.to"
+                :to="item.to"
+                :class="[
+                    'app-shell-nav-item flex items-center justify-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors',
+                    isActive ? 'is-active' : '',
+                ]"
+            >
+                <UIcon :name="item.icon" class="size-5 shrink-0" />
+            </router-link>
+            <button
+                v-else
+                type="button"
+                :class="['app-shell-nav-item flex w-full items-center justify-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors']"
+            >
+                <UIcon :name="item.icon" class="size-5 shrink-0" />
+            </button>
+        </UTooltip>
+
+        <UPopover v-else :content="{ side: 'right', align: 'start', sideOffset: 8 }">
+            <button
+                type="button"
+                :class="[
+                    'app-shell-nav-item flex w-full items-center justify-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors',
+                    isActive ? 'is-active' : '',
+                ]"
+            >
+                <UIcon :name="item.icon" class="size-5 shrink-0" />
+            </button>
+
+            <template #content="{ close }">
+                <div class="w-52 p-1">
+                    <div class="text-highlighted px-2.5 py-1.5 text-xs font-semibold">{{ item.label }}</div>
+                    <ul>
+                        <li v-for="child in item.children" :key="child.label">
+                            <router-link
+                                :to="child.to || '#'"
+                                class="app-shell-nav-child block rounded-lg p-1.5 text-sm transition-colors"
+                                :class="route.path === child.to ? 'is-active' : ''"
+                                @click="close"
+                            >
+                                {{ child.label }}
+                            </router-link>
+                        </li>
+                    </ul>
+                </div>
+            </template>
+        </UPopover>
+    </div>
+
+    <div v-else>
         <router-link
             v-if="item.to && !item.children?.length"
             :to="item.to"
@@ -77,15 +129,15 @@ watch(
             />
         </button>
 
-        <div v-if="!collapsed && item.children?.length && isOpen" class="app-shell-nav-children ml-6 space-y-1 pl-4">
-            <router-link
-                v-for="child in item.children"
-                :key="child.label"
-                :to="child.to || '#'"
-                :class="['app-shell-nav-child block rounded-lg px-3 py-2 text-sm transition-colors', route.path === child.to ? 'is-active' : '']"
-            >
-                {{ child.label }}
-            </router-link>
-        </div>
+        <ul v-if="item.children?.length && isOpen" class="border-default ms-5 border-s">
+            <li v-for="child in item.children" :key="child.label" class="-ms-px ps-1.5">
+                <router-link
+                    :to="child.to || '#'"
+                    :class="['app-shell-nav-child block rounded-lg p-1.5 text-sm transition-colors', route.path === child.to ? 'is-active' : '']"
+                >
+                    {{ child.label }}
+                </router-link>
+            </li>
+        </ul>
     </div>
 </template>

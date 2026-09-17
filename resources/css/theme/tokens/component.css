@@ -1,12 +1,4 @@
 html {
-    --btn-primary-bg: var(--color-primary);
-    --btn-primary-text: var(--color-primary-contrast);
-    --btn-secondary-bg: var(--color-surface);
-    --btn-secondary-text: var(--color-text);
-    --btn-ghost-bg: transparent;
-    --btn-ghost-text: var(--color-text-muted);
-    --btn-danger-bg: var(--color-danger);
-    --btn-danger-text: var(--color-primary-contrast);
     --card-bg: var(--color-surface);
     --card-border: var(--color-border);
     --card-shadow: var(--shadow-card);
@@ -36,44 +28,27 @@ html {
     --overlay-floating-z-index: 102;
     --page-header-title: var(--color-text);
     --page-header-description: var(--color-text-muted);
-    --header-bg: color-mix(in oklab, var(--color-surface) 84%, transparent);
-    --header-border: var(--color-border);
-    --footer-border: var(--color-border);
-    --menu-link-text: var(--color-text-muted);
-    --menu-link-hover-text: var(--color-text);
-    --menu-link-active-text: var(--color-primary);
-    --menu-link-active-bg: color-mix(in oklab, var(--color-primary) 10%, transparent);
-    --menu-link-active-border: color-mix(in oklab, var(--color-primary) 40%, transparent);
-    --menu-panel-active-bg: color-mix(in oklab, var(--color-primary) 12%, transparent);
-    --menu-panel-active-text: var(--color-primary);
-    --shell-sidebar-bg: var(--color-surface);
-    --shell-sidebar-border: var(--color-border);
-    --shell-header-bg: var(--header-bg);
-    --shell-header-border: var(--header-border);
-    --shell-footer-border: var(--footer-border);
-    --shell-backdrop: color-mix(in oklab, var(--neutral-950) 56%, transparent);
-    --shell-brand-bg: color-mix(in oklab, var(--color-primary) 12%, transparent);
-    --shell-brand-text: var(--color-primary);
-    --shell-action-text: var(--color-text-muted);
-    --shell-action-hover-text: var(--color-text);
-    --shell-action-hover-bg: color-mix(in oklab, var(--color-text) 8%, transparent);
-    --shell-fab-bg: var(--color-primary);
-    --shell-fab-hover-bg: color-mix(in oklab, var(--color-primary) 88%, black 12%);
-    --shell-fab-text: var(--color-primary-contrast);
-    --shell-title: var(--color-text);
-    --shell-subtitle: var(--color-text-muted);
-    --shell-nav-text: var(--menu-link-text);
-    --shell-nav-hover-text: var(--menu-link-hover-text);
-    --shell-nav-hover-bg: color-mix(in oklab, var(--color-text) 8%, transparent);
-    --shell-nav-active-text: var(--menu-link-active-text);
-    --shell-nav-active-bg: var(--menu-link-active-bg);
-    --shell-nav-branch-border: var(--color-border);
+    --shell-sidebar-bg: color-mix(in srgb, var(--ui-bg) 78%, var(--ui-bg-elevated) 22%);
+    --shell-sidebar-border: var(--ui-border);
+    --shell-header-bg: color-mix(in srgb, var(--ui-bg) 82%, transparent);
+    --shell-header-border: var(--ui-border);
+    --shell-brand-text: var(--ui-primary);
+    --shell-fab-bg: var(--ui-primary);
+    --shell-fab-hover-bg: color-mix(in srgb, var(--ui-primary) 88%, black 12%);
+    --shell-fab-text: var(--ui-text-inverted);
+    --shell-title: var(--ui-text-highlighted);
+    --shell-subtitle: var(--ui-text-muted);
+    --shell-nav-text: var(--ui-text-muted);
+    --shell-nav-hover-text: var(--ui-text-highlighted);
+    --shell-nav-hover-bg: color-mix(in srgb, var(--ui-text) 8%, transparent);
+    --shell-nav-active-text: var(--ui-primary);
+    --shell-nav-active-bg: color-mix(in srgb, var(--ui-primary) 10%, transparent);
 }
 
 .app-shell {
     min-height: 100vh;
-    background: transparent;
-    color: var(--color-text);
+    background: var(--ui-bg);
+    color: var(--ui-text);
 }
 
 .app-filter-panel {
@@ -253,10 +228,6 @@ html {
 
 .app-menu-source-panel {
     overflow: hidden;
-}
-
-.app-menu-source-panel.app-card--bg-white {
-    background: var(--form-section-bg);
 }
 
 .app-form-section__title,
@@ -485,6 +456,7 @@ html {
 .app-shell-main {
     min-width: 0;
     flex: 1 1 auto;
+    background: var(--ui-bg);
 }
 
 .app-shell-sidebar {
@@ -498,11 +470,6 @@ html {
     backdrop-filter: blur(20px);
 }
 
-.app-shell-footer {
-    border-top: 1px solid var(--shell-footer-border);
-    color: var(--shell-subtitle);
-}
-
 .app-shell-content {
     padding: 1rem;
 }
@@ -513,12 +480,8 @@ html {
     }
 }
 
-.app-shell-backdrop {
-    background: var(--shell-backdrop);
-}
-
 .app-shell-brand-mark {
-    background: var(--shell-brand-bg);
+    background: var(--ui-bg);
     color: var(--shell-brand-text);
 }
 
@@ -526,22 +489,8 @@ html {
     color: var(--shell-title);
 }
 
-.app-shell-brand-subtitle,
-.app-shell-page-subtitle {
+.app-shell-brand-subtitle {
     color: var(--shell-subtitle);
-}
-
-.app-shell-page-title {
-    color: var(--shell-title);
-}
-
-.app-shell-action {
-    color: var(--shell-action-text);
-}
-
-.app-shell-action:hover {
-    background: var(--shell-action-hover-bg);
-    color: var(--shell-action-hover-text);
 }
 
 .app-shell-fab {
@@ -553,41 +502,46 @@ html {
     background: var(--shell-fab-hover-bg);
 }
 
-.app-shell-divider {
-    border-top: 1px solid var(--shell-sidebar-border);
-}
-
-.app-shell-nav-item {
+.app-shell-nav-item,
+.app-shell-nav-child {
+    position: relative;
+    isolation: isolate;
     color: var(--shell-nav-text);
 }
 
-.app-shell-nav-item:hover {
-    background: var(--shell-nav-hover-bg);
-    color: var(--shell-nav-hover-text);
+.app-shell-nav-item::before,
+.app-shell-nav-child::before {
+    position: absolute;
+    inset: 1px 0;
+    z-index: -1;
+    border-radius: var(--radius-md, 0.5rem);
+    content: '';
+    transition: background-color 160ms ease;
 }
 
-.app-shell-nav-item.is-active {
-    background: var(--shell-nav-active-bg);
-    color: var(--shell-nav-active-text);
-}
-
-.app-shell-nav-caret,
-.app-shell-nav-child {
-    color: var(--shell-subtitle);
-}
-
-.app-shell-nav-children {
-    border-left: 1px solid var(--shell-nav-branch-border);
-}
-
+.app-shell-nav-item:hover,
 .app-shell-nav-child:hover {
-    background: var(--shell-nav-hover-bg);
     color: var(--shell-nav-hover-text);
 }
 
-.app-shell-nav-child.is-active {
-    background: var(--shell-nav-active-bg);
+.app-shell-nav-item:hover::before,
+.app-shell-nav-child:hover::before {
+    background: var(--shell-nav-hover-bg);
+}
+
+.app-shell-nav-item.is-active::before,
+.app-shell-nav-child.is-active::before {
     color: var(--shell-nav-active-text);
+    background: var(--shell-nav-active-bg);
+}
+
+.app-shell-nav-item.is-active,
+.app-shell-nav-child.is-active {
+    color: var(--shell-nav-active-text);
+}
+
+.app-shell-nav-caret {
+    color: var(--shell-subtitle);
 }
 
 .app-account-layout {

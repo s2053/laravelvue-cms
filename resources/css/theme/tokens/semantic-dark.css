@@ -16,18 +16,12 @@ html.app-dark {
     --color-text: var(--neutral-50);
     --color-text-muted: var(--neutral-300);
     --color-border: color-mix(in oklab, var(--neutral-800) 78%, var(--primary-800));
-    --color-link: var(--primary-300);
-    --color-link-hover: var(--primary-200);
     --color-primary: var(--primary-300);
     --color-secondary: var(--secondary-300);
-    --color-accent: var(--accent-300);
     --color-success: var(--success-300);
     --color-warning: var(--warning-300);
     --color-danger: var(--danger-300);
     --color-info: var(--info-300);
-    --color-primary-contrast: var(--neutral-950);
     --color-focus: color-mix(in oklab, var(--primary-300) 65%, white);
     --shadow-card: 0 18px 46px color-mix(in oklab, black 24%, transparent);
-    --shadow-raised: 0 12px 28px color-mix(in oklab, black 28%, transparent);
-    --shadow-button: 0 8px 16px color-mix(in oklab, black 22%, transparent);
 }
