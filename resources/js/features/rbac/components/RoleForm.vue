@@ -55,10 +55,7 @@
                     />
 
                     <div class="mt-2 space-y-2 pl-6">
-                        <AppCheckboxGroup
-                            v-model="selectedPermissionValues"
-                            :items="permissionItems(group)"
-                        />
+                        <AppCheckboxGroup v-model="selectedPermissionValues" :items="permissionItems(group)" />
                     </div>
                 </section>
             </div>
@@ -144,7 +141,8 @@ function toggleGroup(value: boolean | unknown[] | 'indeterminate', group: Permis
 
     const perms = Array.isArray(group.permissions) ? group.permissions : [];
     const allIds = perms.map((perm: Permission) => perm.id);
-    form.value.permissions = value === true ? Array.from(new Set([...form.value.permissions, ...allIds])) : form.value.permissions.filter((id) => !allIds.includes(id));
+    form.value.permissions =
+        value === true ? Array.from(new Set([...form.value.permissions, ...allIds])) : form.value.permissions.filter((id) => !allIds.includes(id));
 }
 
 const allPermissionIds = computed(() => props.groups.flatMap((g) => (Array.isArray(g.permissions) ? g.permissions.map((p) => p.id) : [])));

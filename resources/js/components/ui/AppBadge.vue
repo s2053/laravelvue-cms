@@ -39,4 +39,3 @@ const props = withDefaults(
 
 const badgeProps = computed(() => props);
 </script>
-

@@ -1,7 +1,6 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 @import './theme/index.css';
-@import './theme/base.css';
 
 @source '../**/*.js';
 /*

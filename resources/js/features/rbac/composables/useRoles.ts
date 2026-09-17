@@ -1,6 +1,6 @@
+import { useAppToast } from '@/composables/useAppToast';
 import type { Role, RolePayload } from '@/features/rbac/rbac.types';
 import RoleService from '@/features/rbac/services/role.service';
-import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
 type UseRolesOptions = {

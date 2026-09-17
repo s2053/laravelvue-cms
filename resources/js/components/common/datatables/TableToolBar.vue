@@ -2,15 +2,7 @@
     <div class="ml-auto flex items-center gap-2" aria-label="Table toolbar">
         <AppFieldGroup class="w-[200px]">
             <AppInput v-model="query" placeholder="Search" aria-label="Search" @keyup.enter="querySearch" />
-            <AppButton
-                color="neutral"
-                variant="outline"
-                size="md"
-                square
-                icon="i-lucide-search"
-                aria-label="Search"
-                @click="querySearch"
-            />
+            <AppButton color="neutral" variant="outline" size="md" square icon="i-lucide-search" aria-label="Search" @click="querySearch" />
         </AppFieldGroup>
         <AppButton
             v-if="showFilter"

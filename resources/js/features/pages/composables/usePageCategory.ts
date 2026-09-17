@@ -1,6 +1,6 @@
+import { useAppToast } from '@/composables/useAppToast';
 import type { PageCategory, PageCategoryPayload } from '@/features/pages/pages.types';
 import PageCategoryService from '@/features/pages/services/pageCategory.service';
-import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
 type UsePageCategoriesOptions = {

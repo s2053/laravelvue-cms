@@ -52,7 +52,6 @@ const primaryItems = [
             { label: 'Preferences', to: '/dashboard/account/preferences' },
         ],
     },
-    { label: 'Dashboard Lab', icon: 'i-lucide-flask-conical', to: '/dashboard/labs' },
 ];
 
 const supportItems = [

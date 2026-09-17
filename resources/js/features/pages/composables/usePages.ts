@@ -1,6 +1,6 @@
+import { useAppToast } from '@/composables/useAppToast';
 import type { Page } from '@/features/pages/pages.types';
 import PageService from '@/features/pages/services/page.service';
-import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
 type UsePagesOptions = {

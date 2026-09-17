@@ -1,6 +1,6 @@
+import { useAppToast } from '@/composables/useAppToast';
 import type { PermissionGroup, PermissionGroupPayload } from '@/features/rbac/rbac.types';
 import PermissionGroupService from '@/features/rbac/services/permissionGroup.service';
-import { useAppToast } from '@/composables/useAppToast';
 import { ref } from 'vue';
 
 type UsePermissionGroupsOptions = {

@@ -36,9 +36,9 @@ const props = withDefaults(
         target?: string;
     }>(),
     {
-    color: 'primary',
-    variant: 'solid',
-    size: 'md',
+        color: 'primary',
+        variant: 'solid',
+        size: 'md',
     },
 );
 

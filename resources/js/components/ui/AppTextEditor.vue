@@ -62,7 +62,13 @@ const toolbarItems: EditorToolbarItem[][] = [
     ],
 ];
 
-const characterCount = computed(() => (props.modelValue ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().length);
+const characterCount = computed(
+    () =>
+        (props.modelValue ?? '')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim().length,
+);
 const editorStyle = computed(() => ({ '--app-text-editor-min-height': props.minHeight }));
 </script>
 

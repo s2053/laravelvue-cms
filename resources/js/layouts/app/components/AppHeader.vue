@@ -20,12 +20,14 @@ const title = computed(() => String(route.meta?.title || (isDashboardRoute.value
                     class="app-shell-action inline-flex h-10 w-10 items-center justify-center rounded-lg transition"
                     @click="toggleMenu"
                 >
-                    <UIcon :name="layoutState.staticMenuDesktopInactive ? 'i-lucide-panel-left-open' : 'i-lucide-panel-left-close'" class="hidden size-5 lg:block" />
+                    <UIcon
+                        :name="layoutState.staticMenuDesktopInactive ? 'i-lucide-panel-left-open' : 'i-lucide-panel-left-close'"
+                        class="hidden size-5 lg:block"
+                    />
                     <UIcon name="i-lucide-menu" class="size-5 lg:hidden" />
                 </button>
 
                 <router-link to="/dashboard" class="flex items-center gap-3 no-underline">
-
                     <div class="min-w-0">
                         <p class="app-shell-brand-title truncate text-sm font-semibold">Home</p>
                         <p v-if="!isDashboardRoute" class="app-shell-brand-subtitle truncate text-xs">{{ title }}</p>

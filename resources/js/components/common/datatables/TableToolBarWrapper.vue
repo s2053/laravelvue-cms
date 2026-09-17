@@ -15,9 +15,7 @@ const emit = defineEmits<{
         </div>
 
         <div class="mt-1 text-right">
-            <AppButton v-if="searchText" color="error" variant="link" size="sm" icon="i-lucide-x" @click="emit('clear')">
-                Clear Search
-            </AppButton>
+            <AppButton v-if="searchText" color="error" variant="link" size="sm" icon="i-lucide-x" @click="emit('clear')"> Clear Search </AppButton>
         </div>
     </div>
 </template>

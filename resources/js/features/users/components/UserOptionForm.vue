@@ -2,14 +2,7 @@
     <form class="app-form" @submit.prevent="onSubmit">
         <div v-if="action === 'status'" class="app-form-field">
             <label for="user-status" class="app-form-label">Status:</label>
-            <AppSelect
-                id="user-status"
-                v-model="form.status"
-                :items="statusOptions"
-                name="status"
-                placeholder="Select Status"
-                class="w-full"
-            />
+            <AppSelect id="user-status" v-model="form.status" :items="statusOptions" name="status" placeholder="Select Status" class="w-full" />
             <AppFieldError :formError="clientErrors.status" :serverError="serverErrors?.status?.[0]" />
         </div>
 
@@ -23,10 +16,7 @@
                 placeholder="Select Email Verification Status"
                 class="w-full"
             />
-            <AppFieldError
-                :formError="clientErrors.email_verification_status"
-                :serverError="serverErrors?.email_verification_status?.[0]"
-            />
+            <AppFieldError :formError="clientErrors.email_verification_status" :serverError="serverErrors?.email_verification_status?.[0]" />
         </div>
 
         <div class="app-form-actions">

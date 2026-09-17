@@ -77,18 +77,12 @@ watch(
             />
         </button>
 
-        <div
-            v-if="!collapsed && item.children?.length && isOpen"
-            class="app-shell-nav-children ml-6 space-y-1 pl-4"
-        >
+        <div v-if="!collapsed && item.children?.length && isOpen" class="app-shell-nav-children ml-6 space-y-1 pl-4">
             <router-link
                 v-for="child in item.children"
                 :key="child.label"
                 :to="child.to || '#'"
-                :class="[
-                    'app-shell-nav-child block rounded-lg px-3 py-2 text-sm transition-colors',
-                    route.path === child.to ? 'is-active' : '',
-                ]"
+                :class="['app-shell-nav-child block rounded-lg px-3 py-2 text-sm transition-colors', route.path === child.to ? 'is-active' : '']"
             >
                 {{ child.label }}
             </router-link>
