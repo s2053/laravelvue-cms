@@ -26,9 +26,6 @@ const props = withDefaults(
         clearable: false,
         searchable: false,
         selectAll: false,
-        size: 'md',
-        color: 'neutral',
-        variant: 'outline',
     },
 );
 

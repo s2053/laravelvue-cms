@@ -56,8 +56,12 @@ const slideoverSizeClasses: Record<OverlaySize, string> = {
 };
 
 const shellUi = computed(() => ({
-    overlay: 'app-overlay-backdrop',
-    content: ['app-overlay-content', props.width || (props.mode === 'modal' ? modalSizeClasses[props.size] : slideoverSizeClasses[props.size])],
+    overlay: ['app-overlay-backdrop', 'bg-elevated/75'],
+    content: [
+        'app-overlay-content bg-default divide-y divide-default flex flex-col focus:outline-none ring ring-default',
+        props.mode === 'modal' ? 'rounded-lg shadow-lg' : '',
+        props.width || (props.mode === 'modal' ? modalSizeClasses[props.size] : slideoverSizeClasses[props.size]),
+    ],
 }));
 </script>
 

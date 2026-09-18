@@ -135,11 +135,11 @@ const togglePanel = () => {
             <AppInput v-model="searchQuery" placeholder="Search..." class="mb-2 w-full" />
 
             <div v-if="loading">
-                <div v-for="i in 3" :key="i" class="h-6 animate-pulse rounded bg-gray-200/10" />
+                <div v-for="i in 3" :key="i" class="bg-elevated h-6 animate-pulse rounded" />
             </div>
 
             <div v-else>
-                <div v-if="items.length === 0" class="text-muted-color py-2 text-sm">No items found</div>
+                <div v-if="items.length === 0" class="text-muted py-2 text-sm">No items found</div>
 
                 <div v-else>
                     <div v-for="item in items" :key="item.id" class="mb-2 flex items-center">
@@ -153,9 +153,3 @@ const togglePanel = () => {
         </div>
     </AppFormSection>
 </template>
-
-<style scoped>
-.text-muted-color {
-    color: var(--text-secondary-color, #6b7280);
-}
-</style>

@@ -1,7 +1,7 @@
 <template>
     <section class="app-auth-card mx-auto w-full max-w-md">
         <div class="mb-6">
-            <div v-if="localMessage" class="mb-4 text-center text-sm text-[var(--color-primary)]">
+            <div v-if="localMessage" class="text-primary mb-4 text-center text-sm">
                 {{ localMessage }}
             </div>
             <div class="text-center text-2xl font-bold">Login to your account</div>
@@ -27,8 +27,8 @@
             </div>
 
             <div class="flex justify-between text-sm">
-                <router-link to="/register" class="text-[var(--color-primary)] hover:underline">Register</router-link>
-                <router-link to="/forgot-password" class="text-[var(--color-text-muted)] hover:underline">Forgot Password?</router-link>
+                <router-link to="/register" class="text-primary hover:underline">Register</router-link>
+                <router-link to="/forgot-password" class="text-muted hover:underline">Forgot Password?</router-link>
             </div>
         </form>
     </section>

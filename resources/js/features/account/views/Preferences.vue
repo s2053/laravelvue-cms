@@ -12,7 +12,7 @@ import { PreferencesForm } from '@/features/account/components';
 import { useAccount } from '@/features/account/composables';
 import { useAuthStore } from '@/features/auth/auth.store';
 import type { UserPreferences } from '@/features/users/users.types';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 const auth = useAuthStore();
 
 const toast = useAppToast();
@@ -22,13 +22,28 @@ const initialFormPayload: UserPreferences = {
     appearance: 'system',
 };
 
-// reactive form model
+// Start with a safe fallback, then hydrate once the authenticated user is available.
 const formModel = ref<UserPreferences>({
     ...initialFormPayload,
     ...(auth.user?.preferences || {}),
 });
+const initializedUserId = ref<number | null>(auth.user?.id ?? null);
 const serverErrors = ref<{ [key: string]: string[] }>({});
 const submitting = ref(false);
+
+watch(
+    () => auth.user?.id,
+    (userId) => {
+        if (userId == null || initializedUserId.value === userId) return;
+
+        initializedUserId.value = userId;
+        formModel.value = {
+            ...initialFormPayload,
+            ...(auth.user?.preferences || {}),
+        };
+    },
+    { immediate: true },
+);
 
 async function handleSubmit(form: UserPreferences) {
     if (submitting.value) return;

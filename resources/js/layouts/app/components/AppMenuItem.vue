@@ -49,7 +49,7 @@ watch(
                 v-if="item.to"
                 :to="item.to"
                 :class="[
-                    'app-shell-nav-item flex items-center justify-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors',
+                    'app-shell-nav-item flex items-center justify-center gap-1.5 px-1.5 py-1.5 text-sm transition-colors',
                     isActive ? 'is-active' : '',
                 ]"
             >
@@ -58,7 +58,7 @@ watch(
             <button
                 v-else
                 type="button"
-                :class="['app-shell-nav-item flex w-full items-center justify-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors']"
+                :class="['app-shell-nav-item flex w-full items-center justify-center gap-1.5 px-1.5 py-1.5 text-sm transition-colors']"
             >
                 <UIcon :name="item.icon" class="size-5 shrink-0" />
             </button>
@@ -68,7 +68,7 @@ watch(
             <button
                 type="button"
                 :class="[
-                    'app-shell-nav-item flex w-full items-center justify-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors',
+                    'app-shell-nav-item flex w-full items-center justify-center gap-1.5 px-1.5 py-1.5 text-sm transition-colors',
                     isActive ? 'is-active' : '',
                 ]"
             >
@@ -82,7 +82,7 @@ watch(
                         <li v-for="child in item.children" :key="child.label">
                             <router-link
                                 :to="child.to || '#'"
-                                class="app-shell-nav-child block rounded-lg p-1.5 text-sm transition-colors"
+                                class="app-shell-nav-child block p-1.5 text-sm transition-colors"
                                 :class="route.path === child.to ? 'is-active' : ''"
                                 @click="close"
                             >
@@ -99,13 +99,9 @@ watch(
         <router-link
             v-if="item.to && !item.children?.length"
             :to="item.to"
-            :class="[
-                'app-shell-nav-item flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                isActive ? 'is-active' : '',
-                collapsed ? 'justify-center px-2' : '',
-            ]"
+            :class="['app-shell-nav-item flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium transition-colors', isActive ? 'is-active' : '']"
         >
-            <UIcon :name="item.icon" class="size-4 shrink-0" />
+            <UIcon :name="item.icon" class="size-5 shrink-0" />
             <span v-if="!collapsed" class="flex-1 truncate">{{ item.label }}</span>
             <UBadge v-if="!collapsed && item.badge" color="neutral" variant="soft" :label="item.badge" />
         </router-link>
@@ -114,13 +110,12 @@ watch(
             v-else
             type="button"
             :class="[
-                'app-shell-nav-item flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                'app-shell-nav-item flex w-full items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium transition-colors',
                 isActive ? 'is-active' : '',
-                collapsed ? 'justify-center px-2' : '',
             ]"
             @click="isOpen = !isOpen"
         >
-            <UIcon :name="item.icon" class="size-4 shrink-0" />
+            <UIcon :name="item.icon" class="size-5 shrink-0" />
             <span v-if="!collapsed" class="flex-1 truncate text-left">{{ item.label }}</span>
             <UIcon
                 v-if="!collapsed && item.children?.length"
@@ -133,7 +128,7 @@ watch(
             <li v-for="child in item.children" :key="child.label" class="-ms-px ps-1.5">
                 <router-link
                     :to="child.to || '#'"
-                    :class="['app-shell-nav-child block rounded-lg p-1.5 text-sm transition-colors', route.path === child.to ? 'is-active' : '']"
+                    :class="['app-shell-nav-child block p-1.5 text-sm transition-colors', route.path === child.to ? 'is-active' : '']"
                 >
                     {{ child.label }}
                 </router-link>

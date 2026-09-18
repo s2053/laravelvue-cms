@@ -1,7 +1,7 @@
 <template>
     <div class="app-pagination flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-end">
         <div class="flex items-center gap-2">
-            <span class="text-sm text-[var(--color-text-muted)]">Rows</span>
+            <span class="text-muted text-sm">Rows</span>
             <USelect
                 :model-value="itemsPerPage"
                 :items="rowOptions"

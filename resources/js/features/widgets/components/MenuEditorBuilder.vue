@@ -1,7 +1,7 @@
 <template>
-    <div class="app-menu-builder p-5">
-        <div class="mb-4 flex items-center justify-between border-b pb-2">
-            <h3 class="text-lg font-semibold">Menu Structure</h3>
+    <div class="app-menu-builder p-4 sm:p-6">
+        <div class="border-default mb-4 flex items-center justify-between border-b pb-2">
+            <h3 class="text-highlighted text-lg font-semibold">Menu Structure</h3>
             <AppButton :disabled="items?.length === 0" label="Remove All" color="error" variant="ghost" @click="removeAllItems" />
         </div>
 
@@ -24,7 +24,7 @@
 
                                     <!-- Right side: Type badge + toggle -->
                                     <div class="flex items-center gap-2">
-                                        <span class="px-2 py-0.5 text-sm">
+                                        <span class="text-muted px-2 py-0.5 text-xs font-medium">
                                             {{ getContentTypeLabel(item.content_type) }}
                                         </span>
                                         <span>{{ item.open ? '▲' : '▼' }}</span>
@@ -179,13 +179,6 @@ function validateItems(list: WidgetItem[] = []): boolean {
 </script>
 
 <style>
-.menu-item:active {
-    cursor: grabbing;
-}
-
-/*
-* Style for nestable
-*/
 .nestable {
     position: relative;
     display: flex;
@@ -200,14 +193,15 @@ function validateItems(list: WidgetItem[] = []): boolean {
 
 .nestable .nestable-list {
     margin: 0;
-    padding: 0 0 0 40px;
+    padding-inline-start: 1.25rem;
     list-style-type: none;
     width: 100%;
     box-sizing: border-box;
 }
 
 .nestable-rtl .nestable-list {
-    padding: 0 40px 0 0;
+    padding-inline-start: 0;
+    padding-inline-end: 1.25rem;
 }
 
 .nestable > .nestable-list {
@@ -226,7 +220,14 @@ function validateItems(list: WidgetItem[] = []): boolean {
 
 .nestable-item .nestable-list,
 .nestable-item-copy .nestable-list {
-    margin-top: 10px;
+    margin-top: 0.5rem;
+    padding-inline-start: 0.75rem;
+}
+
+.nestable-rtl .nestable-item .nestable-list,
+.nestable-rtl .nestable-item-copy .nestable-list {
+    padding-inline-start: 0;
+    padding-inline-end: 0.75rem;
 }
 
 .nestable-item {
@@ -239,7 +240,6 @@ function validateItems(list: WidgetItem[] = []): boolean {
 
 .nestable-item.is-dragging * {
     opacity: 0;
-    filter: alpha(opacity=0);
 }
 
 .nestable-item.is-dragging:before {
@@ -249,10 +249,9 @@ function validateItems(list: WidgetItem[] = []): boolean {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(106, 127, 233, 0.274);
-    border: 1px dashed rgb(73, 100, 241);
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
+    background-color: color-mix(in oklab, var(--ui-primary) 18%, transparent);
+    border: 1px dashed var(--ui-primary);
+    border-radius: var(--radius-md, 0.5rem);
 }
 
 .nestable-drag-layer {
@@ -273,7 +272,7 @@ function validateItems(list: WidgetItem[] = []): boolean {
     top: 0;
     left: 0;
     padding: 0;
-    background-color: rgba(106, 127, 233, 0.274);
+    background-color: color-mix(in oklab, var(--ui-primary) 18%, transparent);
 }
 
 .nestable-rtl .nestable-drag-layer > .nestable-list {
@@ -307,21 +306,23 @@ function validateItems(list: WidgetItem[] = []): boolean {
 
 .app-menu-item {
     overflow: hidden;
-    margin-bottom: 0.625rem;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md, 0.5rem);
-    background: var(--color-surface-raised);
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-md, 0.375rem);
+    background: var(--ui-bg);
 }
 
 .app-menu-item__header {
-    padding: 8px 12px !important;
-    color: var(--color-text);
-    font-weight: 500;
+    padding: 0.625rem 0.75rem !important;
+    color: var(--ui-text-highlighted);
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: var(--font-weight-medium, 500);
     cursor: pointer;
 }
 
 .app-menu-item__content {
-    border-top: 1px solid var(--color-border);
-    padding: 12px;
+    border-top: 1px solid var(--ui-border);
+    padding: 0.75rem;
+    background: var(--ui-bg);
 }
 </style>

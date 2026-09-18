@@ -235,9 +235,3 @@ function addCustomLink() {
         </AppFormSection>
     </div>
 </template>
-
-<style scoped>
-.text-muted-color {
-    color: var(--text-secondary-color, #6b7280);
-}
-</style>

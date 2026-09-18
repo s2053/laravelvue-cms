@@ -2,8 +2,8 @@
     <div v-if="media" class="flex h-full min-h-0 flex-col gap-4 overflow-hidden pr-2">
         <div class="grid h-full min-h-0 items-start gap-4 overflow-y-auto pr-2 lg:grid-cols-[minmax(0,1.25fr)_minmax(22rem,0.9fr)]">
             <div class="app-media-detail-card self-start overflow-hidden lg:sticky lg:top-0">
-                <div class="flex items-center justify-between gap-3 border-b border-[var(--color-border)] p-4">
-                    <div class="text-sm font-semibold text-[var(--color-text-muted)]">Attachment preview</div>
+                <div class="border-default flex items-center justify-between gap-3 border-b p-4">
+                    <div class="text-muted text-sm font-semibold">Attachment preview</div>
                     <AppButton
                         v-if="isImage"
                         icon="i-lucide-eye"
@@ -16,7 +16,7 @@
                         @click="imageViewerVisible = true"
                     />
                 </div>
-                <div class="flex h-[28rem] items-center justify-center bg-[var(--color-surface-raised)] p-4 lg:h-[calc(90vh-14rem)]">
+                <div class="bg-elevated flex h-[28rem] items-center justify-center p-4 lg:h-[calc(90vh-14rem)]">
                     <img
                         v-if="isImage"
                         :src="previewImage"
@@ -24,7 +24,7 @@
                         class="max-h-full w-auto max-w-full object-contain"
                     />
                     <div v-else class="flex h-full w-full flex-col items-center justify-center gap-3 px-4 text-center">
-                        <div class="rounded-md border border-dashed border-[var(--color-border)] px-5 py-8 text-sm text-[var(--color-text-muted)]">
+                        <div class="border-default text-muted rounded-md border border-dashed px-5 py-8 text-sm">
                             {{ media.original_name || media.filename }}
                         </div>
                     </div>
@@ -35,7 +35,7 @@
                 <section class="app-media-detail-card p-4">
                     <div class="mb-4">
                         <div class="text-lg font-semibold">{{ media.title || media.original_name || media.filename }}</div>
-                        <div class="mt-1 text-sm text-[var(--color-text-muted)]">{{ media.original_name || media.filename }}</div>
+                        <div class="text-muted mt-1 text-sm">{{ media.original_name || media.filename }}</div>
                     </div>
                     <div class="grid gap-2 text-sm">
                         <div><span class="font-semibold">Uploaded file:</span> {{ media.original_name || media.filename }}</div>
@@ -52,25 +52,23 @@
                     <div class="mb-4 text-lg font-semibold">Media details</div>
                     <div v-if="!editing" class="grid gap-3 text-sm">
                         <div class="grid gap-1">
-                            <span class="font-semibold text-[var(--color-text-muted)]">Title</span><span>{{ media.title || '-' }}</span>
+                            <span class="text-muted font-semibold">Title</span><span>{{ media.title || '-' }}</span>
                         </div>
                         <div class="grid gap-1">
-                            <span class="font-semibold text-[var(--color-text-muted)]">Alt text</span><span>{{ media.alt_text || '-' }}</span>
+                            <span class="text-muted font-semibold">Alt text</span><span>{{ media.alt_text || '-' }}</span>
                         </div>
                         <div class="grid gap-1">
-                            <span class="font-semibold text-[var(--color-text-muted)]">Caption</span
-                            ><span class="break-words">{{ media.caption || '-' }}</span>
+                            <span class="text-muted font-semibold">Caption</span><span class="break-words">{{ media.caption || '-' }}</span>
                         </div>
                         <div class="grid gap-1">
-                            <span class="font-semibold text-[var(--color-text-muted)]">Description</span
+                            <span class="text-muted font-semibold">Description</span
                             ><span class="break-words whitespace-pre-line">{{ media.description || '-' }}</span>
                         </div>
                         <div class="grid gap-1 pt-1">
-                            <span class="font-semibold text-[var(--color-text-muted)]">Visibility</span><span>{{ media.visibility }}</span>
+                            <span class="text-muted font-semibold">Visibility</span><span>{{ media.visibility }}</span>
                         </div>
                         <div class="grid gap-1">
-                            <span class="font-semibold text-[var(--color-text-muted)]">Status</span
-                            ><span>{{ media.status ? 'Active' : 'Inactive' }}</span>
+                            <span class="text-muted font-semibold">Status</span><span>{{ media.status ? 'Active' : 'Inactive' }}</span>
                         </div>
                     </div>
                     <div v-else class="app-form">
@@ -123,7 +121,7 @@
         </div>
 
         <AppOverlayShell v-model:open="imageViewerVisible" title="Original image" size="2xl">
-            <div class="flex h-full min-h-0 items-center justify-center overflow-hidden rounded-md bg-[var(--color-surface-raised)] p-4">
+            <div class="bg-elevated flex h-full min-h-0 items-center justify-center overflow-hidden rounded-md p-4">
                 <img v-if="isImage" :src="originalImage" :alt="media.title || media.filename" class="max-h-full max-w-full object-contain" />
             </div>
         </AppOverlayShell>

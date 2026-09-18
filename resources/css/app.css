@@ -3,7 +3,5 @@
 @import './theme/index.css';
 
 @source '../**/*.js';
-
-.app-card--bordered {
-    border: 1px solid var(--card-border);
-}
+@source '../**/*.ts';
+@source '../**/*.vue';

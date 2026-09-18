@@ -15,7 +15,7 @@ export default defineConfig({
         }),
         tailwindcss(),
         vue(),
-        ui(),
+        ui({ colorMode: false }),
         svgLoader(),
         tsconfigPaths(),
     ],

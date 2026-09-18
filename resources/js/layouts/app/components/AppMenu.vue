@@ -62,11 +62,11 @@ const supportItems = [
 
 <template>
     <div class="flex min-h-0 flex-1 flex-col">
-        <nav class="min-h-0 flex-1 overflow-y-auto pr-1">
+        <nav class="min-h-0 flex-1 overflow-y-auto">
             <AppMenuItem v-for="item in primaryItems" :key="item.label" :item="item" :collapsed="collapsed" />
         </nav>
 
-        <nav class="mt-auto pt-6">
+        <nav class="mt-auto pt-4">
             <AppMenuItem v-for="item in supportItems" :key="item.label" :item="item" :collapsed="collapsed" />
         </nav>
     </div>

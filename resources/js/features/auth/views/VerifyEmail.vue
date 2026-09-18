@@ -5,7 +5,7 @@
         </div>
 
         <div class="app-form">
-            <div class="mb-6 text-center text-sm text-[var(--color-text-muted)]">
+            <div class="text-muted mb-6 text-center text-sm">
                 A verification email has been sent to <span class="font-medium">{{ user?.email }}</span
                 >.<br />
                 Please check your inbox and click the link to verify your email.

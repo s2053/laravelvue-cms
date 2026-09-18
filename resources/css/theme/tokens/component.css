@@ -1,48 +1,44 @@
 html {
-    --card-bg: var(--color-surface);
-    --card-border: var(--color-border);
-    --card-shadow: var(--shadow-card);
-    --filter-panel-bg: var(--color-surface);
-    --filter-panel-border: var(--color-border);
-    --filter-panel-shadow: var(--shadow-card);
-    --form-label-text: var(--color-text);
-    --form-error-text: var(--color-danger);
-    --form-section-bg: var(--color-surface);
-    --form-section-border: var(--color-border);
-    --form-section-title: var(--color-text);
-    --form-section-caret: var(--color-text-muted);
-    --tabs-border: var(--color-border);
-    --tabs-text: var(--color-text-muted);
-    --tabs-active-text: var(--color-primary);
-    --text-editor-bg: var(--color-surface);
-    --text-editor-toolbar-bg: color-mix(in oklab, var(--color-surface-raised) 88%, var(--color-primary) 12%);
-    --text-editor-border: var(--color-border);
-    --text-editor-text: var(--color-text);
-    --text-editor-muted-text: var(--color-text-muted);
-    --text-editor-focus-ring: color-mix(in oklab, var(--color-focus) 40%, transparent);
-    --overlay-content-text: var(--color-text);
+    --filter-panel-bg: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
+    --filter-panel-border: var(--ui-border);
+    --form-label-text: var(--ui-text-highlighted);
+    --form-error-text: var(--ui-error);
+    --form-section-bg: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
+    --form-section-border: var(--ui-border);
+    --form-section-title: var(--ui-text-highlighted);
+    --form-section-caret: var(--ui-text-muted);
+    --tabs-border: var(--ui-border);
+    --tabs-text: var(--ui-text-muted);
+    --tabs-active-text: var(--ui-primary);
+    --text-editor-bg: var(--ui-bg);
+    --text-editor-toolbar-bg: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
+    --text-editor-border: var(--ui-border);
+    --text-editor-text: var(--ui-text);
+    --text-editor-muted-text: var(--ui-text-muted);
+    --text-editor-focus-ring: color-mix(in oklab, var(--ui-border-focus) 40%, transparent);
+    --overlay-content-text: var(--ui-text);
     --overlay-heading-line-height: 1.25;
     --overlay-body-line-height: 1.5;
     --overlay-backdrop-z-index: 100;
     --overlay-content-z-index: 101;
     --overlay-floating-z-index: 102;
-    --page-header-title: var(--color-text);
-    --page-header-description: var(--color-text-muted);
-    --shell-sidebar-bg: color-mix(in srgb, var(--ui-bg) 78%, var(--ui-bg-elevated) 22%);
+    --page-header-title: var(--ui-text-highlighted);
+    --page-header-description: var(--ui-text-muted);
+    --shell-sidebar-bg: var(--ui-bg);
     --shell-sidebar-border: var(--ui-border);
-    --shell-header-bg: color-mix(in srgb, var(--ui-bg) 82%, transparent);
+    --shell-header-bg: var(--ui-bg);
     --shell-header-border: var(--ui-border);
     --shell-brand-text: var(--ui-primary);
     --shell-fab-bg: var(--ui-primary);
-    --shell-fab-hover-bg: color-mix(in srgb, var(--ui-primary) 88%, black 12%);
+    --shell-fab-hover-bg: color-mix(in oklab, var(--ui-primary) 75%, transparent);
     --shell-fab-text: var(--ui-text-inverted);
     --shell-title: var(--ui-text-highlighted);
     --shell-subtitle: var(--ui-text-muted);
     --shell-nav-text: var(--ui-text-muted);
     --shell-nav-hover-text: var(--ui-text-highlighted);
-    --shell-nav-hover-bg: color-mix(in srgb, var(--ui-text) 8%, transparent);
+    --shell-nav-hover-bg: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
     --shell-nav-active-text: var(--ui-primary);
-    --shell-nav-active-bg: color-mix(in srgb, var(--ui-primary) 10%, transparent);
+    --shell-nav-active-bg: var(--ui-bg-elevated);
 }
 
 .app-shell {
@@ -53,58 +49,57 @@ html {
 
 .app-filter-panel {
     border: 1px solid var(--filter-panel-border);
-    border-radius: var(--radius-lg, 0.75rem);
+    border-radius: var(--radius-lg, 0.5rem);
     background: var(--filter-panel-bg);
-    box-shadow: var(--filter-panel-shadow);
     padding: 1rem;
 }
 
 .app-auth-card {
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-lg, 0.75rem);
-    background: var(--card-bg);
-    box-shadow: var(--card-shadow);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, 0.5rem);
+    background: var(--ui-bg);
     padding: 1.5rem;
 }
 
 .app-filter-field-label {
-    color: var(--color-text);
+    color: var(--ui-text-highlighted);
     font-size: var(--text-sm, 0.875rem);
     font-weight: var(--font-weight-semibold, 600);
 }
 
 .app-inline-muted-text {
-    color: var(--color-text-muted);
+    color: var(--ui-text-muted);
     font-size: var(--text-sm, 0.875rem);
 }
 
 .app-permission-group {
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--ui-border);
     border-radius: var(--radius-md, 0.5rem);
 }
 
 .app-data-table {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg, 0.75rem);
-    background: var(--color-surface);
+    overflow: hidden;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, 0.5rem);
+    background: var(--ui-bg);
 }
 
 .app-data-table__pagination {
-    border-top: 1px solid var(--color-border);
-    color: var(--color-text-muted);
+    border-top: 1px solid var(--ui-border-muted);
+    color: var(--ui-text-muted);
     font-size: var(--text-sm, 0.875rem);
 }
 
 .app-data-table__sort-button {
-    color: var(--color-text);
+    color: var(--ui-text);
 }
 
 .app-data-table__sort-icon {
-    color: var(--color-text-muted);
+    color: var(--ui-text-muted);
 }
 
 .app-data-table__checkbox {
-    border-color: var(--color-border);
+    border-color: var(--ui-border);
 }
 
 .app-data-table__media-title {
@@ -123,19 +118,19 @@ html {
 
 .app-data-table__title {
     overflow: hidden;
-    color: var(--color-text);
+    color: var(--ui-text);
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .app-confirm-dialog__message,
 .app-file-upload__filename {
-    color: var(--color-text-muted);
+    color: var(--ui-text-muted);
     font-size: var(--text-sm, 0.875rem);
 }
 
 .app-multi-select__select-all {
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--ui-border);
 }
 
 .app-form {
@@ -156,13 +151,19 @@ html {
     font-weight: var(--font-weight-semibold, 600);
 }
 
+.app-form-help {
+    color: var(--ui-text-muted);
+    font-size: var(--text-sm, 0.875rem);
+    line-height: 1.5;
+}
+
 .app-form-slug-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     min-width: 0;
     margin-top: 0.5rem;
-    color: var(--color-text-muted);
+    color: var(--ui-text-muted);
     font-size: var(--text-sm, 0.875rem);
 }
 
@@ -187,13 +188,13 @@ html {
 
 .app-form-media-preview {
     padding: 0.5rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--ui-border);
     border-radius: var(--radius-md, 0.5rem);
 }
 
 .app-loading-state {
     padding: 2rem;
-    color: var(--color-text-muted);
+    color: var(--ui-text-muted);
     text-align: center;
 }
 
@@ -203,16 +204,15 @@ html {
     gap: 1rem;
     padding: 1rem;
     border: 1px solid var(--form-section-border);
-    border-radius: var(--radius-lg, 0.75rem);
+    border-radius: var(--radius-lg, 0.5rem);
     background: var(--form-section-bg);
-    box-shadow: var(--shadow-card);
 }
 
 .app-menu-section,
 .app-menu-builder,
 .app-menu-source-panel {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md, 0.5rem);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, 0.5rem);
     background: var(--form-section-bg);
 }
 
@@ -286,14 +286,13 @@ html {
 
     overflow: hidden;
     border: 1px solid var(--text-editor-border);
-    border-radius: var(--radius-lg, 0.75rem);
+    border-radius: var(--radius-lg, 0.5rem);
     background: var(--text-editor-bg);
     color: var(--text-editor-text);
-    box-shadow: var(--shadow-card);
 }
 
 .app-text-editor:focus-within {
-    border-color: var(--color-focus);
+    border-color: var(--ui-border-focus);
     box-shadow: 0 0 0 3px var(--text-editor-focus-ring);
 }
 
@@ -356,15 +355,16 @@ html {
 
 .app-text-editor .ProseMirror blockquote {
     padding-left: 1rem;
-    border-left: 3px solid var(--color-primary);
+    border-left: 3px solid var(--ui-primary);
     color: var(--text-editor-muted-text);
 }
 
 .app-text-editor .ProseMirror pre {
     overflow-x: auto;
     padding: 0.875rem 1rem;
+    border: 1px solid var(--ui-border-muted);
     border-radius: var(--radius-md, 0.5rem);
-    background: color-mix(in oklab, var(--color-bg) 82%, var(--color-primary) 18%);
+    background: var(--ui-bg-muted);
 }
 
 .app-text-editor .ProseMirror img {
@@ -466,17 +466,20 @@ html {
 
 .app-shell-header {
     border-bottom: 1px solid var(--shell-header-border);
-    background: var(--shell-header-bg);
-    backdrop-filter: blur(20px);
+    background: color-mix(in oklab, var(--shell-header-bg) 75%, transparent);
+    backdrop-filter: blur(8px);
 }
 
 .app-shell-content {
-    padding: 1rem;
+    width: 100%;
+    max-width: var(--ui-container, 80rem);
+    margin-inline: auto;
+    padding: 1.5rem 1rem;
 }
 
 @media (min-width: 640px) {
     .app-shell-content {
-        padding: 1.5rem;
+        padding: 2rem 1.5rem;
     }
 }
 
@@ -506,7 +509,14 @@ html {
 .app-shell-nav-child {
     position: relative;
     isolation: isolate;
+}
+
+.app-shell-nav-item {
     color: var(--shell-nav-text);
+}
+
+.app-shell-nav-child {
+    color: var(--ui-text);
 }
 
 .app-shell-nav-item::before,
@@ -524,6 +534,11 @@ html {
     color: var(--shell-nav-hover-text);
 }
 
+.app-shell-nav-item:focus-visible::before,
+.app-shell-nav-child:focus-visible::before {
+    outline: 3px solid color-mix(in oklab, var(--ui-primary) 25%, transparent);
+}
+
 .app-shell-nav-item:hover::before,
 .app-shell-nav-child:hover::before {
     background: var(--shell-nav-hover-bg);
@@ -531,7 +546,6 @@ html {
 
 .app-shell-nav-item.is-active::before,
 .app-shell-nav-child.is-active::before {
-    color: var(--shell-nav-active-text);
     background: var(--shell-nav-active-bg);
 }
 
@@ -541,28 +555,24 @@ html {
 }
 
 .app-shell-nav-caret {
-    color: var(--shell-subtitle);
+    color: var(--ui-text-dimmed);
 }
 
 .app-account-layout {
     display: grid;
     grid-template-columns: minmax(14rem, 16rem) minmax(0, 1fr);
-    gap: 1.5rem;
+    gap: 2rem;
     min-height: 32rem;
 }
 
 .app-account-layout__sidebar {
     align-self: start;
-    padding: 1.25rem;
-    border: 1px solid var(--card-border);
-    border-radius: 0.75rem;
-    background: var(--card-bg);
-    box-shadow: var(--card-shadow);
+    padding: 0.25rem 0;
 }
 
 .app-account-layout__title {
     margin: 0 0 1rem;
-    color: var(--color-text);
+    color: var(--ui-text-highlighted);
     font-size: 1.125rem;
     font-weight: 700;
 }
@@ -577,8 +587,8 @@ html {
     align-items: center;
     gap: 0.75rem;
     padding: 0.7rem 0.8rem;
-    border-radius: 0.5rem;
-    color: var(--color-text-muted);
+    border-radius: var(--radius-md, 0.375rem);
+    color: var(--ui-text-muted);
     text-decoration: none;
     transition:
         background-color 160ms ease,
@@ -587,7 +597,7 @@ html {
 
 .app-account-layout__link:hover,
 .app-account-layout__link.is-active {
-    background: var(--shell-nav-active-bg);
+    background: var(--ui-bg-elevated);
     color: var(--shell-nav-active-text);
 }
 
@@ -600,18 +610,15 @@ html {
 }
 
 .app-account-layout__main > .app-page-header {
-    margin-bottom: 1.25rem;
-    padding-bottom: 0.875rem;
-    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.5rem;
 }
 
 .app-account-form {
-    width: min(100%, 44rem);
+    width: min(100%, 56rem);
     padding: 1.5rem;
-    border: 1px solid var(--card-border);
-    border-radius: 0.75rem;
-    background: var(--card-bg);
-    box-shadow: var(--card-shadow);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, 0.5rem);
+    background: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
 }
 
 .app-account-form .app-form-media-preview {
@@ -622,23 +629,22 @@ html {
 .app-account-form .app-form-actions {
     margin-top: 1.5rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--ui-border-muted);
 }
 
 .app-site-form {
     width: min(100%, 44rem);
     padding: 1.5rem;
-    border: 1px solid var(--card-border);
-    border-radius: 0.75rem;
-    background: var(--card-bg);
-    box-shadow: var(--card-shadow);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, 0.5rem);
+    background: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
 }
 
 .app-site-map-preview {
     margin-top: 1rem;
     overflow: hidden;
-    border: 1px solid var(--color-border);
-    border-radius: 0.5rem;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, var(--ui-radius, 0.25rem));
 }
 
 .app-site-map-preview iframe {
@@ -657,7 +663,7 @@ html {
 .app-site-social-label {
     flex: 0 0 8rem;
     padding-top: 0.625rem;
-    color: var(--color-text);
+    color: var(--ui-text);
     font-weight: 600;
 }
 

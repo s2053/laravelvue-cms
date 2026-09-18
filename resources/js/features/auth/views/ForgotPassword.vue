@@ -5,7 +5,7 @@
         </div>
 
         <form class="app-form" @submit.prevent="onSubmit">
-            <div class="mb-6 text-center text-sm text-[var(--color-text-muted)]">Enter your email address to receive a password reset link.</div>
+            <div class="text-muted mb-6 text-center text-sm">Enter your email address to receive a password reset link.</div>
             <div class="app-form-field">
                 <label class="app-form-label" for="forgot-email">Email</label>
                 <AppInput
@@ -21,7 +21,7 @@
             </div>
             <div class="app-form-actions"><AppButton type="submit" block :disabled="submitting">Send Reset Link</AppButton></div>
             <div class="text-center text-sm">
-                <RouterLink :to="{ name: 'login' }" class="text-[var(--color-text-muted)] hover:underline">Back to Login</RouterLink>
+                <RouterLink :to="{ name: 'login' }" class="text-muted hover:underline">Back to Login</RouterLink>
             </div>
         </form>
     </section>

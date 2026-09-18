@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false });
 
-withDefaults(
+const { modelValue, id, name, type, placeholder, disabled, required, autocomplete, size, color, variant, icon, leadingIcon, trailingIcon } =
     defineProps<{
         modelValue?: string | number | null;
         id?: string;
@@ -17,14 +17,7 @@ withDefaults(
         icon?: string;
         leadingIcon?: string;
         trailingIcon?: string;
-    }>(),
-    {
-        type: 'text',
-        size: 'md',
-        color: 'neutral',
-        variant: 'outline',
-    },
-);
+    }>();
 
 const emit = defineEmits<{
     'update:modelValue': [value: string | number | null];

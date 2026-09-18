@@ -1,19 +1,25 @@
 <script setup lang="ts">
+import { useAppColorMode, type AppAppearance } from '@/composables/useAppColorMode';
 import { useAppToast } from '@/composables/useAppToast';
+import { useThemePreset } from '@/composables/useThemePreset';
+import { useAccount } from '@/features/account/composables';
 import { useAuthStore } from '@/features/auth/auth.store';
+import { isThemePresetId } from '@/theme/presets';
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const props = defineProps<{
+defineProps<{
     collapsed?: boolean;
 }>();
 
 const auth = useAuthStore();
+const colorMode = useAppColorMode();
+const { activePreset, setPreset, themePresetOptions } = useThemePreset();
+const { updatePreferences } = useAccount({ onError: () => undefined });
 const toast = useAppToast();
 const router = useRouter();
-
-const appearance = ref<'light' | 'dark'>(document.documentElement.classList.contains('app-dark') ? 'dark' : 'light');
+const savingAppearance = ref(false);
 
 const user = computed(() => ({
     name: auth.user?.name || 'Account',
@@ -23,10 +29,24 @@ const user = computed(() => ({
     },
 }));
 
-const setAppearance = (value: 'light' | 'dark') => {
-    appearance.value = value;
-    document.documentElement.classList.toggle('app-dark', value === 'dark');
-    document.documentElement.classList.toggle('dark', value === 'dark');
+const setAppearance = async (value: AppAppearance) => {
+    if (savingAppearance.value || colorMode.appearance.value === value) return;
+
+    const previousAppearance = colorMode.appearance.value;
+    colorMode.setAppearance(value);
+
+    if (!auth.user) return;
+
+    savingAppearance.value = true;
+    try {
+        const updated = await updatePreferences({ ...auth.user.preferences, appearance: value });
+        auth.setUser(updated);
+    } catch (error: any) {
+        colorMode.setAppearance(previousAppearance);
+        toast.error('Error', error.message || 'Could not save appearance preference.', { duration: 4000 });
+    } finally {
+        savingAppearance.value = false;
+    }
 };
 
 const logout = async () => {
@@ -57,6 +77,21 @@ const items = computed<DropdownMenuItem[][]>(() => [
     ],
     [
         {
+            label: 'Preset',
+            icon: 'i-lucide-palette',
+            children: themePresetOptions.map((preset) => ({
+                label: preset.label,
+                type: 'checkbox' as const,
+                checked: activePreset.value.id === preset.id,
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    if (isThemePresetId(preset.id)) {
+                        setPreset(preset.id);
+                    }
+                },
+            })),
+        },
+        {
             label: 'Appearance',
             icon: 'i-lucide-sun-moon',
             children: [
@@ -64,20 +99,30 @@ const items = computed<DropdownMenuItem[][]>(() => [
                     label: 'Light',
                     icon: 'i-lucide-sun',
                     type: 'checkbox',
-                    checked: appearance.value === 'light',
+                    checked: colorMode.appearance.value === 'light',
                     onSelect(event: Event) {
                         event.preventDefault();
-                        setAppearance('light');
+                        void setAppearance('light');
                     },
                 },
                 {
                     label: 'Dark',
                     icon: 'i-lucide-moon',
                     type: 'checkbox',
-                    checked: appearance.value === 'dark',
+                    checked: colorMode.appearance.value === 'dark',
                     onSelect(event: Event) {
                         event.preventDefault();
-                        setAppearance('dark');
+                        void setAppearance('dark');
+                    },
+                },
+                {
+                    label: 'System',
+                    icon: 'i-lucide-monitor',
+                    type: 'checkbox',
+                    checked: colorMode.appearance.value === 'system',
+                    onSelect(event: Event) {
+                        event.preventDefault();
+                        void setAppearance('system');
                     },
                 },
             ],

@@ -5,7 +5,7 @@
         </div>
 
         <form class="app-form" @submit.prevent="onSubmit">
-            <div class="mb-6 text-center text-sm text-[var(--color-text-muted)]">Enter your new password below to reset your account.</div>
+            <div class="text-muted mb-6 text-center text-sm">Enter your new password below to reset your account.</div>
             <div class="app-form-field">
                 <label class="app-form-label" for="reset-password">New Password</label>
                 <AppPassword id="reset-password" v-model="form.password" name="password" autocomplete="new-password" class="w-full" />
@@ -24,7 +24,7 @@
             </div>
             <div class="app-form-actions"><AppButton type="submit" block :disabled="submitting">Reset Password</AppButton></div>
             <div class="text-center text-sm">
-                <RouterLink :to="{ name: 'login' }" class="text-[var(--color-text-muted)] hover:underline">Back to Login</RouterLink>
+                <RouterLink :to="{ name: 'login' }" class="text-muted hover:underline">Back to Login</RouterLink>
             </div>
         </form>
     </section>

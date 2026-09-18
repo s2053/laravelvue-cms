@@ -50,11 +50,11 @@
             <MediaFilter v-if="openFilter" :filters="filters" @update:filters="onFiltersChanged" />
         </div>
 
-        <div v-if="loading" class="media-panel border-dashed p-12 text-center text-[var(--color-text-muted)]">Loading media library...</div>
+        <div v-if="loading" class="media-panel text-muted border-dashed p-12 text-center">Loading media library...</div>
 
         <div v-else-if="records.length === 0" class="media-panel border-dashed p-12 text-center">
             <div class="text-lg font-semibold">No media found</div>
-            <p class="mt-2 text-sm text-[var(--color-text-muted)]">Upload your first asset or change the current search and filters.</p>
+            <p class="text-muted mt-2 text-sm">Upload your first asset or change the current search and filters.</p>
         </div>
 
         <div v-else-if="viewMode === 'grid'" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
@@ -79,13 +79,13 @@
 
                     <div class="media-thumb aspect-[4/3] overflow-hidden">
                         <img v-if="isImage(item)" :src="getPreviewUrl(item)" :alt="item.title || item.filename" class="h-full w-full object-cover" />
-                        <div v-else class="flex h-full items-center justify-center px-4 text-center text-sm text-[var(--color-text-muted)]">
+                        <div v-else class="text-muted flex h-full items-center justify-center px-4 text-center text-sm">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
 
                         <span
                             v-if="item.extension"
-                            class="absolute right-2 bottom-2 rounded-md border border-black/20 bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm"
+                            class="border-inverted/20 bg-inverted/70 text-inverted absolute right-2 bottom-2 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold backdrop-blur-sm"
                         >
                             {{ item.extension.toUpperCase() }}
                         </span>
@@ -103,7 +103,7 @@
                         </button>
                     </div>
 
-                    <div class="flex items-center justify-between text-[11px] text-[var(--color-text-muted)]">
+                    <div class="text-muted flex items-center justify-between text-[11px]">
                         <span>{{ formatFileSize(item.size) }}</span>
                         <span class="truncate">{{ item.created_at ? formatDateOnly(item.created_at) : '-' }}</span>
                     </div>
@@ -118,7 +118,7 @@
 
                     <div class="media-thumb h-20 w-24 overflow-hidden rounded-lg">
                         <img v-if="isImage(item)" :src="getPreviewUrl(item)" :alt="item.title || item.filename" class="h-full w-full object-cover" />
-                        <div v-else class="flex h-full items-center justify-center text-xs text-[var(--color-text-muted)]">
+                        <div v-else class="text-muted flex h-full items-center justify-center text-xs">
                             {{ item.extension?.toUpperCase() || item.type.toUpperCase() }}
                         </div>
                     </div>
@@ -128,7 +128,7 @@
                     <button type="button" class="truncate text-left font-semibold hover:underline" @click="openDetails(item.id)">
                         {{ item.title || item.original_name || item.filename }}
                     </button>
-                    <div class="mt-1 truncate text-sm text-[var(--color-text-muted)]">{{ item.original_name || item.filename }}</div>
+                    <div class="text-muted mt-1 truncate text-sm">{{ item.original_name || item.filename }}</div>
                     <div class="mt-2 flex flex-wrap gap-2">
                         <AppBadge color="neutral" size="sm">{{ item.type }}</AppBadge>
                         <AppBadge :color="item.visibility === 'public' ? 'success' : 'warning'" size="sm">{{ item.visibility }}</AppBadge>
@@ -137,7 +137,7 @@
                 </div>
 
                 <div class="flex items-center gap-2 md:ml-auto">
-                    <span class="text-sm text-[var(--color-text-muted)]">{{ formatFileSize(item.size) }}</span>
+                    <span class="text-muted text-sm">{{ formatFileSize(item.size) }}</span>
                     <AppButton icon="i-lucide-pencil" color="neutral" variant="outline" size="sm" square @click="openDetails(item.id)" />
                     <AppButton icon="i-lucide-trash-2" color="error" variant="outline" size="sm" square @click="removeMediaRecord(item)" />
                 </div>
@@ -546,21 +546,19 @@ function formatDateOnly(dateString?: string | null) {
 
 <style scoped>
 .media-panel {
-    border: 1px solid var(--color-border);
-    border-radius: 1rem;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, 0.5rem);
     padding: 1rem;
-    background: var(--card-bg);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    background: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
 }
 
 .media-item {
-    border: 1px solid var(--card-border);
-    border-radius: 1rem;
-    background: var(--card-bg);
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-lg, 0.5rem);
+    background: color-mix(in oklab, var(--ui-bg-elevated) 50%, transparent);
 }
 
 .media-thumb {
-    background: var(--color-surface-raised);
+    background: var(--ui-bg-muted);
 }
 </style>

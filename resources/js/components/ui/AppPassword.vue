@@ -3,21 +3,18 @@ import { ref } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
-withDefaults(
-    defineProps<{
-        modelValue?: string | null;
-        id?: string;
-        name?: string;
-        placeholder?: string;
-        disabled?: boolean;
-        required?: boolean;
-        autocomplete?: string;
-        size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-        color?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral';
-        variant?: 'outline' | 'soft' | 'subtle' | 'none';
-    }>(),
-    { size: 'md', color: 'neutral', variant: 'outline' },
-);
+defineProps<{
+    modelValue?: string | null;
+    id?: string;
+    name?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    required?: boolean;
+    autocomplete?: string;
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    color?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral';
+    variant?: 'outline' | 'soft' | 'subtle' | 'none';
+}>();
 
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>();
 const visible = ref(false);

@@ -30,7 +30,7 @@ const { layoutState } = useLayout();
 
         <template #default="{ collapsed }">
             <div>
-                <UInput v-if="!collapsed" icon="i-lucide-search" placeholder="Search..." :ui="{ root: 'w-full', base: 'h-10' }">
+                <UInput v-if="!collapsed" icon="i-lucide-search" placeholder="Search..." size="sm" :ui="{ root: 'w-full' }">
                     <template #trailing>
                         <div class="hidden items-center gap-1 sm:flex">
                             <UKbd value="CTRL" class="text-[10px]" />

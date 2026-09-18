@@ -1,12 +1,8 @@
 <template>
     <div class="flex flex-col gap-4">
         <div
-            class="rounded-md border border-dashed border-[var(--color-border)] p-6 transition"
-            :class="
-                isDragging
-                    ? 'border-[var(--color-primary)] bg-[color-mix(in_oklab,var(--color-primary)_10%,transparent)]'
-                    : 'border-[var(--color-border)] bg-[var(--color-surface)]'
-            "
+            class="border-default rounded-md border border-dashed p-6 transition"
+            :class="isDragging ? 'border-primary bg-primary/10' : 'border-default bg-default'"
             @click="openFilePicker"
             @dragenter.prevent="isDragging = true"
             @dragover.prevent="isDragging = true"
@@ -19,9 +15,7 @@
                 <AppButton icon="i-lucide-cloud-upload" color="primary" variant="ghost" size="xl" square aria-label="Upload files" />
                 <div>
                     <div class="text-base font-semibold">Drop files here or click to browse</div>
-                    <div class="mt-1 text-sm text-[var(--color-text-muted)]">
-                        Upload multiple files at once. Supported types: {{ supportedFormatsLabel }}.
-                    </div>
+                    <div class="text-muted mt-1 text-sm">Upload multiple files at once. Supported types: {{ supportedFormatsLabel }}.</div>
                 </div>
                 <AppButton type="button" label="Add Files" icon="i-lucide-plus" @click.stop="openFilePicker" />
             </div>
@@ -32,25 +26,21 @@
         </div>
 
         <div v-if="selectedFiles.length" class="grid gap-3 sm:grid-cols-2">
-            <div
-                v-for="item in selectedFiles"
-                :key="item.id"
-                class="overflow-hidden rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm"
-            >
+            <div v-for="item in selectedFiles" :key="item.id" class="border-default bg-default overflow-hidden rounded-md border shadow-sm">
                 <div class="flex gap-3 p-3">
-                    <div class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-[var(--color-surface-raised)]">
+                    <div class="bg-elevated flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-md">
                         <img v-if="item.isImage" :src="item.previewUrl || ''" :alt="item.file.name" class="h-full w-full object-cover" />
-                        <div v-else class="px-2 text-center text-xs text-[var(--color-text-muted)]">
+                        <div v-else class="text-muted px-2 text-center text-xs">
                             {{ item.extension.toUpperCase() }}
                         </div>
                     </div>
 
                     <div class="min-w-0 flex-1">
                         <div class="truncate font-semibold" :title="item.file.name">{{ item.file.name }}</div>
-                        <div class="mt-1 text-sm text-[var(--color-text-muted)]">{{ formatFileSize(item.file.size) }}</div>
+                        <div class="text-muted mt-1 text-sm">{{ formatFileSize(item.file.size) }}</div>
                         <div class="mt-2 flex flex-wrap items-center gap-2">
                             <AppBadge color="neutral" size="sm">{{ item.isImage ? 'Image' : item.extension.toUpperCase() }}</AppBadge>
-                            <span class="text-xs text-[var(--color-text-muted)]">{{ item.file.type || 'unknown type' }}</span>
+                            <span class="text-muted text-xs">{{ item.file.type || 'unknown type' }}</span>
                         </div>
                     </div>
 
@@ -68,14 +58,10 @@
             </div>
         </div>
 
-        <div v-else class="rounded-md border border-dashed border-[var(--color-border)] px-4 py-8 text-center text-sm text-[var(--color-text-muted)]">
-            No files selected yet.
-        </div>
+        <div v-else class="border-default text-muted rounded-md border border-dashed px-4 py-8 text-center text-sm">No files selected yet.</div>
 
         <div class="flex items-center justify-between gap-3">
-            <div class="text-sm text-[var(--color-text-muted)]">
-                {{ selectedFiles.length }} file{{ selectedFiles.length === 1 ? '' : 's' }} ready to upload
-            </div>
+            <div class="text-muted text-sm">{{ selectedFiles.length }} file{{ selectedFiles.length === 1 ? '' : 's' }} ready to upload</div>
 
             <div class="flex gap-2">
                 <AppButton type="button" label="Clear" color="secondary" variant="outline" :disabled="!selectedFiles.length" @click="clearFiles" />
@@ -251,8 +237,8 @@ function formatFileSize(size: number) {
 
 <style scoped>
 .app-upload-error {
-    border-color: color-mix(in oklab, var(--color-danger) 35%, var(--color-border));
-    background: color-mix(in oklab, var(--color-danger) 10%, var(--color-surface));
+    border-color: color-mix(in oklab, var(--ui-error) 35%, var(--ui-border));
+    background: color-mix(in oklab, var(--ui-error) 10%, var(--ui-bg-elevated));
     color: var(--form-error-text);
 }
 </style>

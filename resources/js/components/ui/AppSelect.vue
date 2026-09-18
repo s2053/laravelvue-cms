@@ -21,9 +21,6 @@ withDefaults(
         placeholder: 'Select an option',
         clearable: false,
         searchable: false,
-        size: 'md',
-        color: 'neutral',
-        variant: 'outline',
     },
 );
 

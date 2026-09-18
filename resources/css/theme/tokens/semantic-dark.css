@@ -1,27 +1,28 @@
-html.dark,
-html.app-dark {
+html.dark {
     color-scheme: dark;
 
-    --ui-primary: var(--color-primary);
-    --ui-secondary: var(--color-secondary);
-    --ui-success: var(--color-success);
-    --ui-info: var(--color-info);
-    --ui-warning: var(--color-warning);
-    --ui-error: var(--color-danger);
-    --ui-neutral: var(--color-text-muted);
+    --ui-primary: var(--ui-color-primary-400, var(--primary-400));
+    --ui-secondary: var(--ui-color-secondary-400, var(--secondary-300));
+    --ui-success: var(--ui-color-success-400, var(--success-300));
+    --ui-info: var(--ui-color-info-400, var(--info-300));
+    --ui-warning: var(--ui-color-warning-400, var(--warning-300));
+    --ui-error: var(--ui-color-error-400, var(--danger-300));
 
-    --color-bg: color-mix(in oklab, var(--neutral-950) 92%, var(--primary-950) 8%);
-    --color-surface: color-mix(in oklab, var(--neutral-900) 82%, var(--primary-900) 18%);
-    --color-surface-raised: color-mix(in oklab, var(--neutral-800) 72%, var(--primary-900) 28%);
-    --color-text: var(--neutral-50);
-    --color-text-muted: var(--neutral-300);
-    --color-border: color-mix(in oklab, var(--neutral-800) 78%, var(--primary-800));
-    --color-primary: var(--primary-300);
-    --color-secondary: var(--secondary-300);
-    --color-success: var(--success-300);
-    --color-warning: var(--warning-300);
-    --color-danger: var(--danger-300);
-    --color-info: var(--info-300);
-    --color-focus: color-mix(in oklab, var(--primary-300) 65%, white);
-    --shadow-card: 0 18px 46px color-mix(in oklab, black 24%, transparent);
+    --ui-text-dimmed: var(--ui-color-neutral-500, var(--neutral-500));
+    --ui-text-muted: var(--ui-color-neutral-400, var(--neutral-400));
+    --ui-text-toned: var(--ui-color-neutral-300, var(--neutral-300));
+    --ui-text: var(--ui-color-neutral-200, var(--neutral-200));
+    --ui-text-highlighted: #fff;
+    --ui-text-inverted: var(--ui-color-neutral-900, var(--neutral-900));
+    --ui-bg: var(--ui-color-neutral-900, var(--neutral-900));
+    --ui-bg-muted: var(--ui-color-neutral-800, var(--neutral-800));
+    --ui-bg-elevated: var(--ui-color-neutral-800, var(--neutral-800));
+    --ui-bg-accented: var(--ui-color-neutral-700, var(--neutral-700));
+    --ui-bg-inverted: #fff;
+    --ui-border: var(--ui-color-neutral-800, var(--neutral-800));
+    --ui-border-muted: var(--ui-color-neutral-700, var(--neutral-700));
+    --ui-border-accented: var(--ui-color-neutral-700, var(--neutral-700));
+    --ui-border-inverted: #fff;
+
+    --ui-border-focus: color-mix(in oklab, var(--ui-color-primary-400, var(--primary-400)) 65%, white);
 }

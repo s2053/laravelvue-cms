@@ -57,7 +57,7 @@
 
             <div class="app-form-field">
                 <label for="post-category-featured-image" class="app-form-label">Featured Image:</label>
-                <div v-if="form.featured_image" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
+                <div v-if="form.featured_image" class="border-default relative my-4 flex justify-center rounded-md border p-2">
                     <img :src="form.featured_image" alt="Thumbnail preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
                     <div class="absolute top-0 right-0">
                         <AppButton

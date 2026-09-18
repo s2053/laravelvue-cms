@@ -7,6 +7,25 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <script>
+            (() => {
+                try {
+                    const preference = localStorage.getItem('vueuse-color-scheme');
+                    const shouldUseDark = preference === 'dark' ||
+                        (preference !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+                    document.documentElement.classList.toggle('dark', shouldUseDark);
+
+                    const preset = localStorage.getItem('cms-theme-preset');
+                    if (preset) {
+                        document.documentElement.dataset.themePreset = preset;
+                    }
+                } catch {
+                    // Theme initialization can safely fall back to light mode.
+                }
+            })();
+        </script>
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />

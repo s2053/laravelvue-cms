@@ -5,7 +5,7 @@
                 <label for="widget-title" class="mb-2 block font-bold">Widget title:</label>
                 <AppInput id="widget-title" v-model="widgetForm.title" placeholder="Widget title" class="w-full" />
                 <AppFieldError :formError="errors.title" :serverError="serverErrors?.title?.[0]" />
-                <div class="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                <div class="text-muted mt-2 flex items-center gap-2 text-sm">
                     <label for="widget-slug" class="font-semibold whitespace-nowrap">Slug:</label>
                     <AppInput
                         v-if="slugEdit"

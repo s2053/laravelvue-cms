@@ -15,32 +15,25 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-const props = withDefaults(
-    defineProps<{
-        label?: string;
-        color?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral';
-        activeColor?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral';
-        variant?: 'solid' | 'outline' | 'soft' | 'subtle' | 'ghost' | 'link';
-        activeVariant?: 'solid' | 'outline' | 'soft' | 'subtle' | 'ghost' | 'link';
-        size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-        icon?: string;
-        leadingIcon?: string;
-        trailingIcon?: string;
-        loading?: boolean;
-        loadingAuto?: boolean;
-        disabled?: boolean;
-        square?: boolean;
-        block?: boolean;
-        type?: 'button' | 'submit' | 'reset';
-        to?: string | Record<string, any>;
-        target?: string;
-    }>(),
-    {
-        color: 'primary',
-        variant: 'solid',
-        size: 'md',
-    },
-);
+const props = defineProps<{
+    label?: string;
+    color?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral';
+    activeColor?: 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral';
+    variant?: 'solid' | 'outline' | 'soft' | 'subtle' | 'ghost' | 'link';
+    activeVariant?: 'solid' | 'outline' | 'soft' | 'subtle' | 'ghost' | 'link';
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    icon?: string;
+    leadingIcon?: string;
+    trailingIcon?: string;
+    loading?: boolean;
+    loadingAuto?: boolean;
+    disabled?: boolean;
+    square?: boolean;
+    block?: boolean;
+    type?: 'button' | 'submit' | 'reset';
+    to?: string | Record<string, any>;
+    target?: string;
+}>();
 
 const buttonProps = computed(() => props);
 </script>

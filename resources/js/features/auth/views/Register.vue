@@ -33,7 +33,7 @@
             </div>
             <div class="app-form-actions"><AppButton type="submit" block :disabled="submitting">Register</AppButton></div>
             <div class="text-sm">
-                <router-link to="/login" class="text-[var(--color-primary)] hover:underline">Already have an account? Log in</router-link>
+                <router-link to="/login" class="text-primary hover:underline">Already have an account? Log in</router-link>
             </div>
         </form>
     </section>

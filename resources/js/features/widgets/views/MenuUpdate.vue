@@ -191,6 +191,6 @@ function addMenuItems(items: WidgetItem[]) {
             </div>
         </div>
 
-        <div v-else class="py-8 text-center text-gray-500">Loading...</div>
+        <div v-else class="app-loading-state">Loading...</div>
     </AppContent>
 </template>

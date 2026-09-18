@@ -1,32 +1,24 @@
 html {
-    background:
-        radial-gradient(circle at top left, color-mix(in oklab, var(--accent-200) 38%, transparent), transparent 34%),
-        radial-gradient(circle at top right, color-mix(in oklab, var(--primary-200) 30%, transparent), transparent 30%),
-        linear-gradient(180deg, var(--color-bg) 0%, color-mix(in oklab, var(--color-bg) 84%, var(--primary-50) 16%) 100%);
-    color: var(--color-text);
+    background: var(--ui-bg);
+    color: var(--ui-text);
 }
 
-html.dark,
-html.app-dark {
-    background:
-        radial-gradient(circle at top left, color-mix(in oklab, var(--accent-500) 16%, transparent), transparent 34%),
-        radial-gradient(circle at top right, color-mix(in oklab, var(--primary-500) 14%, transparent), transparent 30%),
-        linear-gradient(180deg, var(--color-bg) 0%, color-mix(in oklab, var(--color-bg) 88%, var(--primary-900) 12%) 100%);
-    color: var(--color-text);
+html.dark {
+    background: var(--ui-bg);
+    color: var(--ui-text);
 }
 
 body {
     min-height: 100vh;
-    font-family:
-        Inter,
-        ui-sans-serif,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        'Segoe UI',
-        sans-serif;
+    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif);
+    line-height: var(--default-line-height, 1.5);
+    letter-spacing: var(--default-letter-spacing, normal);
     color: inherit;
     background: transparent;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--heading-font-family, inherit);
 }
 
 a {
