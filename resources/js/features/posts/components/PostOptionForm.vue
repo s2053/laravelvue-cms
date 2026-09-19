@@ -1,87 +1,68 @@
 <template>
-    <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
-        <div class="flex flex-col gap-4">
-            <!-- Show status field only for status action -->
-            <div v-if="action == 'status'">
-                <label for="status" class="mb-2 block font-bold">Status:</label>
-                <Select
-                    v-model="form.status"
-                    :options="filteredPostStatusOptions"
-                    name="status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Status"
-                />
-                <FieldError :formError="$form.status?.error?.message" :serverError="serverErrors?.status?.[0]" />
-            </div>
-
-            <!-- Show category field only for category action -->
-            <div v-if="action === 'category_ids'">
-                <label for="category" class="mb-2 block font-bold">Category:</label>
-                <MultiSelect
-                    display="chip"
-                    v-model="form.category_ids"
-                    :options="categoryOptions"
-                    name="category_ids"
-                    optionLabel="title"
-                    optionValue="id"
-                    class="w-full"
-                    placeholder="Select Categories"
-                    showClear
-                />
-                <FieldError :formError="$form.category_ids?.error?.message" :serverError="serverErrors?.category_ids?.[0]" />
-            </div>
-
-            <!-- Show visibility field only for visibility action -->
-            <div v-if="action == 'visibility'">
-                <label for="visibility" class="mb-2 block font-bold">Visibility:</label>
-                <Select
-                    v-model="form.visibility"
-                    :options="PostVisibilityOptions"
-                    name="visibility"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Visibility"
-                />
-                <FieldError :formError="$form.visibility?.error?.message" :serverError="serverErrors?.visibility?.[0]" />
-            </div>
-
-            <!-- Show post_type field only for post_type action -->
-            <div v-if="action == 'post_type'">
-                <label for="post_type" class="mb-2 block font-bold">Post Type:</label>
-
-                <Select
-                    v-model="form.post_type"
-                    :options="PostTypeOptions"
-                    name="post_type"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="w-full"
-                    placeholder="Select Post Type"
-                />
-                <FieldError :formError="$form.post_type?.error?.message" :serverError="serverErrors?.post_type?.[0]" />
-            </div>
+    <form class="app-form" @submit.prevent="onSubmit">
+        <div v-if="action === 'status'" class="app-form-field">
+            <label for="post-action-status" class="app-form-label">Status:</label
+            ><AppSelect
+                id="post-action-status"
+                v-model="form.status"
+                :items="PostStatusOptions"
+                labelKey="label"
+                valueKey="value"
+                class="w-full"
+                placeholder="Select Status"
+            /><AppFieldError :formError="clientErrors.status" :serverError="serverErrors?.status?.[0]" />
         </div>
-
-        <div class="mt-4 flex justify-end gap-2">
-            <Button type="button" label="Cancel" severity="secondary" @click="emit('cancel')" />
-            <Button type="submit" label="Update" severity="primary"></Button>
+        <div v-if="action === 'category_ids'" class="app-form-field">
+            <label for="post-action-category" class="app-form-label">Categories:</label
+            ><AppMultiSelect
+                id="post-action-category"
+                v-model="form.category_ids"
+                :items="categoryOptions"
+                labelKey="title"
+                valueKey="id"
+                clearable
+                selectAll
+                class="w-full"
+                placeholder="Select Categories"
+            /><AppFieldError :formError="clientErrors.category_ids" :serverError="serverErrors?.category_ids?.[0]" />
         </div>
-    </Form>
+        <div v-if="action === 'visibility'" class="app-form-field">
+            <label for="post-action-visibility" class="app-form-label">Visibility:</label
+            ><AppSelect
+                id="post-action-visibility"
+                v-model="form.visibility"
+                :items="PostVisibilityOptions"
+                labelKey="label"
+                valueKey="value"
+                class="w-full"
+                placeholder="Select Visibility"
+            /><AppFieldError :formError="clientErrors.visibility" :serverError="serverErrors?.visibility?.[0]" />
+        </div>
+        <div v-if="action === 'post_type'" class="app-form-field">
+            <label for="post-action-type" class="app-form-label">Post Type:</label
+            ><AppSelect
+                id="post-action-type"
+                v-model="form.post_type"
+                :items="PostTypeOptions"
+                labelKey="label"
+                valueKey="value"
+                class="w-full"
+                placeholder="Select Post Type"
+            /><AppFieldError :formError="clientErrors.post_type" :serverError="serverErrors?.post_type?.[0]" />
+        </div>
+        <div class="app-form-actions">
+            <AppButton type="button" color="neutral" variant="outline" @click="emit('cancel')">Cancel</AppButton
+            ><AppButton type="submit">Update</AppButton>
+        </div>
+    </form>
 </template>
-
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
+import { AppButton, AppFieldError, AppMultiSelect, AppSelect } from '@/components/ui';
 import { PostStatus, PostStatusOptions, PostTypeOptions, PostVisibilityOptions } from '@/features/posts/posts.enum';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
-
 const props = withDefaults(
     defineProps<{
-        // action: 'status' | 'post_category_id' | 'visibility' | 'post_type';
         action: string;
         initialData?: Record<string, any>;
         serverErrors?: Record<string, string[]>;
@@ -89,36 +70,38 @@ const props = withDefaults(
     }>(),
     { initialData: () => ({}) },
 );
-
 const emit = defineEmits(['submit', 'cancel']);
-
-// local form state
 const form = ref({ ...props.initialData });
-
-// keep form in sync with incoming data
+const clientErrors = ref<Record<string, string>>({});
 watch(
     () => props.initialData,
-    (val) => Object.assign(form.value, val),
+    (value) => {
+        form.value = { ...value };
+        clientErrors.value = {};
+    },
+    { deep: true },
 );
-
-// validation
-const resolver = zodResolver(
-    z.object({
-        status: z.enum(Object.values(PostStatus) as [string, ...string[]]),
-        visibility: z.enum(PostVisibilityOptions.map((o) => o.value) as any),
-        post_type: z.enum(PostTypeOptions.map((o) => o.value) as any),
-        post_category_id: z.number().nullable(),
-    }),
-);
-
-// submit
-function onSubmit({ valid }: { valid: boolean }) {
-    if (!valid) return;
-    const payload = { ...form.value };
-    if (props.action === 'post_category_id' && !payload.post_category_id) payload.post_category_id = null;
-    emit('submit', payload);
+function schemaForAction(action: string) {
+    switch (action) {
+        case 'status':
+            return z.object({ status: z.enum(Object.values(PostStatus) as [string, ...string[]]) });
+        case 'visibility':
+            return z.object({ visibility: z.enum(PostVisibilityOptions.map((option) => option.value) as [string, ...string[]]) });
+        case 'post_type':
+            return z.object({ post_type: z.enum(PostTypeOptions.map((option) => option.value) as [string, ...string[]]) });
+        case 'category_ids':
+            return z.object({ category_ids: z.array(z.number()) });
+        default:
+            return z.object({});
+    }
 }
-
-// dropdown refs
-const filteredPostStatusOptions = PostStatusOptions;
+function onSubmit() {
+    const parsed = schemaForAction(props.action).safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
+    }
+    clientErrors.value = {};
+    emit('submit', { ...form.value });
+}
 </script>

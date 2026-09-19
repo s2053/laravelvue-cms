@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { AppButton } from '@/components/ui';
+
 defineProps<{ searchText: string }>();
 
 const emit = defineEmits<{
@@ -13,15 +15,7 @@ const emit = defineEmits<{
         </div>
 
         <div class="mt-1 text-right">
-            <a
-                v-if="searchText"
-                href="#"
-                class="items-center gap-1 align-middle text-sm text-red-600 hover:text-red-700"
-                @click.prevent.stop="emit('clear')"
-            >
-                <i class="pi pi-times align-middle" style="font-size: 0.875rem"></i>
-                Clear Search
-            </a>
+            <AppButton v-if="searchText" color="error" variant="link" size="sm" icon="i-lucide-x" @click="emit('clear')"> Clear Search </AppButton>
         </div>
     </div>
 </template>

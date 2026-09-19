@@ -1,12 +1,8 @@
 <template>
     <AppContent>
-        <h2>Post Category Management</h2>
-
-        <!-- Top toolbar -->
-        <div class="mb-3 flex justify-between">
-            <Button icon="pi pi-plus" label="Add New" @click="openCreate" />
-        </div>
-
+        <AppPageHeader title="Post Category Management">
+            <template #actions><AppButton icon="i-lucide-plus" @click="openCreate">Add New Category</AppButton></template>
+        </AppPageHeader>
         <AppDataTable
             :items="records"
             :loading="loading"
@@ -17,78 +13,68 @@
             :selection="selectedRecords"
             :sortField="sortField"
             :sortOrder="sortOrder"
-            :paginatorTemplate="'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown'"
-            :currentPageReportTemplate="'{first} to {last} of {totalRecords}'"
+            :columns="tableColumns"
+            selectable
             dataKey="id"
             @page="onPage"
             @sort="onSort"
             @selection-change="selectedRecords = $event"
         >
-            <!-- Table header -->
             <template #header>
                 <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
                     <div class="flex items-center">
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
-
                         <div class="ml-auto flex items-center gap-2">
-                            <TableToolBar v-model="globalFilterValue" showFilter @search="onGlobalSearch" @toggleFilter="openFilter = !openFilter" />
+                            <TableToolBar
+                                v-model="globalFilterValue"
+                                showFilter
+                                :filterActive="openFilter"
+                                @search="onGlobalSearch"
+                                @toggleFilter="openFilter = !openFilter"
+                            />
                         </div>
                     </div>
                 </TableToolBarWrapper>
-
-                <!-- Collapsible filter panel -->
                 <PostCategoryFilter v-if="openFilter" :filters="filters" @update:filters="onFiltersChanged" />
             </template>
-
-            <!-- Dynamic columns -->
-            <template #columns>
-                <Column selectionMode="multiple" headerStyle="width: 3rem" />
-
-                <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" sortable>
-                    <template v-if="col.field === 'created_at'" #body="{ data }">
-                        {{ formatDateTimeString(data.created_at) }}
-                    </template>
-
-                    <template v-else-if="col.field === 'title'" #body="{ data }">
-                        <div v-if="data.featured_image">
-                            <img :src="data.featured_image" alt="Featured image" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
-                        </div>
-                        {{ data.title }}
-                    </template>
-
-                    <template v-else-if="col.field === 'parent_id'" #body="{ data }">
-                        <div class="">
-                            {{ data.parent ? data.parent.title : '-' }}
-                        </div>
-                    </template>
-
-                    <template v-else-if="col.field === 'status'" #body="{ data }">
-                        <Tag :value="data.status ? 'Active' : 'Inactive'" :severity="data.status ? 'success' : 'danger'" />
-                    </template>
-                </Column>
-            </template>
-
-            <!-- Row actions -->
-            <template #actions>
-                <Column header="Action">
-                    <template #body="{ data }">
-                        <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="openEdit(data)" />
-                        <Button
-                            icon="pi pi-trash"
-                            size="small"
-                            severity="danger"
-                            outlined
-                            rounded
-                            class="mr-2"
-                            @click="removeRecord(data.id, data.title)"
-                        />
-                    </template>
-                </Column>
-            </template>
+            <template #title-cell="{ row }"
+                ><div class="flex items-center gap-2">
+                    <img
+                        v-if="(row.original as PostCategory).featured_image"
+                        :src="(row.original as PostCategory).featured_image!"
+                        alt="Featured image"
+                        class="max-h-12 max-w-24 rounded object-contain"
+                    /><span>{{ (row.original as PostCategory).title }}</span>
+                </div></template
+            >
+            <template #parent_id-cell="{ row }">{{ (row.original as PostCategory).parent?.title || '—' }}</template>
+            <template #status-cell="{ row }"
+                ><AppBadge :color="(row.original as PostCategory).status ? 'success' : 'error'" size="sm">{{
+                    (row.original as PostCategory).status ? 'Active' : 'Inactive'
+                }}</AppBadge></template
+            >
+            <template #created_at-cell="{ row }">{{
+                (row.original as PostCategory).created_at ? formatDateTimeString((row.original as PostCategory).created_at!) : '—'
+            }}</template>
+            <template #actions-cell="{ row }"
+                ><div class="flex items-center justify-end gap-2">
+                    <AppButton
+                        color="neutral"
+                        variant="outline"
+                        icon="i-lucide-pencil"
+                        size="sm"
+                        @click="openEdit(row.original as PostCategory)"
+                    /><AppButton
+                        color="error"
+                        variant="outline"
+                        icon="i-lucide-trash-2"
+                        size="sm"
+                        @click="removeRecord((row.original as PostCategory).id, (row.original as PostCategory).title)"
+                    /></div
+            ></template>
         </AppDataTable>
-
-        <Dialog v-model:visible="dialogVisible" modal :header="dialogTitle" :style="{ width: '35rem' }">
-            <PostCategoryForm
+        <AppOverlayShell v-model:open="dialogVisible" :title="dialogTitle" size="lg" :close="true" :dismissible="true"
+            ><PostCategoryForm
                 :initialForm="formModel"
                 :submitLabel="dialogSubmitLabel"
                 :serverErrors="serverErrors"
@@ -97,42 +83,36 @@
                 :submitting="submitting"
                 @submit="handleSubmit"
                 @cancel="dialogVisible = false"
-            />
-        </Dialog>
-
-        <!-- Bulk/single option dialog -->
-        <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
-            <PostCategoryOptionForm
+        /></AppOverlayShell>
+        <AppOverlayShell v-model:open="isActionDialogVisible" :title="actionDialogTitle" size="md" :close="true" :dismissible="true"
+            ><PostCategoryOptionForm
                 :action="actionDialogAction"
                 :initialData="actionDialogInitial"
                 :serverErrors="optionFormServerErrors"
                 @submit="submitActionUpdate"
                 @cancel="isActionDialogVisible = false"
-            />
-        </Dialog>
+        /></AppOverlayShell>
     </AppContent>
 </template>
+
 <script setup lang="ts">
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { PostCategoryFilter, PostCategoryForm, PostCategoryOptionForm } from '@/features/posts/components';
-
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import AppContent from '@/layouts/app/components/AppContent.vue';
-import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
-
-// Utils
+import { AppBadge, AppButton, AppOverlayShell, AppPageHeader } from '@/components/ui';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { usePaginatedTable } from '@/composables/usePaginatedList';
+import { PostCategoryFilter, PostCategoryForm, PostCategoryOptionForm } from '@/features/posts/components';
 import { usePostCategory, usePostCategoryActions } from '@/features/posts/composables';
-import { PostCategory, PostCategoryFilters, PostCategoryPayload } from '@/features/posts/posts.types';
+import type { PostCategory, PostCategoryFilters, PostCategoryPayload } from '@/features/posts/posts.types';
 import PostCategoryService from '@/features/posts/services/postCategory.service';
+import AppContent from '@/layouts/app/components/AppContent.vue';
 import { formatDateTimeString } from '@/utils/dateHelper';
 import { pickCleanData, pickMatchData } from '@/utils/objectHelpers';
 import { strTruncate } from '@/utils/stringHelper';
+import { computed, onMounted, ref } from 'vue';
 
-const { showDeleteConfirm } = useDeleteConfirm();
-const toast = useToast();
-
+const toast = useAppToast();
+const { showDeleteConfirm } = useAppDeleteConfirm();
 const {
     options: postCategoryOptions,
     fetchOptions,
@@ -140,9 +120,7 @@ const {
     createPostCategory,
     updatePostCategory,
     deletePostCategory,
-} = usePostCategory();
-
-// Table data / pagination / filters
+} = usePostCategory({ onError: () => undefined });
 const {
     items: records,
     total,
@@ -164,18 +142,15 @@ const {
     onFiltersChanged,
     numOfRows,
 } = usePaginatedTable(PostCategoryService.getPaginated, {
-    initialFilters: {
-        status: [],
-        created_at: [],
-        global: '',
-    } as PostCategoryFilters,
+    initialFilters: { status: [], created_at: [], global: '' } as PostCategoryFilters,
     initialSortField: 'created_at',
     initialSortOrder: -1,
     initialPerPage: 25,
     perPageOptions: [10, 25, 50, 100],
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load post categories', { duration: 4000 });
+    },
 });
-
-// Bulk actions
 const {
     bulkAction,
     bulkOptions,
@@ -184,36 +159,25 @@ const {
     submit: submitActionUpdate,
     serverErrors: optionFormServerErrors,
 } = usePostCategoryActions({ selectedRecords, tableReload });
-
-// Aliases for dialog refs
 const { visible: isActionDialogVisible, title: actionDialogTitle, action: actionDialogAction, initial: actionDialogInitial } = actionDialog;
-
-// Columns
-const allColumns = [
-    { field: 'id', label: 'Id' },
-    { field: 'title', label: 'Title' },
-    { field: 'parent_id', label: 'Parent Category' },
-    { field: 'sort_order', label: 'Sort Order' },
-    { field: 'status', label: 'Status' },
-    { field: 'created_at', label: 'Created At' },
-];
-const visibleColumns = ref<string[]>(['id', 'title', 'parent_id', 'sort_order', 'status', 'created_at']);
-const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
-
-const parentCategories = ref<{ id: number; title: string }[]>([]);
-onMounted(async () => {
-    loadPageData({ page: 1, rows: numOfRows.value, filters });
-});
-
-// Dialog & form state
+type TableColumn = { key: string; label: string; sortable?: boolean; width?: string; cellClass?: string; headerClass?: string };
+const tableColumns = computed<TableColumn[]>(() => [
+    { key: 'id', label: 'ID', sortable: true, width: '80px' },
+    { key: 'title', label: 'Post Category', sortable: true },
+    { key: 'parent_id', label: 'Parent Category', sortable: true },
+    { key: 'sort_order', label: 'Sort Order', sortable: true },
+    { key: 'status', label: 'Status', sortable: true, width: '130px' },
+    { key: 'created_at', label: 'Created At', sortable: true, width: '200px' },
+    { key: 'actions', label: 'Actions', sortable: false, width: '120px', cellClass: 'text-right', headerClass: 'text-right' },
+]);
+onMounted(() => loadPageData({ page: 1, rows: numOfRows.value, filters }));
 const dialogVisible = ref(false);
 const dialogTitle = ref('Create Post Category');
 const dialogSubmitLabel = ref('Create');
 const editingId = ref<number | null>(null);
-const serverErrors = ref<{ [key: string]: string[] }>({});
-
+const serverErrors = ref<Record<string, string[]>>({});
 const submitting = ref(false);
-
+const parentCategories = ref<{ id: number; title: string }[]>([]);
 const initialFormPayload: PostCategoryPayload = {
     title: '',
     slug: '',
@@ -226,10 +190,7 @@ const initialFormPayload: PostCategoryPayload = {
     featured_image: null,
     featured_image_file: null,
 };
-
 const formModel = ref<PostCategoryPayload>({ ...initialFormPayload });
-
-// Dialog functions
 async function openCreate() {
     dialogTitle.value = 'Create Post Category';
     dialogSubmitLabel.value = 'Create';
@@ -237,58 +198,37 @@ async function openCreate() {
     serverErrors.value = {};
     formModel.value = { ...initialFormPayload };
     await fetchOptions();
-    parentCategories.value = postCategoryOptions.value.map((c) => ({ id: c.id, title: c.title }));
+    parentCategories.value = postCategoryOptions.value.map(({ id, title }) => ({ id, title }));
     dialogVisible.value = true;
 }
-
 async function openEdit(category: PostCategory) {
     dialogTitle.value = 'Edit Post Category';
     dialogSubmitLabel.value = 'Update';
     editingId.value = category.id;
     serverErrors.value = {};
-
     try {
         const [_, latest] = await Promise.all([fetchOptions(true), getPostCategoryById(category.id)]);
-
         parentCategories.value = postCategoryOptions.value
             .filter((c) => Number(c.id) !== Number(category.id) && c.parent_id !== category.id)
-            .map((c) => ({ id: c.id, title: c.title }));
-
+            .map(({ id, title }) => ({ id, title }));
         formModel.value = { ...pickMatchData(latest, initialFormPayload) };
         dialogVisible.value = true;
     } catch (err: any) {
-        toast.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: err?.message || 'Failed to fetch record',
-            life: 4000,
-        });
+        toast.error('Error', err?.message || 'Failed to fetch record', { duration: 4000 });
     }
 }
-
 function payloadToFormData(payload: Partial<PostCategoryPayload>): FormData {
     const nullables = ['featured_image', 'parent_id', 'status'];
     const formData = new FormData();
-
-    if (editingId.value) {
-        formData.append('_method', 'PUT');
-    }
-
+    if (editingId.value) formData.append('_method', 'PUT');
     Object.entries(payload).forEach(([key, value]) => {
-        if (key === 'featured_image_file' && value) {
-            formData.append('featured_image_file', value as File);
-        } else if (typeof value === 'boolean') {
-            formData.append(key, value ? '1' : '0');
-        } else if (nullables.includes(key)) {
-            formData.append(key, value == null ? '' : String(value));
-        } else if (value !== undefined && value !== null) {
-            formData.append(key, value as any);
-        }
+        if (key === 'featured_image_file' && value) formData.append('featured_image_file', value as File);
+        else if (typeof value === 'boolean') formData.append(key, value ? '1' : '0');
+        else if (nullables.includes(key)) formData.append(key, value == null ? '' : String(value));
+        else if (value !== undefined && value !== null) formData.append(key, value as any);
     });
-
     return formData;
 }
-
 async function handleSubmit(form: PostCategoryPayload) {
     if (submitting.value) return;
     submitting.value = true;
@@ -296,48 +236,34 @@ async function handleSubmit(form: PostCategoryPayload) {
     try {
         const payload = pickCleanData({ ...form }, initialFormPayload);
         const formData = payloadToFormData(payload);
-
         if (editingId.value) {
             await updatePostCategory(editingId.value, formData);
-            toast.add({ severity: 'success', summary: 'Record updated', life: 2000 });
+            toast.success('Record updated', undefined, { duration: 2000 });
         } else {
             await createPostCategory(formData);
-            toast.add({ severity: 'success', summary: 'Record created', life: 2000 });
+            toast.success('Record created', undefined, { duration: 2000 });
         }
         dialogVisible.value = false;
         tableReload();
     } catch (err: any) {
-        if (err.response?.status === 422 && err.response.data?.errors) {
-            serverErrors.value = err.response.data.errors;
-        } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Operation failed',
-                life: 4000,
-            });
-        }
+        if (err.response?.status === 422 && err.response.data?.errors) serverErrors.value = err.response.data.errors;
+        else toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
     } finally {
         submitting.value = false;
     }
 }
-
-// Delete function
-function removeRecord(id: number, title?: string) {
-    let message = '';
-    if (!title?.trim()) {
-        message = `Are You Sure To Delete It?`;
-    } else {
-        message = `Do you want to delete ${title ? `\"${strTruncate(title)}\"` : 'this record'}?`;
-    }
-    showDeleteConfirm({
-        message,
-        onAccept: async () => {
-            await deletePostCategory(id);
-            tableReload();
-        },
-        successMessage: 'Record deleted',
-        errorMessage: 'Failed to delete records',
-    });
+async function removeRecord(id: number, title?: string) {
+    const message = title?.trim() ? `Do you want to delete \"${strTruncate(title)}\"?` : 'Are you sure to delete this record?';
+    try {
+        await showDeleteConfirm({
+            message,
+            onAccept: async () => {
+                await deletePostCategory(id);
+                tableReload();
+            },
+            successMessage: 'Record deleted',
+            errorMessage: 'Failed to delete post category',
+        });
+    } catch {}
 }
 </script>

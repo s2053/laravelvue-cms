@@ -1,112 +1,138 @@
-<script setup>
-import { useLayout } from '@/layouts/app/composables/layout';
-import { onBeforeMount, ref, watch } from 'vue';
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
+interface MenuChild {
+    label: string;
+    to?: string;
+}
 
-const { layoutState, setActiveMenuItem, toggleMenu } = useLayout();
+interface MenuItem {
+    label: string;
+    icon: string;
+    to?: string;
+    badge?: string;
+    children?: MenuChild[];
+}
 
-const props = defineProps({
-    item: {
-        type: Object,
-        default: () => ({}),
-    },
-    index: {
-        type: Number,
-        default: 0,
-    },
-    root: {
-        type: Boolean,
-        default: true,
-    },
-    parentItemKey: {
-        type: String,
-        default: null,
-    },
-});
+const props = defineProps<{
+    item: MenuItem;
+    collapsed?: boolean;
+}>();
 
-const isActiveMenu = ref(false);
-const itemKey = ref(null);
+const isOpen = ref(false);
 
-onBeforeMount(() => {
-    itemKey.value = props.parentItemKey ? props.parentItemKey + '-' + props.index : String(props.index);
+const isActive = computed(() => {
+    if (props.item.to) {
+        return route.path === props.item.to;
+    }
 
-    const activeItem = layoutState.activeMenuItem;
-
-    isActiveMenu.value = activeItem === itemKey.value || activeItem ? activeItem.startsWith(itemKey.value + '-') : false;
+    return props.item.children?.some((child) => child.to === route.path) ?? false;
 });
 
 watch(
-    () => layoutState.activeMenuItem,
-    (newVal) => {
-        isActiveMenu.value = newVal === itemKey.value || newVal.startsWith(itemKey.value + '-');
+    () => route.path,
+    () => {
+        if (props.item.children?.some((child) => child.to === route.path)) {
+            isOpen.value = true;
+        }
     },
+    { immediate: true },
 );
-
-function itemClick(event, item) {
-    if (item.disabled) {
-        event.preventDefault();
-        return;
-    }
-
-    if ((item.to || item.url) && (layoutState.staticMenuMobileActive || layoutState.overlayMenuActive)) {
-        toggleMenu();
-    }
-
-    if (item.command) {
-        item.command({ originalEvent: event, item: item });
-    }
-
-    const foundItemKey = item.items ? (isActiveMenu.value ? props.parentItemKey : itemKey) : itemKey.value;
-
-    setActiveMenuItem(foundItemKey);
-}
-
-function checkActiveRoute(item) {
-    return route.path === item.to;
-}
 </script>
 
 <template>
-    <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActiveMenu }">
-        <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>
-        <a
-            v-if="(!item.to || item.items) && item.visible !== false"
-            :href="item.url"
-            @click="itemClick($event, item, index)"
-            :class="item.class"
-            :target="item.target"
-            tabindex="0"
-        >
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
-        </a>
-        <router-link
-            v-if="item.to && !item.items && item.visible !== false"
-            @click="itemClick($event, item, index)"
-            :class="[item.class, { 'active-route': checkActiveRoute(item) }]"
-            tabindex="0"
-            :to="item.to"
-        >
-            <i :class="item.icon" class="layout-menuitem-icon"></i>
-            <span class="layout-menuitem-text">{{ item.label }}</span>
-            <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
-        </router-link>
-        <Transition v-if="item.items && item.visible !== false" name="layout-submenu">
-            <ul v-show="root ? true : isActiveMenu" class="layout-submenu">
-                <app-menu-item
-                    v-for="(child, i) in item.items"
-                    :key="child"
-                    :index="i"
-                    :item="child"
-                    :parentItemKey="itemKey"
-                    :root="false"
-                ></app-menu-item>
-            </ul>
-        </Transition>
-    </li>
-</template>
+    <div v-if="collapsed">
+        <UTooltip v-if="!item.children?.length" :text="item.label" :content="{ side: 'right', sideOffset: 8 }">
+            <router-link
+                v-if="item.to"
+                :to="item.to"
+                :class="[
+                    'app-shell-nav-item flex items-center justify-center gap-1.5 px-1.5 py-1.5 text-sm transition-colors',
+                    isActive ? 'is-active' : '',
+                ]"
+            >
+                <UIcon :name="item.icon" class="size-5 shrink-0" />
+            </router-link>
+            <button
+                v-else
+                type="button"
+                :class="['app-shell-nav-item flex w-full items-center justify-center gap-1.5 px-1.5 py-1.5 text-sm transition-colors']"
+            >
+                <UIcon :name="item.icon" class="size-5 shrink-0" />
+            </button>
+        </UTooltip>
 
-<style lang="scss" scoped></style>
+        <UPopover v-else :content="{ side: 'right', align: 'start', sideOffset: 8 }">
+            <button
+                type="button"
+                :class="[
+                    'app-shell-nav-item flex w-full items-center justify-center gap-1.5 px-1.5 py-1.5 text-sm transition-colors',
+                    isActive ? 'is-active' : '',
+                ]"
+            >
+                <UIcon :name="item.icon" class="size-5 shrink-0" />
+            </button>
+
+            <template #content="{ close }">
+                <div class="w-52 p-1">
+                    <div class="text-highlighted px-2.5 py-1.5 text-xs font-semibold">{{ item.label }}</div>
+                    <ul>
+                        <li v-for="child in item.children" :key="child.label">
+                            <router-link
+                                :to="child.to || '#'"
+                                class="app-shell-nav-child block p-1.5 text-sm transition-colors"
+                                :class="route.path === child.to ? 'is-active' : ''"
+                                @click="close"
+                            >
+                                {{ child.label }}
+                            </router-link>
+                        </li>
+                    </ul>
+                </div>
+            </template>
+        </UPopover>
+    </div>
+
+    <div v-else>
+        <router-link
+            v-if="item.to && !item.children?.length"
+            :to="item.to"
+            :class="['app-shell-nav-item flex items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium transition-colors', isActive ? 'is-active' : '']"
+        >
+            <UIcon :name="item.icon" class="size-5 shrink-0" />
+            <span v-if="!collapsed" class="flex-1 truncate">{{ item.label }}</span>
+            <UBadge v-if="!collapsed && item.badge" color="neutral" variant="soft" :label="item.badge" />
+        </router-link>
+
+        <button
+            v-else
+            type="button"
+            :class="[
+                'app-shell-nav-item flex w-full items-center gap-1.5 px-2.5 py-1.5 text-sm font-medium transition-colors',
+                isActive ? 'is-active' : '',
+            ]"
+            @click="isOpen = !isOpen"
+        >
+            <UIcon :name="item.icon" class="size-5 shrink-0" />
+            <span v-if="!collapsed" class="flex-1 truncate text-left">{{ item.label }}</span>
+            <UIcon
+                v-if="!collapsed && item.children?.length"
+                :name="isOpen ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'"
+                class="app-shell-nav-caret size-4"
+            />
+        </button>
+
+        <ul v-if="item.children?.length && isOpen" class="border-default ms-5 border-s">
+            <li v-for="child in item.children" :key="child.label" class="-ms-px ps-1.5">
+                <router-link
+                    :to="child.to || '#'"
+                    :class="['app-shell-nav-child block p-1.5 text-sm transition-colors', route.path === child.to ? 'is-active' : '']"
+                >
+                    {{ child.label }}
+                </router-link>
+            </li>
+        </ul>
+    </div>
+</template>

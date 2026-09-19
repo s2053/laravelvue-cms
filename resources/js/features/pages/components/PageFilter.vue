@@ -1,77 +1,80 @@
 <template>
-    <Panel class="mt-3">
-        <!-- Filter Fields -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <!-- Status Filter -->
+    <section class="app-filter-panel mt-3">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div>
-                <label for="status" class="mb-1 block font-semibold">Status</label>
-                <MultiSelect
+                <label for="page-filter-status" class="app-filter-field-label mb-1 block">Status</label>
+                <AppMultiSelect
+                    id="page-filter-status"
                     v-model="localFilters.status"
-                    :options="PageStatusOptions"
+                    :items="PageStatusOptions"
                     name="status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="app-input-sm w-full"
+                    labelKey="label"
+                    valueKey="value"
+                    class="w-full"
                     placeholder="Select Status"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
 
-            <!-- Page Type Filter -->
             <div>
-                <label for="pageType" class="mb-1 block font-semibold">Page Type</label>
-                <MultiSelect
+                <label for="page-filter-type" class="app-filter-field-label mb-1 block">Page Type</label>
+                <AppMultiSelect
+                    id="page-filter-type"
                     v-model="localFilters.page_type"
-                    :options="PageTypeOptions"
+                    :items="PageTypeOptions"
                     name="pageType"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="app-input-sm w-full"
+                    labelKey="label"
+                    valueKey="value"
+                    class="w-full"
                     placeholder="Select Page Type"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
 
-            <!-- Category Filter -->
             <div>
-                <label for="category" class="mb-1 block font-semibold">Category</label>
-                <MultiSelect
+                <label for="page-filter-category" class="app-filter-field-label mb-1 block">Category</label>
+                <AppMultiSelect
+                    id="page-filter-category"
                     v-model="localFilters.page_category_id"
-                    :options="categoryOptions"
+                    :items="categoryOptions"
                     name="category"
-                    optionLabel="title"
-                    optionValue="id"
-                    class="app-input-sm w-full"
+                    labelKey="title"
+                    valueKey="id"
+                    class="w-full"
                     placeholder="Select Category"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
 
-            <!-- Visibility Filter -->
             <div>
-                <label for="visibility" class="mb-1 block font-semibold">Visibility</label>
-                <MultiSelect
+                <label for="page-filter-visibility" class="app-filter-field-label mb-1 block">Visibility</label>
+                <AppMultiSelect
+                    id="page-filter-visibility"
                     v-model="localFilters.visibility"
-                    :options="PageVisibilityOptions"
+                    :items="PageVisibilityOptions"
                     name="visibility"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="app-input-sm w-full"
+                    labelKey="label"
+                    valueKey="value"
+                    class="w-full"
                     placeholder="Select Visibility"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
         </div>
 
-        <!-- Filter Action Buttons -->
         <div class="mt-4 flex justify-end gap-2">
-            <Button size="small" label="Reset" outlined severity="danger" @click="resetFilters" />
-            <Button size="small" label="Apply Filters" severity="primary" @click="emitFilters" />
+            <AppButton size="sm" color="error" variant="outline" @click="resetFilters">Reset</AppButton>
+            <AppButton size="sm" @click="emitFilters">Apply Filters</AppButton>
         </div>
-    </Panel>
+    </section>
 </template>
 
 <script setup lang="ts">
+import { AppButton, AppMultiSelect } from '@/components/ui';
 import { PageStatusOptions, PageTypeOptions, PageVisibilityOptions } from '@/features/pages/enums';
 import type { PageFilters } from '@/features/pages/pages.types';
 import { reactive, watch } from 'vue';
@@ -89,16 +92,14 @@ const localFilters = reactive<PageFilters>({ ...props.filters });
 
 watch(
     () => props.filters,
-    (val) => Object.assign(localFilters, val),
+    (value) => Object.assign(localFilters, value),
     { deep: true },
 );
 
-// Emit current local filters to parent
 function emitFilters() {
     emit('update:filters', { ...localFilters });
 }
 
-// Clear all filter fields and emit reset
 function resetFilters() {
     localFilters.status = [];
     localFilters.page_type = [];

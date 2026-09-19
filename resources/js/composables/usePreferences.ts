@@ -1,28 +1,23 @@
+import { useAppColorMode, type AppAppearance } from '@/composables/useAppColorMode';
 import { useAuthStore } from '@/features/auth/auth.store';
-import { useLayout } from '@/layouts/app/composables/layout';
 import { watch } from 'vue';
+
+function normalizeAppearance(value: unknown): AppAppearance | null {
+    return value === 'light' || value === 'dark' || value === 'system' ? value : null;
+}
 
 export function usePreferencesSync() {
     const auth = useAuthStore();
-    const { layoutConfig, toggleDarkMode } = useLayout();
+    const colorMode = useAppColorMode();
 
-    // Helper to check current dark mode state
-    const applyAppearance = (appearance: string | undefined) => {
-        if (!appearance) return;
-
-        if (appearance === 'dark' && !layoutConfig.darkTheme) {
-            toggleDarkMode();
-        } else if (appearance === 'light' && layoutConfig.darkTheme) {
-            toggleDarkMode();
-        }
-    };
-
-    // Watch for changes in user preference for appearance
     watch(
         () => auth.user?.preferences?.appearance,
-        (newAppearance) => {
-            applyAppearance(newAppearance);
+        (value) => {
+            const appearance = normalizeAppearance(value);
+            if (appearance) colorMode.setAppearance(appearance);
         },
         { immediate: true },
     );
+
+    return colorMode;
 }

@@ -1,7 +1,7 @@
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
 import { usePermissionGroups } from '@/features/rbac/composables/usePermissionGroups';
-import { PermissionGroup } from '@/features/rbac/rbac.types';
-import { Ref, ref } from 'vue';
+import type { PermissionGroup } from '@/features/rbac/rbac.types';
+import { ref, type Ref } from 'vue';
 
 export function usePermissionGroupActions(table: { selectedRecords: Ref<PermissionGroup[]>; tableReload: () => void }) {
     // Current bulk action selected
@@ -13,8 +13,8 @@ export function usePermissionGroupActions(table: { selectedRecords: Ref<Permissi
     // Selected IDs
     const selectedIds = ref<number[]>([]);
 
-    const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdatePermissionGroups } = usePermissionGroups();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
+    const { bulkUpdatePermissionGroups } = usePermissionGroups({ onError: () => undefined });
 
     // Trigger bulk action
     function applyBulk() {
@@ -31,20 +31,22 @@ export function usePermissionGroupActions(table: { selectedRecords: Ref<Permissi
     }
 
     // Show delete confirmation
-    function confirmDelete(ids: number[], name?: string) {
+    async function confirmDelete(ids: number[], name?: string) {
         const message = ids.length === 1 ? `Delete "${name ?? 'this record'}"?` : `Delete ${ids.length} selected records?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdatePermissionGroups('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Record deleted',
-            errorMessage: 'Failed to delete record',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdatePermissionGroups('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                },
+                successMessage: 'Record deleted',
+                errorMessage: 'Failed to delete record',
+            });
+        } catch {}
     }
 
     return {

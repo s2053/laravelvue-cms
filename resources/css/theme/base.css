@@ -1,0 +1,26 @@
+html {
+    background: var(--ui-bg);
+    color: var(--ui-text);
+}
+
+html.dark {
+    background: var(--ui-bg);
+    color: var(--ui-text);
+}
+
+body {
+    min-height: 100vh;
+    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif);
+    line-height: var(--default-line-height, 1.5);
+    letter-spacing: var(--default-letter-spacing, normal);
+    color: inherit;
+    background: transparent;
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--heading-font-family, inherit);
+}
+
+a {
+    color: inherit;
+}

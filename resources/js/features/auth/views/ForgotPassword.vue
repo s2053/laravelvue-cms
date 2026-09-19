@@ -1,49 +1,47 @@
 <template>
-    <Card class="mx-auto w-full max-w-md">
-        <template #title>
+    <section class="app-auth-card mx-auto w-full max-w-md">
+        <div class="mb-6">
             <div class="text-center text-2xl font-bold">Forgot Password</div>
-        </template>
+        </div>
 
-        <template #content>
-            <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
-                <div class="mb-6 text-center text-sm">Enter your email address to receive a password reset link.</div>
-
-                <!-- Email Input -->
-                <div class="mb-4">
-                    <InputText name="email" v-model="form.email" class="w-full" placeholder="Email address" />
-                    <FieldError :formError="$form.email?.error?.message" :serverError="serverErrors?.email?.[0]" />
-                </div>
-
-                <!-- Submit Button -->
-                <div class="mb-4">
-                    <Button type="submit" label="Send Reset Link" severity="primary" class="w-full" :disabled="submitting" />
-                </div>
-
-                <!-- Back to Login -->
-                <div class="text-center text-sm">
-                    <RouterLink :to="{ name: 'login' }" class="text-secondary hover:!underline">Back to Login</RouterLink>
-                </div>
-            </Form>
-        </template>
-    </Card>
+        <form class="app-form" @submit.prevent="onSubmit">
+            <div class="text-muted mb-6 text-center text-sm">Enter your email address to receive a password reset link.</div>
+            <div class="app-form-field">
+                <label class="app-form-label" for="forgot-email">Email</label>
+                <AppInput
+                    id="forgot-email"
+                    v-model="form.email"
+                    name="email"
+                    type="email"
+                    autocomplete="email"
+                    placeholder="Email address"
+                    class="w-full"
+                />
+                <AppFieldError :formError="clientErrors.email" :serverError="serverErrors?.email?.[0]" />
+            </div>
+            <div class="app-form-actions"><AppButton type="submit" block :disabled="submitting">Send Reset Link</AppButton></div>
+            <div class="text-center text-sm">
+                <RouterLink :to="{ name: 'login' }" class="text-muted hover:underline">Back to Login</RouterLink>
+            </div>
+        </form>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { useToast } from 'primevue/usetoast';
+import { AppButton, AppFieldError, AppInput } from '@/components/ui';
+import { useAppToast } from '@/composables/useAppToast';
+import { useAuthStore } from '@/features/auth/auth.store';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { z } from 'zod';
 
-import FieldError from '@/components/common/FieldError.vue';
-import { useAuthStore } from '@/features/auth/auth.store';
-
-const toast = useToast();
+const toast = useAppToast();
 const router = useRouter();
 const auth = useAuthStore();
 
 const submitting = ref(false);
 const serverErrors = ref<{ [key: string]: string[] }>({});
+const clientErrors = ref<Record<string, string>>({});
 
 // Initial form state
 const form = ref({
@@ -55,11 +53,15 @@ const schema = z.object({
     email: z.email({ message: 'Please enter a valid email address.' }),
 });
 
-const resolver = zodResolver(schema);
-
 // Form submit handler
-async function onSubmit({ valid }: { valid: boolean }) {
-    if (!valid) return;
+async function onSubmit() {
+    const parsed = schema.safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = mapZodErrors(parsed.error.issues);
+        return;
+    }
+
+    clientErrors.value = {};
 
     submitting.value = true;
     serverErrors.value = {};
@@ -67,11 +69,7 @@ async function onSubmit({ valid }: { valid: boolean }) {
     try {
         const res = await auth.forgotPassword(form.value.email);
 
-        toast.add({
-            severity: 'success',
-            summary: res.message || 'Reset link sent!',
-            life: 3000,
-        });
+        toast.success(res.message || 'Reset link sent!', undefined, { duration: 3000 });
 
         router.push({
             name: 'login',
@@ -81,17 +79,20 @@ async function onSubmit({ valid }: { valid: boolean }) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.response?.data?.message || 'Something went wrong.',
-                life: 4000,
-            });
+            toast.error('Error', err?.response?.data?.message || 'Something went wrong.', { duration: 4000 });
         }
     } finally {
         setTimeout(() => {
             submitting.value = false;
         }, 2000);
     }
+}
+
+function mapZodErrors(issues: z.core.$ZodIssue[]) {
+    return issues.reduce<Record<string, string>>((errors, issue) => {
+        const field = String(issue.path[0] ?? '');
+        if (field && !errors[field]) errors[field] = issue.message;
+        return errors;
+    }, {});
 }
 </script>

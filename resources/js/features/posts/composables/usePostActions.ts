@@ -1,8 +1,8 @@
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { usePosts } from '@/features/posts/composables/usePosts';
 import { Post } from '@/features/posts/posts.types';
 import { isoToMySQLDatetime, localDateTimeToUTC, utcToLocalDateTime } from '@/utils/dateHelper';
-import { useToast } from 'primevue/usetoast';
 import { Ref, ref } from 'vue';
 
 export function usePostActions(table: { selectedRecords: Ref<Post[]>; tableReload: () => void }) {
@@ -28,9 +28,9 @@ export function usePostActions(table: { selectedRecords: Ref<Post[]>; tableReloa
     const initialForm = ref<Record<string, any>>({});
     const selectedIds = ref<number[]>([]);
 
-    const toast = useToast();
-    const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdatePosts } = usePosts();
+    const toast = useAppToast();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
+    const { bulkUpdatePosts } = usePosts({ onError: () => undefined });
 
     // Trigger bulk action, handle delete separately
     function applyBulk() {
@@ -77,7 +77,6 @@ export function usePostActions(table: { selectedRecords: Ref<Post[]>; tableReloa
         dialogTitle.value = selectedCount > 1 ? `Bulk Update ${actionTitle} [${selectedCount} selected]` : `Update ${actionTitle}`;
 
         initialForm.value = buildInitialForm(action, row);
-        console.log('Initial form data:', initialForm.value);
         dialogVisible.value = true;
     }
 
@@ -96,7 +95,7 @@ export function usePostActions(table: { selectedRecords: Ref<Post[]>; tableReloa
         try {
             await bulkUpdatePosts(dialogAction.value, selectedIds.value, form);
 
-            toast.add({ severity: 'success', summary: 'Post updated', life: 2000 });
+            toast.success('Post updated', undefined, { duration: 2000 });
             closeDialog();
 
             selectedIds.value = [];
@@ -107,31 +106,28 @@ export function usePostActions(table: { selectedRecords: Ref<Post[]>; tableReloa
             if (err.response?.status === 422 && err.response.data?.errors) {
                 serverErrors.value = err.response.data.errors;
             } else {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: err?.message || 'Operation failed',
-                    life: 4000,
-                });
+                toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
             }
         }
     }
 
     // Show delete confirmation and execute delete if confirmed
-    function confirmDelete(ids: number[], title?: string) {
+    async function confirmDelete(ids: number[], title?: string) {
         const message = ids.length === 1 ? `Delete "${title ?? 'this post'}"?` : `Delete ${ids.length} selected posts?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdatePosts('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Post deleted',
-            errorMessage: 'Failed to delete post',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdatePosts('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                },
+                successMessage: 'Post deleted',
+                errorMessage: 'Failed to delete post',
+            });
+        } catch {}
     }
 
     return {

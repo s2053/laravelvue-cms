@@ -3,8 +3,14 @@ import SiteService from '@/features/sites/services/site.service';
 import { SiteInfo } from '@/features/sites/sites.types';
 import { ref } from 'vue';
 
-export function useSiteInfo() {
-    const { handleError } = useApiErrorHandler();
+type UseSiteInfoOptions = { onError?: (error: unknown) => void };
+
+export function useSiteInfo(config: UseSiteInfoOptions = {}) {
+    async function reportError(err: unknown) {
+        if (config.onError) return config.onError(err);
+        const { handleError } = useApiErrorHandler();
+        handleError(err);
+    }
 
     const siteInfo = ref<SiteInfo | null>(null);
     const loading = ref(false);
@@ -18,7 +24,7 @@ export function useSiteInfo() {
             const res = await SiteService.get();
             siteInfo.value = res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch site info';
         } finally {
             loading.value = false;
@@ -32,7 +38,7 @@ export function useSiteInfo() {
             siteInfo.value = res.data;
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update site info';
             throw err;
         }
