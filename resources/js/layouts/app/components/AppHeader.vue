@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AppButton } from '@/components/ui';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 

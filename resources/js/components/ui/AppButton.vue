@@ -1,5 +1,5 @@
 <template>
-    <UButton v-bind="buttonProps" class="app-button">
+    <UButton v-bind="{ ...buttonProps, ...$attrs }" class="app-button">
         <template v-if="$slots.leading" #leading>
             <slot name="leading" />
         </template>
@@ -14,6 +14,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
     label?: string;

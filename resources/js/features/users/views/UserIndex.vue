@@ -445,6 +445,6 @@ function showUpdateDialogForSingle(action: string, id: number) {
 
 onMounted(() => {
     void fetchRoles();
-    loadPageData({ page: 0, rows: numOfRows.value, filters });
+    loadPageData({ page: 1, rows: numOfRows.value, filters });
 });
 </script>

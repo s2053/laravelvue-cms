@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AppPageHeader } from '@/components/ui';
+import { AppButton, AppPageHeader } from '@/components/ui';
 import AppContent from '@/layouts/app/components/AppContent.vue';
 import { computed } from 'vue';
 

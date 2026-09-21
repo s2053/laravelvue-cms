@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { AppButton } from '@/components/ui';
 import AppMenu from '@/layouts/app/components/AppMenu.vue';
 import AppUserMenu from '@/layouts/app/components/AppUserMenu.vue';
 import { useLayout } from '@/layouts/app/composables/layout';
