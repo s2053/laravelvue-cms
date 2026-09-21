@@ -88,7 +88,10 @@ Route::middleware(['auth:sanctum', 'verified.api'])->group(function () {
     Route::apiResource('posts', PostController::class);
     Route::post('/posts/bulk-update', [PostController::class, 'bulkUpdate'])->name('posts.bulk-update');
 
-    Route::apiResource('media', MediaController::class);
+    Route::apiResource('media', MediaController::class)->parameters([
+        'media' => 'media',
+    ]);
+    Route::post('/media/bulk-store', [MediaController::class, 'bulkStore']);
     Route::post('/media/bulk-update', [MediaController::class, 'bulkUpdate']);
 
     Route::prefix('site-info')->group(function () {

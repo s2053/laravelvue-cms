@@ -1,37 +1,25 @@
 <template>
-    <Form v-slot="$form" :initialValues="form" :resolver="resolver" :key="editingId || 'create'" @submit="onSubmit" class="flex flex-col gap-4">
-        <!-- Name Field -->
-        <div class="flex flex-col gap-1">
-            <label for="name" class="mb-2 block font-bold">
-                <i class="pi pi-user mr-2"></i>
-                Name:
-            </label>
-            <InputText v-model="form.name" name="name" type="text" placeholder="Name" />
-            <FieldError :formError="$form.name?.error?.message" :serverError="serverErrors?.name?.[0]" />
+    <form class="app-form" @submit.prevent="onSubmit">
+        <div class="app-form-field">
+            <label for="user-details-name" class="app-form-label">Name:</label>
+            <AppInput id="user-details-name" v-model="form.name" name="name" type="text" placeholder="Name" class="w-full" />
+            <AppFieldError :formError="clientErrors.name" :serverError="serverErrors?.name?.[0]" />
         </div>
 
-        <!-- Email Field -->
-        <div class="flex flex-col gap-1">
-            <label for="email" class="mb-2 block font-bold">
-                <i class="pi pi-envelope mr-2"></i>
-                Email:
-            </label>
-            <InputText v-model="form.email" name="email" type="email" placeholder="Email" />
-            <FieldError :formError="$form.email?.error?.message" :serverError="serverErrors?.email?.[0]" />
+        <div class="app-form-field">
+            <label for="user-details-email" class="app-form-label">Email:</label>
+            <AppInput id="user-details-email" v-model="form.email" name="email" type="email" placeholder="Email" class="w-full" />
+            <AppFieldError :formError="clientErrors.email" :serverError="serverErrors?.email?.[0]" />
         </div>
 
-        <!-- Submit Button -->
-        <div class="flex justify-end gap-2">
-            <Button type="submit" label="Update Details" severity="secondary" :disabled="submitting" />
+        <div class="app-form-actions">
+            <AppButton type="submit" color="neutral" :loading="submitting">Update Details</AppButton>
         </div>
-    </Form>
+    </form>
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
+import { AppButton, AppFieldError, AppInput } from '@/components/ui';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
 
@@ -46,16 +34,16 @@ interface UserDetailsFormProps {
 }
 
 const props = defineProps<UserDetailsFormProps>();
-const emit = defineEmits(['submit']);
-
-const editingId = props.editingId;
+const emit = defineEmits<{
+    submit: [payload: { name: string; email: string }];
+}>();
 
 const form = ref({
     name: props.initialForm.name ?? '',
     email: props.initialForm.email ?? '',
 });
+const clientErrors = ref<Record<string, string>>({});
 
-// Reset form when initialForm changes
 watch(
     () => props.initialForm,
     (newForm) => {
@@ -63,25 +51,28 @@ watch(
             name: newForm.name ?? '',
             email: newForm.email ?? '',
         };
+        clientErrors.value = {};
     },
     { immediate: true, deep: true },
 );
 
-// Zod validation resolver
-const resolver = zodResolver(
-    z.object({
-        name: z
-            .string()
-            .min(1, { message: 'User name is required.' })
-            .transform((val) => val.trim()),
-        email: z.string().email({ message: 'Valid email is required.' }),
-    }),
-);
+const detailsSchema = z.object({
+    name: z
+        .string()
+        .min(1, { message: 'User name is required.' })
+        .transform((value) => value.trim()),
+    email: z.email({ message: 'Valid email is required.' }),
+});
 
-// Submit handler
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) {
-        emit('submit', form.value);
+function onSubmit() {
+    const parsed = detailsSchema.safeParse(form.value);
+
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
     }
+
+    clientErrors.value = {};
+    emit('submit', form.value);
 }
 </script>

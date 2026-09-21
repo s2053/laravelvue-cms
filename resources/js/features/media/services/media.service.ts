@@ -1,4 +1,4 @@
-import type { MediaPayload, MediaRecord } from '@/features/media/media.types';
+import type { MediaBulkUploadPayload, MediaPayload, MediaRecord } from '@/features/media/media.types';
 import { api } from '@/lib/axios';
 import type { ApiResponse, PaginatedResponse } from '@/types/apiResponse';
 
@@ -29,6 +29,17 @@ const MediaService = {
         if (payload.status !== undefined) formData.append('status', payload.status ? '1' : '0');
 
         const res = await api.post<ApiResponse<MediaRecord>>('/media', formData);
+        return res.data;
+    },
+
+    async bulkStore(payload: MediaBulkUploadPayload): Promise<ApiResponse<MediaRecord[]>> {
+        const formData = new FormData();
+
+        payload.files.forEach((file) => {
+            formData.append('files[]', file);
+        });
+
+        const res = await api.post<ApiResponse<MediaRecord[]>>('/media/bulk-store', formData);
         return res.data;
     },
 

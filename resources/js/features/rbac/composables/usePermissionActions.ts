@@ -1,7 +1,7 @@
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
 import { usePermissions } from '@/features/rbac/composables/usePermissions';
-import { Permission } from '@/features/rbac/rbac.types';
-import { Ref, ref } from 'vue';
+import type { Permission } from '@/features/rbac/rbac.types';
+import { ref, type Ref } from 'vue';
 
 export function usePermissionActions(table: { selectedRecords: Ref<Permission[]>; tableReload: () => void }) {
     // Current bulk action selected
@@ -13,8 +13,8 @@ export function usePermissionActions(table: { selectedRecords: Ref<Permission[]>
     // Selected IDs
     const selectedIds = ref<number[]>([]);
 
-    const { showDeleteConfirm } = useDeleteConfirm();
-    const { bulkUpdatePermissions } = usePermissions();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
+    const { bulkUpdatePermissions } = usePermissions({ onError: () => undefined });
 
     // Trigger bulk action
     function applyBulk() {
@@ -31,20 +31,22 @@ export function usePermissionActions(table: { selectedRecords: Ref<Permission[]>
     }
 
     // Show delete confirmation
-    function confirmDelete(ids: number[], name?: string) {
+    async function confirmDelete(ids: number[], name?: string) {
         const message = ids.length === 1 ? `Delete "${name ?? 'this record'}"?` : `Delete ${ids.length} selected records?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdatePermissions('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Record deleted',
-            errorMessage: 'Failed to delete record',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdatePermissions('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                },
+                successMessage: 'Record deleted',
+                errorMessage: 'Failed to delete record',
+            });
+        } catch {}
     }
 
     return {

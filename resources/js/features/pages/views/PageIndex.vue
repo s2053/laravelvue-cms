@@ -1,11 +1,10 @@
 <template>
     <AppContent>
-        <h2>Page Management</h2>
-
-        <!-- Top toolbar -->
-        <div class="mb-3 flex justify-between">
-            <Button icon="pi pi-plus" label="Add New Page" @click="goToCreatePage" />
-        </div>
+        <AppPageHeader title="Page Management">
+            <template #actions>
+                <AppButton icon="i-lucide-plus" @click="goToCreatePage">Add New Page</AppButton>
+            </template>
+        </AppPageHeader>
 
         <AppDataTable
             :items="pages"
@@ -17,128 +16,121 @@
             :selection="selectedRecords"
             :sortField="sortField"
             :sortOrder="sortOrder"
-            :paginatorTemplate="'FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown'"
-            :currentPageReportTemplate="'{first} to {last} of {totalRecords}'"
+            :columns="tableColumns"
+            selectable
             dataKey="id"
             @page="onPage"
             @sort="onSort"
             @selection-change="selectedRecords = $event"
         >
-            <!-- Table header with bulk actions + search -->
             <template #header>
                 <TableToolBarWrapper :searchText="filters.global" @clear="onGlobalSearch('')">
                     <div class="flex items-center">
                         <BulkActions v-model="bulkAction" :bulkOptions="bulkOptions" :selectedRecords="selectedRecords" @apply="applyBulk" />
 
                         <div class="ml-auto flex items-center gap-2">
-                            <TableToolBar v-model="globalFilterValue" @search="onGlobalSearch" showFilter @toggleFilter="openFilter = !openFilter" />
+                            <TableToolBar
+                                v-model="globalFilterValue"
+                                showFilter
+                                :filterActive="openFilter"
+                                @search="onGlobalSearch"
+                                @toggleFilter="openFilter = !openFilter"
+                            />
                         </div>
                     </div>
                 </TableToolBarWrapper>
 
-                <!-- Collapsible filter panel -->
                 <PageFilter v-if="openFilter" :filters="filters" :categoryOptions="categoryOptions" @update:filters="onFiltersChanged" />
             </template>
 
-            <!-- Dynamic columns -->
-            <template #columns>
-                <Column selectionMode="multiple" headerStyle="width: 3rem" />
-
-                <Column v-for="col in visibleCols" :key="col.field" :field="col.field" :header="col.label" sortable>
-                    <!-- Column-specific renderers -->
-                    <template v-if="col.field === 'created_at'" #body="{ data }">
-                        {{ formatDateTimeString(data.created_at) }}
-                    </template>
-
-                    <template v-else-if="col.field === 'category'" #body="{ data }">
-                        <div class="text-center">
-                            {{ data.category ? data.category.title : '-' }}
-                        </div>
-                    </template>
-
-                    <template v-else-if="col.field === 'title'" #body="{ data }">
-                        <div v-if="data.thumbnail">
-                            <img :src="data.thumbnail" alt="Thumbnail" class="mr-2 inline-block max-h-[60px] max-w-[100px] rounded" />
-                        </div>
-                        {{ data.title }}
-                    </template>
-                </Column>
+            <template #title-cell="{ row }">
+                <div class="app-data-table__media-title">
+                    <img
+                        v-if="(row.original as Page).thumbnail"
+                        :src="(row.original as Page).thumbnail!"
+                        alt="Page thumbnail"
+                        class="app-data-table__thumbnail"
+                    />
+                    <span :title="(row.original as Page).title" class="app-data-table__title">{{ (row.original as Page).title }}</span>
+                </div>
             </template>
 
-            <!-- Row-level actions -->
-            <template #actions>
-                <Column header="Action">
-                    <template #body="{ data }">
-                        <Button icon="pi pi-pencil" size="small" outlined rounded class="mr-2" @click="goToEditPage(data.id)" />
-                        <Button
-                            icon="pi pi-trash"
-                            size="small"
-                            severity="danger"
-                            outlined
-                            rounded
-                            class="mr-2"
-                            @click="removePage(data.id, data.title)"
-                        />
+            <template #category-cell="{ row }">
+                {{ (row.original as Page).category?.title ?? '—' }}
+            </template>
 
-                        <Button icon="pi pi-ellipsis-v" size="small" severity="secondary" outlined rounded @click="toggleMenu(data.id, $event)" />
+            <template #status-cell="{ row }">
+                <AppBadge color="info" size="sm">{{ labelFor(PageStatusOptions, (row.original as Page).status) }}</AppBadge>
+            </template>
 
-                        <!-- Popup menu -->
-                        <Menu
-                            :ref="(el: any) => setMenuRef(data.id, el)"
-                            popup
-                            :model="[
-                                { label: 'Edit', icon: 'pi pi-pencil', command: () => goToEditPage(data.id) },
-                                { label: 'Update Status', icon: 'pi pi-cog', command: () => showUpdateDialogForSingle('status', data.id) },
-                                { label: 'Update Visibility', icon: 'pi pi-eye', command: () => showUpdateDialogForSingle('visibility', data.id) },
-                                { label: 'Update Page Type', icon: 'pi pi-file', command: () => showUpdateDialogForSingle('page_type', data.id) },
-                                {
-                                    label: 'Update Category',
-                                    icon: 'pi pi-tags',
-                                    command: () => showUpdateDialogForSingle('page_category_id', data.id),
-                                },
-                                { label: 'Remove', icon: 'pi pi-trash', command: () => removePage(data.id, data.title) },
-                            ]"
-                            class="!min-w-40"
-                        />
-                    </template>
-                </Column>
+            <template #page_type-cell="{ row }">
+                <AppBadge color="neutral" size="sm">{{ labelFor(PageTypeOptions, (row.original as Page).page_type) }}</AppBadge>
+            </template>
+
+            <template #visibility-cell="{ row }">
+                <AppBadge color="primary" size="sm">{{ labelFor(PageVisibilityOptions, (row.original as Page).visibility) }}</AppBadge>
+            </template>
+
+            <template #created_at-cell="{ row }">
+                {{ (row.original as Page).created_at ? formatDateTimeString((row.original as Page).created_at!) : '—' }}
+            </template>
+
+            <template #actions-cell="{ row }">
+                <div class="flex items-center justify-end gap-2">
+                    <AppButton color="neutral" variant="outline" icon="i-lucide-pencil" size="sm" @click="goToEditPage((row.original as Page).id)" />
+                    <AppButton
+                        color="error"
+                        variant="outline"
+                        icon="i-lucide-trash-2"
+                        size="sm"
+                        @click="removePage((row.original as Page).id, (row.original as Page).title)"
+                    />
+                    <AppDropdownMenu :items="rowMenuItems(row.original as Page)" :content="{ align: 'end' }">
+                        <AppButton color="neutral" variant="outline" icon="i-lucide-ellipsis-vertical" size="sm" />
+                    </AppDropdownMenu>
+                </div>
             </template>
         </AppDataTable>
 
-        <!-- Bulk/single option dialog -->
-        <Dialog v-model:visible="isActionDialogVisible" modal :header="actionDialogTitle" :style="{ width: '35rem' }">
+        <AppOverlayShell v-model:open="isActionDialogVisible" :title="actionDialogTitle" size="md" :close="true" :dismissible="true">
             <PageOptionForm
                 :categoryOptions="categoryOptions"
                 :action="actionDialogAction"
                 :initialData="actionDialogInitial"
-                :serverErrors="PageOptionFormServerErrors"
+                :serverErrors="pageOptionFormServerErrors"
                 @submit="submitActionUpdate"
                 @cancel="isActionDialogVisible = false"
             />
-        </Dialog>
+        </AppOverlayShell>
     </AppContent>
 </template>
 
 <script setup lang="ts">
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
-import { usePageActions, usePageCategories, usePages } from '@/features/pages/composables';
-
-import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-
-// Utils
-import { formatDateTimeString } from '@/utils/dateHelper';
-import { strTruncate } from '@/utils/stringHelper';
-
-// UI components
 import { AppDataTable, BulkActions, TableToolBar, TableToolBarWrapper } from '@/components/common/datatables';
-import AppContent from '@/layouts/app/components/AppContent.vue';
-
+import { AppBadge, AppButton, AppDropdownMenu, AppOverlayShell, AppPageHeader, type AppDropdownMenuItem } from '@/components/ui';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { usePaginatedTable } from '@/composables/usePaginatedList';
 import { PageFilter, PageOptionForm } from '@/features/pages/components';
-import { PageFilters } from '@/features/pages/pages.types';
+import { usePageActions, usePageCategories, usePages } from '@/features/pages/composables';
+import { PageStatusOptions, PageTypeOptions, PageVisibilityOptions } from '@/features/pages/enums';
+import type { Page, PageFilters } from '@/features/pages/pages.types';
 import PageService from '@/features/pages/services/page.service';
+import AppContent from '@/layouts/app/components/AppContent.vue';
+import { formatDateTimeString } from '@/utils/dateHelper';
+import { strTruncate } from '@/utils/stringHelper';
+import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+const toast = useAppToast();
+const router = useRouter();
+const { showDeleteConfirm } = useAppDeleteConfirm();
+const { deletePage } = usePages({ onError: () => undefined });
+const { categories, fetchCategories } = usePageCategories({
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load page categories', { duration: 4000 });
+    },
+});
 
 const {
     items: pages,
@@ -168,9 +160,11 @@ const {
         visibility: [],
         global: '',
     } as PageFilters,
+    onError: (error) => {
+        toast.error('Error', error instanceof Error ? error.message : 'Failed to load pages', { duration: 4000 });
+    },
 });
 
-// Bulk + single‑row actions (dialog, toasts, etc.)
 const {
     bulkAction,
     bulkOptions,
@@ -178,70 +172,130 @@ const {
     openSingle,
     dialog: actionDialog,
     submit: submitActionUpdate,
-    serverErrors: PageOptionFormServerErrors,
+    serverErrors: pageOptionFormServerErrors,
 } = usePageActions({ selectedRecords, tableReload });
-
-// Aliases for dialog refs
 const { visible: isActionDialogVisible, title: actionDialogTitle, action: actionDialogAction, initial: actionDialogInitial } = actionDialog;
 
-// Categories for form selects
-const { categories, fetchCategories } = usePageCategories();
-const categoryOptions = computed(() => (categories.value ?? []).map((cat) => ({ id: cat.id as number, title: cat.title })));
+const categoryOptions = computed(() => (categories.value ?? []).map((category) => ({ id: category.id, title: category.title })));
 
-// Utils
-const toast = useToast();
-const router = useRouter();
-const { showDeleteConfirm } = useDeleteConfirm();
-const { deletePage } = usePages();
-
-onMounted(() => {
-    fetchCategories();
-    loadPageData({ page: 0, rows: numOfRows.value, filters });
-});
-
-const allColumns = [
-    { field: 'id', label: 'Id' },
-    { field: 'title', label: 'Title' },
-    { field: 'category', label: 'Category' },
-    { field: 'status', label: 'Status' },
-    { field: 'page_type', label: 'Page Type' },
-    { field: 'visibility', label: 'Visibility' },
-    { field: 'created_at', label: 'Created At' },
-];
-const visibleColumns = ref<string[]>(['id', 'title', 'status', 'visibility', 'page_type', 'category', 'created_at']);
-const visibleCols = computed(() => allColumns.filter((c) => visibleColumns.value.includes(c.field)));
-
-const menuRefs = ref<Record<number, any | null>>({});
-const setMenuRef = (id: number, el: any | null) => {
-    if (el) menuRefs.value[id] = el;
-    else delete menuRefs.value[id];
+type TableColumn = {
+    key: string;
+    label: string;
+    sortable?: boolean;
+    width?: string;
+    cellClass?: string;
+    headerClass?: string;
 };
-const toggleMenu = (id: number, ev: Event) => menuRefs.value[id]?.toggle(ev);
 
-//Navigation helpers
-const goToCreatePage = () => router.push({ name: 'pages.create' });
-const goToEditPage = (id: number) => router.push({ name: 'pages.edit', params: { id } });
+const tableColumns = computed<TableColumn[]>(() => [
+    { key: 'id', label: 'ID', sortable: true, width: '80px' },
+    { key: 'title', label: 'Title', sortable: true },
+    { key: 'category', label: 'Category', sortable: true, width: '170px' },
+    { key: 'status', label: 'Status', sortable: true, width: '140px' },
+    { key: 'page_type', label: 'Page Type', sortable: true, width: '140px' },
+    { key: 'visibility', label: 'Visibility', sortable: true, width: '180px' },
+    { key: 'created_at', label: 'Created At', sortable: true, width: '190px' },
+    { key: 'actions', label: 'Actions', sortable: false, width: '170px', cellClass: 'text-right', headerClass: 'text-right' },
+]);
 
-// Row‑level Operation
-function removePage(id: number, title?: string) {
-    const message = `Do you want to delete ${title ? `\"${strTruncate(title)}\"` : 'this page'}?`;
-    showDeleteConfirm({
-        message,
-        onAccept: async () => {
-            await deletePage(id);
-            tableReload();
-        },
-        successMessage: 'Page deleted',
-        errorMessage: 'Failed to delete page',
-    });
+function rowMenuItems(page: Page): AppDropdownMenuItem[][] {
+    return [
+        [
+            {
+                label: 'Edit',
+                icon: 'i-lucide-pencil',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    goToEditPage(page.id);
+                },
+            },
+            {
+                label: 'Update Status',
+                icon: 'i-lucide-settings-2',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    showUpdateDialogForSingle('status', page.id);
+                },
+            },
+            {
+                label: 'Update Visibility',
+                icon: 'i-lucide-eye',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    showUpdateDialogForSingle('visibility', page.id);
+                },
+            },
+            {
+                label: 'Update Page Type',
+                icon: 'i-lucide-file-text',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    showUpdateDialogForSingle('page_type', page.id);
+                },
+            },
+            {
+                label: 'Update Category',
+                icon: 'i-lucide-tags',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    showUpdateDialogForSingle('page_category_id', page.id);
+                },
+            },
+        ],
+        [
+            {
+                label: 'Remove',
+                icon: 'i-lucide-trash-2',
+                color: 'error',
+                onSelect(event: Event) {
+                    event.preventDefault();
+                    void removePage(page.id, page.title);
+                },
+            },
+        ],
+    ];
+}
+
+function labelFor(options: Array<{ label: string; value: string }>, value: string | null | undefined) {
+    return options.find((option) => option.value === value)?.label ?? '—';
+}
+
+function goToCreatePage() {
+    void router.push({ name: 'pages.create' });
+}
+
+function goToEditPage(id: number) {
+    void router.push({ name: 'pages.edit', params: { id } });
+}
+
+async function removePage(id: number, title?: string) {
+    const message = title ? `Do you want to delete \"${strTruncate(title)}\"?` : 'Do you want to delete this page?';
+
+    try {
+        await showDeleteConfirm({
+            message,
+            onAccept: async () => {
+                await deletePage(id);
+                tableReload();
+            },
+            successMessage: 'Page deleted',
+            errorMessage: 'Failed to delete page',
+        });
+    } catch {}
 }
 
 function showUpdateDialogForSingle(action: string, id: number) {
-    const row = pages.value.find((p) => p.id === id);
-    if (!row) {
-        toast.add({ severity: 'warn', summary: 'Page not found', life: 2500 });
+    const page = pages.value.find((record) => record.id === id);
+    if (!page) {
+        toast.warning('Page not found', undefined, { duration: 2500 });
         return;
     }
-    openSingle(action, row);
+
+    openSingle(action, page);
 }
+
+onMounted(() => {
+    void fetchCategories();
+    loadPageData({ page: 1, rows: numOfRows.value, filters });
+});
 </script>

@@ -3,8 +3,20 @@ import type { PostTag, PostTagOption, PostTagPayload } from '@/features/posts/po
 import PostTagService from '@/features/posts/services/postTag.service';
 import { ref } from 'vue';
 
-export function usePostTags() {
-    const { handleError } = useApiErrorHandler();
+type UsePostTagsOptions = {
+    onError?: (error: unknown) => void | Promise<void>;
+};
+
+export function usePostTags(config: UsePostTagsOptions = {}) {
+    async function reportError(error: unknown) {
+        if (config.onError) {
+            await config.onError(error);
+            return;
+        }
+
+        const { handleError } = useApiErrorHandler();
+        handleError(error);
+    }
 
     const postTags = ref<PostTag[]>([]);
     const options = ref<PostTagOption[]>([]);
@@ -20,7 +32,7 @@ export function usePostTags() {
             const res = await PostTagService.getAll(params);
             postTags.value = res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch post tags';
         } finally {
             loading.value = false;
@@ -33,7 +45,7 @@ export function usePostTags() {
             const res = await PostTagService.getById(id);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch post tag';
             throw err;
         }
@@ -46,7 +58,7 @@ export function usePostTags() {
             const res = await PostTagService.getOptions(all, search);
             options.value = res.data; // assumes service wraps data in `data`
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to fetch post tag options';
         } finally {
             loading.value = false;
@@ -59,7 +71,7 @@ export function usePostTags() {
             const res = await PostTagService.create(payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to create post tag';
             throw err;
         }
@@ -71,7 +83,7 @@ export function usePostTags() {
             const res = await PostTagService.update(id, payload);
             return res.data;
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to update post tag';
             throw err;
         }
@@ -82,7 +94,7 @@ export function usePostTags() {
         try {
             await PostTagService.delete(id);
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to delete post tag';
             throw err;
         }
@@ -93,7 +105,7 @@ export function usePostTags() {
         try {
             await PostTagService.bulkUpdate({ action, ids, data });
         } catch (err: any) {
-            handleError(err);
+            await reportError(err);
             error.value = err.message || 'Failed to perform bulk update';
             throw err;
         }

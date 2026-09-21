@@ -1,9 +1,9 @@
 // src/features/users/composables/useUserActions.ts
-import { useDeleteConfirm } from '@/composables/useDeleteConfirm';
+import { useAppDeleteConfirm } from '@/composables/useAppDeleteConfirm';
+import { useAppToast } from '@/composables/useAppToast';
 import { useUsers } from '@/features/users/composables/useUsers';
 import { User } from '@/features/users/users.types';
-import { useToast } from 'primevue/usetoast';
-import { Ref, ref } from 'vue';
+import { ref, type Ref } from 'vue';
 
 export function useUserActions(table: { selectedRecords: Ref<User[]>; tableReload: () => void }) {
     // Current bulk action selected
@@ -26,8 +26,8 @@ export function useUserActions(table: { selectedRecords: Ref<User[]>; tableReloa
     const initialForm = ref<Record<string, any>>({});
     const selectedIds = ref<number[]>([]);
 
-    const toast = useToast();
-    const { showDeleteConfirm } = useDeleteConfirm();
+    const toast = useAppToast();
+    const { showDeleteConfirm } = useAppDeleteConfirm();
     const { bulkUpdateUsers } = useUsers();
 
     // Trigger bulk action, handle delete separately
@@ -91,7 +91,7 @@ export function useUserActions(table: { selectedRecords: Ref<User[]>; tableReloa
         try {
             await bulkUpdateUsers(dialogAction.value, selectedIds.value, form);
 
-            toast.add({ severity: 'success', summary: 'Updated.', life: 2000 });
+            toast.success('Updated.', undefined, { duration: 2000 });
             closeDialog();
 
             selectedIds.value = [];
@@ -102,31 +102,28 @@ export function useUserActions(table: { selectedRecords: Ref<User[]>; tableReloa
             if (err.response?.status === 422 && err.response.data?.errors) {
                 serverErrors.value = err.response.data.errors;
             } else {
-                toast.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: err?.message || 'Operation failed',
-                    life: 4000,
-                });
+                toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
             }
         }
     }
 
     // Show delete confirmation and execute delete if confirmed
-    function confirmDelete(ids: number[], name?: string) {
+    async function confirmDelete(ids: number[], name?: string) {
         const message = ids.length === 1 ? `Delete user "${name ?? 'this user'}"?` : `Delete ${ids.length} selected users?`;
 
-        showDeleteConfirm({
-            message,
-            onAccept: async () => {
-                await bulkUpdateUsers('delete', ids);
-                table.tableReload();
-                table.selectedRecords.value = [];
-                selectedIds.value = [];
-            },
-            successMessage: 'Record deleted',
-            errorMessage: 'Failed to delete record',
-        });
+        try {
+            await showDeleteConfirm({
+                message,
+                onAccept: async () => {
+                    await bulkUpdateUsers('delete', ids);
+                    table.tableReload();
+                    table.selectedRecords.value = [];
+                    selectedIds.value = [];
+                },
+                successMessage: 'Record deleted',
+                errorMessage: 'Failed to delete record',
+            });
+        } catch {}
     }
 
     return {

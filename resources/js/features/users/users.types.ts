@@ -19,7 +19,7 @@ export type UserProfilePayload = Pick<UserPayload, 'name' | 'profile_img' | 'sta
 export type UserSecurityPayload = Pick<UserPayload, 'password' | 'password_confirmation'> & { current_password: string };
 
 export interface UserPreferences {
-    appearance?: string;
+    appearance?: 'light' | 'dark' | 'system';
 }
 export type UserFilters = {
     status: boolean[];

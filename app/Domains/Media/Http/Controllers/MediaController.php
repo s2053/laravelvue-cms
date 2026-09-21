@@ -3,6 +3,7 @@
 namespace App\Domains\Media\Http\Controllers;
 
 use App\Domains\Media\Http\Requests\BulkUpdateMediaRequest;
+use App\Domains\Media\Http\Requests\BulkStoreMediaRequest;
 use App\Domains\Media\Http\Requests\StoreMediaRequest;
 use App\Domains\Media\Http\Requests\UpdateMediaRequest;
 use App\Domains\Media\Http\Resources\MediaResource;
@@ -33,6 +34,15 @@ class MediaController extends Controller
         $media = $this->service->create($request->validated());
 
         return (new MediaResource($media))
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function bulkStore(BulkStoreMediaRequest $request)
+    {
+        $records = $this->service->bulkCreate($request->validated());
+
+        return MediaResource::collection($records)
             ->response()
             ->setStatusCode(201);
     }
