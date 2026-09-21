@@ -1,30 +1,30 @@
 <template>
-    <div class="menu-editor rounded-md border p-6">
-        <div class="mb-4 flex items-center justify-between border-b pb-2">
-            <h3 class="text-lg font-semibold">Menu Structure</h3>
-            <Button :disabled="items?.length === 0" label="Remove All" severity="danger" text @click="removeAllItems" />
+    <div class="app-menu-builder p-4 sm:p-6">
+        <div class="border-default mb-4 flex items-center justify-between border-b pb-2">
+            <h3 class="text-highlighted text-lg font-semibold">Menu Structure</h3>
+            <AppButton :disabled="items?.length === 0" label="Remove All" color="error" variant="ghost" @click="removeAllItems" />
         </div>
 
         <!-- Show server error -->
         <div class="mb-2">
-            <FieldError :serverError="serverErrors ? Object.values(serverErrors).flat().join('\n') : undefined" />
-            <FieldError :formError="formError" />
+            <AppFieldError :serverError="serverErrors ? Object.values(serverErrors).flat().join('\n') : undefined" />
+            <AppFieldError :formError="formError" />
         </div>
 
         <div class="menu-structure-wrapper overflow-x-auto pb-2">
             <div class="menu-structure-list min-w-full">
                 <VueNestable :value="items" :maxDepth="maxDepth" :threshold="20" @input="updateItems">
                     <template #default="{ item }">
-                        <div class="p-panel rounded border">
+                        <div class="app-menu-item">
                             <VueNestableHandle>
-                                <div class="p-panel-header flex cursor-pointer items-center justify-between" @click="item.open = !item.open">
+                                <div class="app-menu-item__header flex cursor-pointer items-center justify-between" @click="item.open = !item.open">
                                     <!-- Title on the left -->
 
                                     <span>{{ strTruncate(item.title, 45) }}</span>
 
                                     <!-- Right side: Type badge + toggle -->
                                     <div class="flex items-center gap-2">
-                                        <span class="px-2 py-0.5 text-sm">
+                                        <span class="text-muted px-2 py-0.5 text-xs font-medium">
                                             {{ getContentTypeLabel(item.content_type) }}
                                         </span>
                                         <span>{{ item.open ? '▲' : '▼' }}</span>
@@ -32,8 +32,9 @@
                                 </div>
                             </VueNestableHandle>
 
-                            <div v-show="item.open" class="p-panel-content">
-                                <MenuItemNode :item="item" :formErrors="itemErrors[String(item.id)]" @update="updateItem" @remove="removeItem"> </MenuItemNode>
+                            <div v-show="item.open" class="app-menu-item__content">
+                                <MenuItemNode :item="item" :formErrors="itemErrors[String(item.id)]" @update="updateItem" @remove="removeItem">
+                                </MenuItemNode>
                             </div>
                         </div>
                     </template>
@@ -41,14 +42,14 @@
             </div>
         </div>
         <div class="mt-4 flex justify-end gap-2">
-            <Button label="Cancel" outlined @click="cancel" />
-            <Button label="Save" :loading="submitting" @click="save" />
+            <AppButton label="Cancel" variant="outline" color="secondary" @click="cancel" />
+            <AppButton label="Save" :loading="submitting" @click="save" />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
+import { AppButton, AppFieldError } from '@/components/ui';
 import { MenuItemNode } from '@/features/widgets/components';
 import type { WidgetItem, WidgetPayload } from '@/features/widgets/widgets.types';
 import { strTruncate } from '@/utils/stringHelper';
@@ -178,13 +179,6 @@ function validateItems(list: WidgetItem[] = []): boolean {
 </script>
 
 <style>
-.menu-item:active {
-    cursor: grabbing;
-}
-
-/*
-* Style for nestable
-*/
 .nestable {
     position: relative;
     display: flex;
@@ -199,14 +193,15 @@ function validateItems(list: WidgetItem[] = []): boolean {
 
 .nestable .nestable-list {
     margin: 0;
-    padding: 0 0 0 40px;
+    padding-inline-start: 1.25rem;
     list-style-type: none;
     width: 100%;
     box-sizing: border-box;
 }
 
 .nestable-rtl .nestable-list {
-    padding: 0 40px 0 0;
+    padding-inline-start: 0;
+    padding-inline-end: 1.25rem;
 }
 
 .nestable > .nestable-list {
@@ -225,7 +220,14 @@ function validateItems(list: WidgetItem[] = []): boolean {
 
 .nestable-item .nestable-list,
 .nestable-item-copy .nestable-list {
-    margin-top: 10px;
+    margin-top: 0.5rem;
+    padding-inline-start: 0.75rem;
+}
+
+.nestable-rtl .nestable-item .nestable-list,
+.nestable-rtl .nestable-item-copy .nestable-list {
+    padding-inline-start: 0;
+    padding-inline-end: 0.75rem;
 }
 
 .nestable-item {
@@ -238,7 +240,6 @@ function validateItems(list: WidgetItem[] = []): boolean {
 
 .nestable-item.is-dragging * {
     opacity: 0;
-    filter: alpha(opacity=0);
 }
 
 .nestable-item.is-dragging:before {
@@ -248,10 +249,9 @@ function validateItems(list: WidgetItem[] = []): boolean {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(106, 127, 233, 0.274);
-    border: 1px dashed rgb(73, 100, 241);
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
+    background-color: color-mix(in oklab, var(--ui-primary) 18%, transparent);
+    border: 1px dashed var(--ui-primary);
+    border-radius: var(--radius-md, 0.5rem);
 }
 
 .nestable-drag-layer {
@@ -272,7 +272,7 @@ function validateItems(list: WidgetItem[] = []): boolean {
     top: 0;
     left: 0;
     padding: 0;
-    background-color: rgba(106, 127, 233, 0.274);
+    background-color: color-mix(in oklab, var(--ui-primary) 18%, transparent);
 }
 
 .nestable-rtl .nestable-drag-layer > .nestable-list {
@@ -288,9 +288,9 @@ function validateItems(list: WidgetItem[] = []): boolean {
 }
 
 .nestable-item {
-    width: 480px;
+    width: 100%;
     max-width: 100%;
-    min-width: 480px;
+    min-width: 0;
     margin-top: 8px;
     transition: box-shadow 0.2s ease;
 }
@@ -304,13 +304,25 @@ function validateItems(list: WidgetItem[] = []): boolean {
     width: 100%;
 }
 
-.p-panel-header {
-    padding: 8px 12px !important;
-    font-weight: 500;
+.app-menu-item {
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--radius-md, 0.375rem);
+    background: var(--ui-bg);
+}
+
+.app-menu-item__header {
+    padding: 0.625rem 0.75rem !important;
+    color: var(--ui-text-highlighted);
+    font-size: var(--text-sm, 0.875rem);
+    font-weight: var(--font-weight-medium, 500);
     cursor: pointer;
 }
 
-.p-panel-content {
-    padding: 12px;
+.app-menu-item__content {
+    border-top: 1px solid var(--ui-border);
+    padding: 0.75rem;
+    background: var(--ui-bg);
 }
 </style>

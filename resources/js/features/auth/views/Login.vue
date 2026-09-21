@@ -1,67 +1,51 @@
 <template>
-    <Card class="mx-auto w-full max-w-md">
-        <template #title>
+    <section class="app-auth-card mx-auto w-full max-w-md">
+        <div class="mb-6">
             <div v-if="localMessage" class="text-primary mb-4 text-center text-sm">
                 {{ localMessage }}
-                <!-- <Message severity="info">Info Message</Message> -->
             </div>
             <div class="text-center text-2xl font-bold">Login to your account</div>
-        </template>
+        </div>
 
-        <template #content>
-            <Form v-slot="$form" :initialValues="form" :resolver="resolver" @submit="onSubmit">
-                <!-- Email Input -->
-                <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium" for="email">Email</label>
-                    <InputText name="email" v-model="form.email" type="email" class="w-full" />
-                    <FieldError :formError="$form.email?.error?.message" :serverError="serverErrors?.email?.[0]" />
-                </div>
+        <form class="app-form" @submit.prevent="onSubmit">
+            <div class="app-form-field">
+                <label class="app-form-label" for="login-email">Email</label>
+                <AppInput id="login-email" v-model="form.email" name="email" type="email" autocomplete="email" class="w-full" />
+                <AppFieldError :formError="clientErrors.email" :serverError="serverErrors?.email?.[0]" />
+            </div>
 
-                <!-- Password Input -->
-                <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium" for="password">Password</label>
-                    <Password :fluid="true" v-model="form.password" name="password" :feedback="false" toggleMask />
-                    <FieldError :formError="$form.password?.error?.message" :serverError="serverErrors?.password?.[0]" />
-                </div>
+            <div class="app-form-field">
+                <label class="app-form-label" for="login-password">Password</label>
+                <AppPassword id="login-password" v-model="form.password" name="password" autocomplete="current-password" class="w-full" />
+                <AppFieldError :formError="clientErrors.password" :serverError="serverErrors?.password?.[0]" />
+            </div>
 
-                <!-- Remember Me Checkbox -->
-                <div class="mb-4 flex items-center">
-                    <Checkbox v-model="form.remember" name="remember" binary />
-                    <label for="remember" class="ml-2 text-sm">Remember me</label>
-                </div>
+            <AppCheckbox v-model="form.remember" name="remember" label="Remember me" />
 
-                <!-- Submit Button -->
-                <div class="mb-4">
-                    <Button type="submit" label="Log in" severity="primary" class="w-full" :disabled="submitting" />
-                </div>
+            <div class="app-form-actions">
+                <AppButton type="submit" block :disabled="submitting">Log in</AppButton>
+            </div>
 
-                <!-- Links -->
-                <div class="flex justify-between text-sm">
-                    <router-link to="/register" class="text-primary hover:!underline">Register</router-link>
-                    <router-link to="/forgot-password" class="text-secondary hover:!underline">Forgot Password?</router-link>
-                </div>
-            </Form>
-        </template>
-    </Card>
+            <div class="flex justify-between text-sm">
+                <router-link to="/register" class="text-primary hover:underline">Register</router-link>
+                <router-link to="/forgot-password" class="text-muted hover:underline">Forgot Password?</router-link>
+            </div>
+        </form>
+    </section>
 </template>
 
 <script setup lang="ts">
-import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { useToast } from 'primevue/usetoast';
-import { onMounted, ref } from 'vue';
-import { z } from 'zod';
-
-import FieldError from '@/components/common/FieldError.vue';
-import type { LoginPayload } from '@/features/auth/auth.types';
-
+import { AppButton, AppCheckbox, AppFieldError, AppInput, AppPassword } from '@/components/ui';
+import { useAppToast } from '@/composables/useAppToast';
 import { useAuthStore } from '@/features/auth/auth.store';
-
+import type { LoginPayload } from '@/features/auth/auth.types';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { z } from 'zod';
 
 const router = useRouter();
 const route = useRoute();
-
-const toast = useToast();
+const toast = useAppToast();
 
 const { login, notificationMessage, setNotificationMessage, clearNotificationMessage } = useAuthStore();
 
@@ -70,6 +54,7 @@ const serverErrors = ref<{ [key: string]: string[] }>({});
 
 const localMessage = ref(notificationMessage);
 const submitting = ref(false);
+const clientErrors = ref<Record<string, string>>({});
 
 onMounted(async () => {
     if (route.query.verified === '1') {
@@ -94,9 +79,15 @@ const initialFormPayload: LoginPayload = {
 // Reactive form state
 const form = ref<LoginPayload>({ ...initialFormPayload });
 
-// Form submission handler
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) handleSubmit(form.value);
+function onSubmit() {
+    const parsed = schema.safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = mapZodErrors(parsed.error.issues);
+        return;
+    }
+
+    clientErrors.value = {};
+    handleSubmit({ ...parsed.data, remember: form.value.remember });
 }
 
 // Async login process
@@ -108,7 +99,7 @@ async function handleSubmit(form: LoginPayload) {
         const payload = { ...form };
         await login(payload);
 
-        toast.add({ severity: 'success', summary: 'Login Successful!!!', life: 2000 });
+        toast.success('Login Successful!!!', undefined, { duration: 2000 });
 
         setTimeout(() => {
             router.push({ name: 'dashboard' });
@@ -117,22 +108,23 @@ async function handleSubmit(form: LoginPayload) {
         if (err.response?.status === 422 && err.response.data?.errors) {
             serverErrors.value = err.response.data.errors;
         } else {
-            toast.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: err?.message || 'Operation failed',
-                life: 4000,
-            });
+            toast.error('Error', err?.message || 'Operation failed', { duration: 4000 });
         }
     } finally {
         submitting.value = false;
     }
 }
 
-const resolver = zodResolver(
-    z.object({
-        email: z.email({ error: 'Valid email is required.' }),
-        password: z.string().min(8, { error: () => 'Password must be at least 8 characters.' }),
-    }),
-);
+const schema = z.object({
+    email: z.email({ error: 'Valid email is required.' }),
+    password: z.string().min(8, { error: () => 'Password must be at least 8 characters.' }),
+});
+
+function mapZodErrors(issues: z.core.$ZodIssue[]) {
+    return issues.reduce<Record<string, string>>((errors, issue) => {
+        const field = String(issue.path[0] ?? '');
+        if (field && !errors[field]) errors[field] = issue.message;
+        return errors;
+    }, {});
+}
 </script>

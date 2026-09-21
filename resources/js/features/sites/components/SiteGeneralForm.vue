@@ -1,188 +1,123 @@
 <template>
-    <div class="w-full max-w-2xl">
-        <Form v-slot="$form" :initialValues="form" :resolver="resolver" :key="'general'" @submit="onSubmit" class="flex flex-col gap-6">
-            <!-- Site Title -->
-            <div class="flex flex-col gap-1">
-                <label for="site_title" class="mb-2 block font-bold">
-                    <i class="pi pi-globe mr-2"></i>
-                    Site Title:
-                </label>
-                <InputText v-model="form.site_title" name="site_title" placeholder="Site Title" />
-                <FieldError :formError="$form.site_title?.error?.message" :serverError="serverErrors?.site_title?.[0]" />
-            </div>
-
-            <!-- Tagline -->
-            <div class="flex flex-col gap-1">
-                <label for="tagline" class="mb-2 block font-bold">
-                    <i class="pi pi-info-circle mr-2"></i>
-                    Tagline:
-                </label>
-                <InputText v-model="form.tagline" name="tagline" placeholder="Tagline" />
-                <FieldError :formError="$form.tagline?.error?.message" :serverError="serverErrors?.tagline?.[0]" />
-            </div>
-
-            <!-- Logo -->
-            <div class="flex flex-col gap-1">
-                <label for="logo" class="mb-2 block font-bold">
-                    <i class="pi pi-image mr-2"></i>
-                    Logo:
-                </label>
-
-                <div v-if="form.logo" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
-                    <img :src="form.logo" alt="Logo preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
-                    <div class="absolute top-0 right-0">
-                        <Button @click="form.logo = null" icon="pi pi-trash" severity="danger" aria-label="Remove" size="small" title="Remove" />
-                    </div>
-                </div>
-
-                <MediaUploader v-model:file="form.logo_file" />
-                <FieldError :formError="$form.logo_file?.error?.message" :serverError="serverErrors?.logo_file?.[0]" />
-            </div>
-
-            <!-- Favicon -->
-            <div class="flex flex-col gap-1">
-                <label for="favicon" class="mb-2 block font-bold">
-                    <i class="pi pi-star mr-2"></i>
-                    Favicon:
-                </label>
-
-                <div v-if="form.favicon" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
-                    <img :src="form.favicon" alt="Favicon preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
-                    <div class="absolute top-0 right-0">
-                        <Button @click="form.favicon = null" icon="pi pi-trash" severity="danger" aria-label="Remove" size="small" title="Remove" />
-                    </div>
-                </div>
-
-                <MediaUploader v-model:file="form.favicon_file" />
-                <FieldError :formError="$form.favicon_file?.error?.message" :serverError="serverErrors?.favicon_file?.[0]" />
-            </div>
-
-            <!-- Footer Logo -->
-            <div class="flex flex-col gap-1">
-                <label for="footer_logo" class="mb-2 block font-bold">
-                    <i class="pi pi-images mr-2"></i>
-                    Footer Logo:
-                </label>
-
-                <div v-if="form.footer_logo" class="app-card--bordered relative my-4 flex justify-center border-amber-400 p-2">
-                    <img :src="form.footer_logo" alt="Footer logo preview" class="block max-h-32 w-full max-w-xs rounded object-contain" />
-                    <div class="absolute top-0 right-0">
-                        <Button
-                            @click="form.footer_logo = null"
-                            icon="pi pi-trash"
-                            severity="danger"
-                            aria-label="Remove"
-                            size="small"
-                            title="Remove"
+    <form class="app-form app-site-form" @submit.prevent="onSubmit">
+        <div class="app-form-field">
+            <label for="site-title" class="app-form-label">Site Title:</label
+            ><AppInput id="site-title" v-model="form.site_title" placeholder="Site Title" class="w-full" /><AppFieldError
+                :formError="clientErrors.site_title"
+                :serverError="serverErrors?.site_title?.[0]"
+            />
+        </div>
+        <div class="app-form-field">
+            <label for="site-tagline" class="app-form-label">Tagline:</label
+            ><AppInput id="site-tagline" v-model="form.tagline" placeholder="Tagline" class="w-full" /><AppFieldError
+                :formError="clientErrors.tagline"
+                :serverError="serverErrors?.tagline?.[0]"
+            />
+        </div>
+        <AppFormSection title="Branding" collapsible>
+            <div class="space-y-4">
+                <div v-for="item in imageFields" :key="item.key" class="app-form-field">
+                    <label class="app-form-label">{{ item.label }}:</label>
+                    <div v-if="form[item.key]" class="app-form-media-preview relative flex justify-center">
+                        <img
+                            :src="form[item.key] as string"
+                            :alt="`${item.label} preview`"
+                            class="max-h-32 w-full max-w-xs rounded object-contain"
+                        /><AppButton
+                            type="button"
+                            color="error"
+                            variant="solid"
+                            size="sm"
+                            icon="i-lucide-trash-2"
+                            class="absolute top-2 right-2"
+                            @click="form[item.key] = null"
                         />
                     </div>
+                    <MediaUploader v-model:file="form[item.fileKey]" /><AppFieldError :serverError="serverErrors?.[`${item.fileKey}`]?.[0]" />
                 </div>
-
-                <MediaUploader v-model:file="form.footer_logo_file" />
-                <FieldError :formError="$form.footer_logo_file?.error?.message" :serverError="serverErrors?.footer_logo_file?.[0]" />
             </div>
-
-            <hr />
-
-            <!-- Meta Title -->
-            <div class="flex flex-col gap-1">
-                <label for="meta_title" class="mb-2 block font-bold">
-                    <i class="pi pi-pencil mr-2"></i>
-                    Meta Title:
-                </label>
-                <InputText v-model="form.meta_title" name="meta_title" placeholder="Meta Title" />
-                <FieldError :formError="$form.meta_title?.error?.message" :serverError="serverErrors?.meta_title?.[0]" />
+        </AppFormSection>
+        <AppFormSection title="SEO & Legal" collapsible>
+            <div class="space-y-4">
+                <div class="app-form-field">
+                    <label for="site-meta-title" class="app-form-label">Meta Title:</label
+                    ><AppInput id="site-meta-title" v-model="form.meta_title" placeholder="Meta Title" class="w-full" /><AppFieldError
+                        :formError="clientErrors.meta_title"
+                        :serverError="serverErrors?.meta_title?.[0]"
+                    />
+                </div>
+                <div class="app-form-field">
+                    <label for="site-meta-description" class="app-form-label">Meta Description:</label
+                    ><AppTextarea
+                        id="site-meta-description"
+                        v-model="form.meta_description"
+                        placeholder="Meta Description"
+                        :rows="3"
+                        class="w-full"
+                    /><AppFieldError :formError="clientErrors.meta_description" :serverError="serverErrors?.meta_description?.[0]" />
+                </div>
+                <AppCheckbox v-model="form.cookies_enabled" label="Enable Cookies Notice" />
+                <div v-if="form.cookies_enabled" class="app-form-field">
+                    <label for="site-cookies-text" class="app-form-label">Cookies Text:</label
+                    ><AppTextarea
+                        id="site-cookies-text"
+                        v-model="form.cookies_text"
+                        placeholder="Cookies Policy Text"
+                        :rows="3"
+                        class="w-full"
+                    /><AppFieldError :serverError="serverErrors?.cookies_text?.[0]" />
+                </div>
+                <div class="app-form-field">
+                    <label for="site-copyright" class="app-form-label">Copyright Text:</label
+                    ><AppInput id="site-copyright" v-model="form.copyright_text" placeholder="© 2025 My Website" class="w-full" /><AppFieldError
+                        :serverError="serverErrors?.copyright_text?.[0]"
+                    />
+                </div>
             </div>
-
-            <!-- Meta Description -->
-            <div class="flex flex-col gap-1">
-                <label for="meta_description" class="mb-2 block font-bold">
-                    <i class="pi pi-align-left mr-2"></i>
-                    Meta Description:
-                </label>
-                <Textarea v-model="form.meta_description" name="meta_description" placeholder="Meta Description" rows="3" />
-                <FieldError :formError="$form.meta_description?.error?.message" :serverError="serverErrors?.meta_description?.[0]" />
-            </div>
-
-            <!-- Cookies Enabled -->
-            <div class="flex items-center gap-2">
-                <Checkbox v-model="form.cookies_enabled" name="cookies_enabled" binary />
-                <label for="cookies_enabled" class="font-bold">Enable Cookies Notice</label>
-            </div>
-
-            <!-- Cookies Text -->
-            <div class="flex flex-col gap-1" v-if="form.cookies_enabled">
-                <label for="cookies_text" class="mb-2 block font-bold">
-                    <i class="pi pi-lock mr-2"></i>
-                    Cookies Text:
-                </label>
-                <Textarea v-model="form.cookies_text" name="cookies_text" placeholder="Cookies Policy Text" rows="3" />
-                <FieldError :serverError="serverErrors?.cookies_text?.[0]" />
-            </div>
-
-            <!-- Copyright -->
-            <div class="flex flex-col gap-1">
-                <label for="copyright_text" class="mb-2 block font-bold">
-                    <i class="pi pi-copyright mr-2"></i>
-                    Copyright Text:
-                </label>
-                <InputText v-model="form.copyright_text" name="copyright_text" placeholder="© 2025 My Website" />
-                <FieldError :serverError="serverErrors?.copyright_text?.[0]" />
-            </div>
-
-            <!-- Submit -->
-            <div class="mt-4 flex justify-end gap-2">
-                <Button type="submit" label="Save General Settings" severity="success" :disabled="submitting" />
-            </div>
-        </Form>
-    </div>
+        </AppFormSection>
+        <div class="app-form-actions"><AppButton type="submit" :disabled="submitting">Save General Settings</AppButton></div>
+    </form>
 </template>
-
 <script setup lang="ts">
-import FieldError from '@/components/common/FieldError.vue';
 import MediaUploader from '@/components/common/MediaUploader.vue';
-import { zodResolver } from '@primevue/forms/resolvers/zod';
-
-import { SiteInfoPayload } from '@/features/sites/sites.types';
+import { AppButton, AppCheckbox, AppFieldError, AppFormSection, AppInput, AppTextarea } from '@/components/ui';
+import type { SiteInfoPayload } from '@/features/sites/sites.types';
 import { ref, watch } from 'vue';
 import { z } from 'zod';
-
-interface SiteGeneralFormProps {
-    initialForm: SiteInfoPayload;
-    serverErrors?: Record<string, string[]>;
-    submitting?: boolean;
-}
-
-const props = defineProps<SiteGeneralFormProps>();
-const emit = defineEmits(['submit']);
-
-const form = ref({ ...props.initialForm });
-
+const props = withDefaults(defineProps<{ initialForm: SiteInfoPayload; serverErrors?: Record<string, string[]>; submitting?: boolean }>(), {
+    submitting: false,
+});
+const emit = defineEmits<{ (e: 'submit', payload: SiteInfoPayload): void }>();
+const form = ref<SiteInfoPayload>({ ...props.initialForm });
+const clientErrors = ref<Record<string, string>>({});
+const imageFields = [
+    { key: 'logo', fileKey: 'logo_file', label: 'Logo' },
+    { key: 'favicon', fileKey: 'favicon_file', label: 'Favicon' },
+    { key: 'footer_logo', fileKey: 'footer_logo_file', label: 'Footer Logo' },
+] as const;
 watch(
     () => props.initialForm,
-    (newForm) => {
-        form.value = { ...newForm };
+    (value) => {
+        form.value = { ...value };
+        clientErrors.value = {};
     },
     { immediate: true, deep: true },
 );
-
-const resolver = zodResolver(
-    z.object({
-        site_title: z
-            .string()
-            .min(1, { message: 'Site title is required.' })
-            .transform((val) => val.trim()),
-        tagline: z.string().nullable().optional(),
-        meta_title: z.string().nullable().optional(),
-        meta_description: z.string().nullable().optional(),
-        cookies_text: z.string().nullable().optional(),
-        copyright_text: z.string().nullable().optional(),
-    }),
-);
-
-function onSubmit({ valid }: { valid: boolean }) {
-    if (valid) {
-        emit('submit', form.value);
+const schema = z.object({
+    site_title: z.string().trim().min(1, { message: 'Site title is required.' }),
+    tagline: z.string().nullable().optional(),
+    meta_title: z.string().nullable().optional(),
+    meta_description: z.string().nullable().optional(),
+    cookies_text: z.string().nullable().optional(),
+    copyright_text: z.string().nullable().optional(),
+});
+function onSubmit() {
+    const parsed = schema.safeParse(form.value);
+    if (!parsed.success) {
+        clientErrors.value = Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]));
+        return;
     }
+    clientErrors.value = {};
+    emit('submit', { ...form.value, site_title: String(form.value.site_title ?? '').trim() });
 }
 </script>

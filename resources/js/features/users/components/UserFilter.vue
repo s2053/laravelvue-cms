@@ -1,61 +1,60 @@
 <template>
-    <Panel class="mt-3">
-        <!-- Filter Fields -->
+    <section class="app-filter-panel mt-3">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <!-- Status Filter -->
             <div>
-                <label for="status" class="mb-1 block font-semibold">Status</label>
-                <MultiSelect
+                <label for="status" class="app-filter-field-label mb-1 block">Status</label>
+                <AppMultiSelect
                     v-model="localFilters.status"
-                    :options="statusOptions"
+                    :items="statusOptions"
                     name="status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="app-input-sm w-full"
+                    labelKey="label"
+                    valueKey="value"
+                    class="w-full"
                     placeholder="Select Status"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
-            <!-- Status Filter -->
             <div>
-                <label for="status" class="mb-1 block font-semibold">Email status:</label>
-                <MultiSelect
+                <label for="email_status" class="app-filter-field-label mb-1 block">Email status:</label>
+                <AppMultiSelect
                     v-model="localFilters.email_verified_status"
-                    :options="verifiedOptions"
+                    :items="verifiedOptions"
                     name="email_status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="app-input-sm w-full"
+                    labelKey="label"
+                    valueKey="value"
+                    class="w-full"
                     placeholder="Select Email Status"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
 
-            <!-- Roles Filter -->
             <div>
-                <label for="roles" class="mb-1 block font-semibold">Roles</label>
-                <MultiSelect
+                <label for="roles" class="app-filter-field-label mb-1 block">Roles</label>
+                <AppMultiSelect
                     v-model="localFilters.role_ids"
-                    :options="roleOptions"
+                    :items="roleOptions"
                     name="roles"
-                    optionLabel="name"
-                    optionValue="id"
-                    class="app-input-sm w-full"
+                    labelKey="name"
+                    valueKey="id"
+                    class="w-full"
                     placeholder="Select roles"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
         </div>
 
-        <!-- Filter Action Buttons -->
         <div class="mt-4 flex justify-end gap-2">
-            <Button size="small" label="Reset" outlined severity="danger" @click="resetFilters" />
-            <Button size="small" label="Apply Filters" severity="primary" @click="emitFilters" />
+            <AppButton size="sm" color="error" variant="outline" @click="resetFilters">Reset</AppButton>
+            <AppButton size="sm" @click="emitFilters">Apply Filters</AppButton>
         </div>
-    </Panel>
+    </section>
 </template>
 
 <script setup lang="ts">
+import { AppButton, AppMultiSelect } from '@/components/ui';
 import type { UserFilters } from '@/features/users/users.types';
 import { reactive, watch } from 'vue';
 

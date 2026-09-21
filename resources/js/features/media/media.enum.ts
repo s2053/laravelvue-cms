@@ -32,3 +32,30 @@ export const MediaStatusOptions = [
     { label: 'Active', value: true },
     { label: 'Inactive', value: false },
 ];
+
+export const MediaAllowedExtensions = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+    'avif',
+    'mp4',
+    'webm',
+    'mov',
+    'mp3',
+    'wav',
+    'ogg',
+    'm4a',
+    'pdf',
+    'doc',
+    'docx',
+    'xls',
+    'xlsx',
+    'ppt',
+    'pptx',
+    'txt',
+    'rtf',
+];
+
+export const MediaUploadAccept = MediaAllowedExtensions.map((extension) => `.${extension}`).join(',');

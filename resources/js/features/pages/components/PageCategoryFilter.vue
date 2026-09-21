@@ -1,32 +1,32 @@
 <template>
-    <Panel class="mt-3">
-        <!-- Filter Fields -->
+    <section class="app-filter-panel mt-3">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <!-- Status Filter -->
             <div>
-                <label for="status" class="mb-1 block font-semibold">Status</label>
-                <MultiSelect
+                <label for="page-category-status" class="app-filter-field-label mb-1 block">Status</label>
+                <AppMultiSelect
+                    id="page-category-status"
                     v-model="localFilters.status"
-                    :options="statusOptions"
+                    :items="statusOptions"
                     name="status"
-                    optionLabel="label"
-                    optionValue="value"
-                    class="app-input-sm w-full"
+                    labelKey="label"
+                    valueKey="value"
+                    class="w-full"
                     placeholder="Select Status"
-                    showClear
+                    clearable
+                    selectAll
                 />
             </div>
         </div>
 
-        <!-- Filter Action Buttons -->
         <div class="mt-4 flex justify-end gap-2">
-            <Button size="small" label="Reset" outlined severity="danger" @click="resetFilters" />
-            <Button size="small" label="Apply Filters" severity="primary" @click="emitFilters" />
+            <AppButton size="sm" color="error" variant="outline" @click="resetFilters">Reset</AppButton>
+            <AppButton size="sm" @click="emitFilters">Apply Filters</AppButton>
         </div>
-    </Panel>
+    </section>
 </template>
 
 <script setup lang="ts">
+import { AppButton, AppMultiSelect } from '@/components/ui';
 import type { PageCategoryFilters } from '@/features/pages/pages.types';
 import { reactive, watch } from 'vue';
 
@@ -42,23 +42,19 @@ const localFilters = reactive<PageCategoryFilters>({ ...props.filters });
 
 watch(
     () => props.filters,
-    (val) => Object.assign(localFilters, val),
+    (value) => Object.assign(localFilters, value),
     { deep: true },
 );
 
-// Emit current local filters to parent
 function emitFilters() {
     emit('update:filters', { ...localFilters });
 }
 
-// Clear all filter fields and emit reset
 function resetFilters() {
     localFilters.status = [];
-
     emitFilters();
 }
 
-// Status dropdown options
 const statusOptions = [
     { label: 'Active', value: true },
     { label: 'Inactive', value: false },

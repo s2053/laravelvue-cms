@@ -1,61 +1,40 @@
 <template>
-    <Tabs v-model:value="activeTab">
-        <TabList>
-            <Tab value="details" as="div">
-                <i class="pi pi-user mr-2"></i>
-                <span class="font-bold whitespace-nowrap">User Details</span>
-            </Tab>
-            <Tab value="security" as="div">
-                <i class="pi pi-lock mr-2"></i>
-                <span class="font-bold whitespace-nowrap">Security</span>
-            </Tab>
-            <Tab value="roles" as="div">
-                <i class="pi pi-users mr-2"></i>
-                <span class="font-bold whitespace-nowrap">Roles</span>
-            </Tab>
-        </TabList>
+    <AppTabs v-model="activeTab" :items="tabs" />
 
-        <TabPanels>
-            <TabPanel value="details" as="div">
-                <UserDetailsForm
-                    :initialForm="detailsForm"
-                    :editingId="editingId"
-                    :serverErrors="serverErrors"
-                    :submitting="submitting"
-                    @submit="onDetailsSubmit"
-                />
-            </TabPanel>
+    <section v-show="activeTab === 'details'" class="app-tab-panel">
+        <UserDetailsForm
+            :initialForm="detailsForm"
+            :editingId="editingId"
+            :serverErrors="serverErrors"
+            :submitting="submitting"
+            @submit="onDetailsSubmit"
+        />
+    </section>
 
-            <TabPanel value="security" as="div">
-                <UserSecurityForm
-                    :initialForm="securityForm"
-                    :editingId="editingId"
-                    :serverErrors="serverErrors"
-                    :submitting="submitting"
-                    @submit="onSecuritySubmit"
-                />
-            </TabPanel>
+    <section v-show="activeTab === 'security'" class="app-tab-panel">
+        <UserSecurityForm
+            :initialForm="securityForm"
+            :editingId="editingId"
+            :serverErrors="serverErrors"
+            :submitting="submitting"
+            @submit="onSecuritySubmit"
+        />
+    </section>
 
-            <TabPanel value="roles" as="div">
-                <UserRolesForm
-                    :initialForm="rolesForm"
-                    :editingId="editingId"
-                    :roles="roles"
-                    :serverErrors="serverErrors"
-                    :submitting="submitting"
-                    @submit="onRolesSubmit"
-                />
-            </TabPanel>
-        </TabPanels>
-    </Tabs>
+    <section v-show="activeTab === 'roles'" class="app-tab-panel">
+        <UserRolesForm
+            :initialForm="rolesForm"
+            :editingId="editingId"
+            :roles="roles"
+            :serverErrors="serverErrors"
+            :submitting="submitting"
+            @submit="onRolesSubmit"
+        />
+    </section>
 </template>
 
 <script setup lang="ts">
-import Tab from 'primevue/tab';
-import TabList from 'primevue/tablist';
-import TabPanel from 'primevue/tabpanel';
-import TabPanels from 'primevue/tabpanels';
-import Tabs from 'primevue/tabs';
+import { AppTabs } from '@/components/ui';
 import { ref, watch } from 'vue';
 
 import UserDetailsForm from './UserDetailsForm.vue';
@@ -81,6 +60,11 @@ const editingId = props.editingId;
 const emit = defineEmits(['updateDetails', 'updateSecurity', 'updateRoles', 'cancel']);
 
 const activeTab = ref('details');
+const tabs = [
+    { label: 'User Details', value: 'details', icon: 'i-lucide-user' },
+    { label: 'Security', value: 'security', icon: 'i-lucide-lock-keyhole' },
+    { label: 'Roles', value: 'roles', icon: 'i-lucide-users' },
+];
 
 const detailsForm = ref({
     name: props.initialForm.name ?? '',

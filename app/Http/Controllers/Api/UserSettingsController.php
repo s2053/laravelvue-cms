@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
 use App\Http\Requests\User\UserEditDetailsRequest;
 use App\Http\Requests\User\UserEditPasswordRequest;
+use App\Http\Requests\User\UserPreferencesRequest;
 use App\Http\Resources\UserResource;
 use App\Services\UserSettingsService;
-use Illuminate\Http\Request;
 
 class UserSettingsController extends Controller
 {
@@ -42,25 +41,19 @@ class UserSettingsController extends Controller
 
         return response()->json([
             'data' => null,
-            'message' => 'Security settings updated successfully.'
+            'message' => 'Security settings updated successfully.',
         ], 200);
     }
 
     /**
      * Update authenticated user's preferences (JSON data).
      */
-    public function updatePreferences(Request $request)
+    public function updatePreferences(UserPreferencesRequest $request)
     {
         $user = $request->user();
 
-        $validated = $request->validate([
-            'appearance' => 'string',
-        ]);
-
-        $record = $this->service->updatePreferences($user, $validated);
+        $record = $this->service->updatePreferences($user, $request->validated());
 
         return new UserResource(resource: $record);
     }
-
-
 }

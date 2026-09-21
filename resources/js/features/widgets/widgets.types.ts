@@ -32,6 +32,7 @@ export interface WidgetItem {
     order?: number;
     parent_id?: number;
     status: boolean;
+    open?: boolean;
     created_at?: string;
     children?: WidgetItem[];
 }
